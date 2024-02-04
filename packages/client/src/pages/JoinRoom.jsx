@@ -1,10 +1,16 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { RoomStatusEnum } from "@board-game-ito/shared";
 import { roomIdConfig } from "@board-game-ito/shared";
+
+import { useAuth } from "../hooks/useAuth";
+import { useSocket } from "../hooks/useSocket";
+import { outputServerError } from "../utils/utils";
 
 function JoinRoom() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { socket } = useSocket();
 
   // Prepare react-hook-form
   const {
@@ -17,43 +23,39 @@ function JoinRoom() {
 
   // Room ID Submitted
   const onSubmit = async (data) => {
-    if (!data || !data.roomId) {
+    const roomId = data.roomId;
+
+    if (!data || !roomId) {
       alert("Please enter a valid Room ID.");
       return;
     }
 
-    // Get room info availability
-    await fetch(`/join/${data.roomId}`)
-      .then((response) => response.json())
-      .then((responseData) => {
-        // Check if responseData is null or undefined
-        if (!responseData) {
-          alert("Server returned invalid data. Please try again later.");
-          return;
-        }
-
-        // Get room status
-        const { roomStatus } = responseData;
-
-        switch (roomStatus) {
-          case RoomStatusEnum.AVAILABLE:
-            navigate("/waiting/" + data.roomId); // Room ID is valid, redirect to the waiting room
-            break;
-          case RoomStatusEnum.PLAYING:
-            alert("This Room is currently playing. Please try other rooms.");
-            break;
-          case RoomStatusEnum.FULL:
-            alert("This Room is currently full. Please try other rooms.");
-            break;
-          default:
-            alert("This Room does not exist. Please try other rooms.");
-        }
-      })
-      .catch((error) => {
-        console.error("[Server Error]: Error validating Room ID:", error);
-        alert("Server Error. Please try again later.");
-      });
+    // Send to socket
+    socket.emit("joinRoom", {
+      user: user,
+      roomId: roomId,
+      socketId: socket.id,
+    });
   };
+
+  useEffect(() => {
+    socket.on("userJoined", async (data) => {
+      try {
+        const { success, response } = data;
+        if (success) {
+          const { user, room } = response;
+          navigate("/waiting/" + room.id); // Redirect to the waiting room
+        } else {
+          outputServerError({ error: response });
+        }
+      } catch (error) {
+        outputServerError({
+          error: error,
+          message: "Returned data is missing from the server",
+        });
+      }
+    });
+  }, [socket]);
 
   return (
     <div>

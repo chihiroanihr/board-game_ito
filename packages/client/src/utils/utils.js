@@ -6,7 +6,7 @@ export const isObjectEmpty = (objectName) => {
   );
 };
 
-export const outputServerError = (error, string) => {
-  console.error(`[Server Error]: ${string ? " " + string : ""}:`, error);
+export const outputServerError = ({ error, message = "" }) => {
+  console.error(`[Server Error]: ${message ? " " + message : ""}:`, error);
   alert("Server Error. Please try again later.");
 };

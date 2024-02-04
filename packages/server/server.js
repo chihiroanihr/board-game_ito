@@ -5,9 +5,9 @@ import http from "http";
 import cors from "cors";
 import { Server } from "socket.io";
 
-import registerUserRoute from "./routes/registerUserRoute.js";
-import createRoomRoute from "./routes/createRoomRoute.js";
-import joinRoomRoute from "./routes/joinRoomRoute.js";
+import handleLogin from "./routes/registerUserRoute.js";
+import handleCreateRoom from "./routes/createRoomRoute.js";
+import handleJoinRoom from "./routes/joinRoomRoute.js";
 import { deleteAllRooms } from "./controllers/roomController.js";
 import { deleteAllUsers } from "./controllers/userController.js";
 
@@ -33,32 +33,40 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("login", (data) => {
-    console.log(
-      `[Login]: User ID (${data.user.id}) with socket ID (${data.socketId})`
-    );
-    io.emit("userLoggedIn", data.user.id);
+  /** @socket - Login */
+  socket.on("login", async (data) => {
+    const { socketId, userName } = data;
+    const response = await handleLogin(userName);
+    io.emit("userCreated", response);
+    console.log(`[Login]: ${socketId}`);
   });
 
-  socket.on("logout", (data) => {
-    console.log(
-      `[Logout]: User ID (${data.user.id}) with socket ID (${data.socketId})`
-    );
-    io.emit("userLoggedOut", data.user.id);
+  /** @socket - Logout */
+  socket.on("logout", async (data) => {
+    const { socketId, user } = data;
+    /** @todo: handle log out function */
+    console.log(`[Logout]: ${socketId}`);
+  });
+
+  socket.on("createRoom", async (data) => {
+    const { socketId, user } = data;
+    const response = await handleCreateRoom(user);
+    io.emit("roomCreated", response);
+    console.log(`[Create Room]: ${socketId}`);
+  });
+
+  socket.on("joinRoom", async (data) => {
+    const { socketId, user, roomId } = data;
+    const response = await handleJoinRoom({ user, roomId });
+    io.emit("userJoined", response);
+    console.log(`[Join Room]: ${socketId}`);
   });
 
   // Disconnect event
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log("User disconnected:", socket.id);
   });
 });
-
-// Use Register User Route
-app.use("/user", registerUserRoute);
-// Use Create Room Route
-app.use("/create", createRoomRoute);
-// Use Join Room Route
-app.use("/join", joinRoomRoute);
 
 // Main Route
 app.get("/", async (req, res) => {

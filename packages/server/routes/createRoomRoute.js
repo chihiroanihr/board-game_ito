@@ -1,4 +1,3 @@
-import express from "express";
 import { RoomStatusEnum, UserStatusEnum } from "@board-game-ito/shared";
 
 import { getRoomInfo, addNewRoom } from "../controllers/roomController.js";
@@ -20,17 +19,13 @@ const generateUniqueRoomId = async () => {
   return { room, roomId };
 };
 
-const createRoomRoute = express.Router();
-
-createRoomRoute.post("/", async (req, res) => {
+const handleCreateRoom = async (user) => {
   try {
     // Generate unique room ID
     const { room, roomId } = await generateUniqueRoomId();
 
     // If room ID generated is unique
     if (!room) {
-      // Get user information
-      const { user } = req.body;
       // Update user information
       user.status = UserStatusEnum.PENDING;
       /** @api_call - Update user info to database (PUT) */
@@ -50,22 +45,33 @@ createRoomRoute.post("/", async (req, res) => {
         const success = await addNewRoom(newRoom);
 
         if (success) {
-          res.status(200).json({ success: true, room: newRoom });
+          return { success: true, response: { room: newRoom } };
         } else {
-          res.status(200).json({ success: false });
+          return {
+            success: false,
+            response: "[DB Error]: Failed to add new room.",
+          };
         }
       } else {
-        res.status(200).json({ success: false });
+        return {
+          success: false,
+          response: "[DB Error]: Failed to update user's status.",
+        };
       }
     }
     // If room ID keeps overlapping with those in database
     else {
-      res.status(200).json({ success: false });
+      return {
+        success: false,
+        response: "[DB Error]: Room ID overlaps.",
+      };
     }
   } catch (error) {
-    console.log("[Error]: ", error);
-    res.status(500).send(error);
+    return {
+      success: false,
+      response: "[Server Error]: " + error,
+    };
   }
-});
+};
 
-export default createRoomRoute;
+export default handleCreateRoom;

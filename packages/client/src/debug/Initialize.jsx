@@ -24,7 +24,10 @@ export default function Initialize() {
       })
       // Server error
       .catch((error) => {
-        outputServerError(error, "Error initializing json-server database");
+        outputServerError({
+          error: error,
+          message: "Error initializing json-server database",
+        });
       });
   };
 

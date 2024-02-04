@@ -1,4 +1,3 @@
-import express from "express";
 import { UserStatusEnum } from "@board-game-ito/shared";
 
 import { getUserInfo, addNewUser } from "../controllers/userController.js";
@@ -20,12 +19,8 @@ const generateUniqueUserId = async () => {
   return { user, userId };
 };
 
-const registerUserRoute = express.Router();
-
-registerUserRoute.post("/", async (req, res) => {
+const handleLogin = async (userName) => {
   try {
-    const { userName } = req.params;
-
     // Generate unique user ID
     const { user, userId } = await generateUniqueUserId();
 
@@ -43,19 +38,27 @@ registerUserRoute.post("/", async (req, res) => {
       const success = await addNewUser(newUser);
 
       if (success) {
-        res.status(200).json({ success: true, user: newUser });
+        return { success: true, response: { user: newUser } };
       } else {
-        res.status(200).json({ success: false });
+        return {
+          success: false,
+          response: "[DB Error]: Failed to add new user.",
+        };
       }
     }
-    // If room ID keeps overlapping with those in database
+    // If user ID keeps overlapping with those in database
     else {
-      res.status(200).json({ success: false });
+      return {
+        success: false,
+        response: "[DB Error]: User ID overlaps.",
+      };
     }
   } catch (error) {
-    console.log("[Error]: ", error);
-    res.status(500).send(error);
+    return {
+      success: false,
+      response: "[Server Error]: " + error,
+    };
   }
-});
+};
 
-export default registerUserRoute;
+export default handleLogin;

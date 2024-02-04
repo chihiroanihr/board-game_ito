@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import { useSocket } from "../hooks/useSocket";
-import { isObjectEmpty, outputServerError } from "../utils/utils";
+import { outputServerError } from "../utils/utils";
 
 function Home() {
   const navigate = useNavigate();
@@ -36,43 +36,32 @@ function Home() {
 
     const userName = data.name.trim(); // Trim any start/end spaces
 
-    await fetch(`/user`, {
-      method: "POST",
-      cache: "no-cache",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      referrerPolicy: "no-referrer",
-      body: JSON.stringify({ userName }),
-    })
-      .then((response) => response.json())
-      .then(async (responseData) => {
-        // Response is empty -> Server error
-        if (isObjectEmpty(responseData)) {
-          throw new Error();
-        }
-        // Name is registered
-        else if (responseData.success) {
-          // Send to socket
-          socket.emit("login", {
-            user: responseData.user,
-            socketId: socket.id,
-          });
-          // Store user ID to local storage
-          await login(responseData.user);
-        }
-        // Name could not been registered
-        else {
-          alert(
-            "The following name could not be registered. Please try a different name."
-          );
-        }
-      })
-      // Server error
-      .catch((error) => {
-        outputServerError(error, "Error registering name");
-      });
+    // Send to socket
+    socket.emit("login", {
+      userName: userName,
+      socketId: socket.id,
+    });
   };
+
+  useEffect(() => {
+    socket.on("userCreated", async (data) => {
+      // "data" type: User or String
+      try {
+        const { success, response } = data;
+        if (success) {
+          const { user } = response;
+          await login(user);
+        } else {
+          outputServerError({ error: response });
+        }
+      } catch (error) {
+        outputServerError({
+          error: error,
+          message: "Returned data is missing from the server",
+        });
+      }
+    });
+  }, [socket, login]);
 
   return (
     <div>

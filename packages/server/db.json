@@ -1,30 +1,31 @@
 {
-  "rooms": [],
+  "rooms": [
+    {
+      "id": "HKBJFYQW",
+      "status": "available",
+      "creationTime": "2024-02-04T21:35:08.650Z",
+      "createdBy": {
+        "id": "PHOR-HSUQ-E5US",
+        "name": "Attack On Titan Lovers",
+        "status": "pending",
+        "creationTime": "2024-02-04T21:34:43.892Z"
+      },
+      "players": [
+        {
+          "id": "PHOR-HSUQ-E5US",
+          "name": "Attack On Titan Lovers",
+          "status": "pending",
+          "creationTime": "2024-02-04T21:34:43.892Z"
+        }
+      ]
+    }
+  ],
   "users": [
     {
-      "id": "EYZ7-1LQH-QF5P",
-      "status": "idle",
-      "creationTime": "2024-02-04T16:58:43.846Z"
-    },
-    {
-      "id": "FIQE-HCLS-SE44",
-      "status": "idle",
-      "creationTime": "2024-02-04T17:21:39.212Z"
-    },
-    {
-      "id": "VHXN-ZGIH-TKEN",
-      "status": "idle",
-      "creationTime": "2024-02-04T17:24:35.757Z"
-    },
-    {
-      "id": "TJER-FOUS-LYVW",
-      "status": "idle",
-      "creationTime": "2024-02-04T17:26:12.703Z"
-    },
-    {
-      "id": "JU02-BH1J-LUSW",
-      "status": "idle",
-      "creationTime": "2024-02-04T17:28:52.984Z"
+      "id": "PHOR-HSUQ-E5US",
+      "name": "Attack On Titan Lovers",
+      "status": "pending",
+      "creationTime": "2024-02-04T21:34:43.892Z"
     }
   ]
 }
