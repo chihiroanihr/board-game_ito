@@ -1,0 +1,19 @@
+{
+  "name": "@board-game-ito/shared",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "keywords": [],
+  "author": "",
+  "private": true,
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "postinstall": "npm run build",
+    "watch": "tsc --watch"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
+}
