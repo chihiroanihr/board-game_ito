@@ -1,9 +1,10 @@
-import { RoomStatusEnum } from "@board-game-ito/shared";
+import { RoomStatusEnum, UserStatusEnum } from "@board-game-ito/shared";
 
 import { getRoomInfo } from "../controllers/roomController.js";
+import { updateUser } from "../controllers/userController.js";
 import { addPlayerInRoom } from "../controllers/playerController.js";
 
-const handleJoinRoom = async ({ user, roomId }) => {
+const handleJoinRoom = async (user, roomId) => {
   try {
     /** @api_call - Obtain room info from the database (GET) */
     const room = await getRoomInfo(roomId);
@@ -12,21 +13,21 @@ const handleJoinRoom = async ({ user, roomId }) => {
     if (!room) {
       return {
         success: false,
-        response: "[DB Error]: This room does not exist.",
+        result: "[DB Error]: This room does not exist.",
       };
     }
     //  If room exists but playing
     else if (room.status === RoomStatusEnum.PLAYING) {
       return {
         success: false,
-        response: "[DB Error]: This room is currently playing.",
+        result: "[DB Error]: This room is currently playing.",
       };
     }
     //  If room exists but full
     else if (room.status === RoomStatusEnum.FULL) {
       return {
         success: false,
-        response: "[DB Error]: This room is full of players.",
+        result: "[DB Error]: This room is full of players.",
       };
     }
     // If room exists and not full
@@ -38,27 +39,27 @@ const handleJoinRoom = async ({ user, roomId }) => {
 
       if (success) {
         /** @api_call - Add user to room (PUT) */
-        const success = await addPlayerInRoom({ user, roomId });
+        const success = await addPlayerInRoom(user, room);
 
         if (success) {
-          return { success: true, response: { user: user, room: room } };
+          return { success: true, result: { user: user, room: room } };
         } else {
           return {
             success: false,
-            response: "[DB Error]: Failed to add user to the room.",
+            result: "[DB Error]: Failed to add user to the room.",
           };
         }
       } else {
         return {
           success: false,
-          response: "[DB Error]: Failed to update user's status.",
+          result: "[DB Error]: Failed to update user's status.",
         };
       }
     }
   } catch (error) {
     return {
       success: false,
-      response: "[Server Error]: " + error,
+      result: "[Server Error]: " + error,
     };
   }
 };

@@ -10,8 +10,8 @@
     "packages/*"
   ],
   "scripts": {
-    "client": "cd packages/client && npm start",
-    "server": "cd packages/server && nodemon server.js",
+    "client": "cd packages/client && npm start --host=192.168.1.150:3000",
+    "server": "cd packages/server && nodemon server.js --host=192.168.1.150:3001",
     "install-packages": "npm install --legacy-peer-deps",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

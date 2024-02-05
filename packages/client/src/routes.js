@@ -27,15 +27,25 @@ const getUserData = () =>
     }, 3000)
   );
 
+const getRoomData = () =>
+  new Promise((resolve) =>
+    setTimeout(() => {
+      const room = window.localStorage.getItem("room");
+      resolve(room);
+    }, 3000)
+  );
+
 // Declare a routing table
 const routes = createBrowserRouter(
   createRoutesFromElements(
     // Layout Route
-    <Route
-      element={<AuthLayout />}
-      loader={() => defer({ userPromise: getUserData() })} // defer() allows us to pass promises instead of resolved values before the Route component is rendered.
-    >
-      <Route element={<SocketLayout />}>
+    <Route element={<SocketLayout />}>
+      <Route
+        element={<AuthLayout />}
+        loader={() =>
+          defer({ userPromise: getUserData(), roomPromise: getRoomData() })
+        } // defer() allows us to pass promises instead of resolved values before the Route component is rendered.
+      >
         <Route element={<HomeLayout />}>
           <Route path="/" element={<Home />} />
         </Route>
@@ -44,7 +54,7 @@ const routes = createBrowserRouter(
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-room" element={<CreateRoom />} />
           <Route path="/join-room" element={<JoinRoom />} />
-          <Route path="/waiting/:roomId" element={<Waiting />} />
+          <Route path="/waiting" element={<Waiting />} />
         </Route>
       </Route>
 

@@ -13,11 +13,14 @@ export const useLocalStorage = (keyName, defaultValue) => {
       }
       // If key does not exist in local storage
       else {
-        window.localStorage.setItem(keyName, JSON.stringify(defaultValue));
-        return defaultValue; // store original param's value
+        window.localStorage.setItem(keyName, JSON.stringify(defaultValue)); // store key value
+        window.dispatchEvent(new Event("storage")); // fire an storage event after value change
+        return defaultValue;
       }
-    } catch (err) {
-      return defaultValue; // store original param's value
+    } catch (error) {
+      // Error storing to local storage
+      console.log(error);
+      return defaultValue;
     }
   });
 
@@ -25,11 +28,11 @@ export const useLocalStorage = (keyName, defaultValue) => {
   const handleSetValue = (newValue) => {
     try {
       // Set new key to local storage
-      window.localStorage.setItem(keyName, JSON.stringify(newValue));
-    } catch (err) {
-      console.log(err);
+      window.localStorage.setItem(keyName, JSON.stringify(newValue)); // store key value
+    } catch (error) {
+      // Error storing to local storage
+      console.log(error);
     }
-
     // Store it as state
     setStoredValue(newValue);
   };

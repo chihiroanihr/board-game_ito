@@ -38,11 +38,11 @@ const handleLogin = async (userName) => {
       const success = await addNewUser(newUser);
 
       if (success) {
-        return { success: true, response: { user: newUser } };
+        return { success: true, result: { user: newUser } };
       } else {
         return {
           success: false,
-          response: "[DB Error]: Failed to add new user.",
+          result: "[DB Error]: Failed to add new user.",
         };
       }
     }
@@ -50,13 +50,13 @@ const handleLogin = async (userName) => {
     else {
       return {
         success: false,
-        response: "[DB Error]: User ID overlaps.",
+        result: "[DB Error]: User ID overlaps.",
       };
     }
   } catch (error) {
     return {
       success: false,
-      response: "[Server Error]: " + error,
+      result: "[Server Error]: " + error,
     };
   }
 };

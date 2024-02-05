@@ -1,22 +1,13 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import { useSocket } from "../hooks/useSocket";
 import { outputServerError } from "../utils/utils";
 
 function Home() {
-  const navigate = useNavigate();
-  const { user, login } = useAuth();
+  const { login } = useAuth();
   const { socket } = useSocket();
-
-  // If user already logged-in
-  useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
-    }
-  }, [user]);
 
   // Prepare react-hook-form
   const {
@@ -44,15 +35,15 @@ function Home() {
   };
 
   useEffect(() => {
-    socket.on("userCreated", async (data) => {
+    async function onLoginEvent(data) {
       // "data" type: User or String
       try {
-        const { success, response } = data;
+        const { success, result } = data;
         if (success) {
-          const { user } = response;
+          const { user } = result;
           await login(user);
         } else {
-          outputServerError({ error: response });
+          outputServerError({ error: result });
         }
       } catch (error) {
         outputServerError({
@@ -60,8 +51,15 @@ function Home() {
           message: "Returned data is missing from the server",
         });
       }
-    });
-  }, [socket, login]);
+    }
+
+    socket.on("login", onLoginEvent);
+
+    // Cleanup the socket event listener when the component unmounts
+    return () => {
+      socket.off("login", onLoginEvent);
+    };
+  }, [login, socket]);
 
   return (
     <div>

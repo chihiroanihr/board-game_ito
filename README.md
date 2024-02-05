@@ -11,3 +11,11 @@
 ### Routing
 
 - [The Power Of CreateBrowserRouter: Optimizing Your React App's Navigation](https://www.dhiwise.com/post/the-power-of-createbrowserrouter-optimizing-your-react-app)
+
+### Authentication
+
+- [Authentication with React Router v6](https://blog.logrocket.com/authentication-react-router-v6/)
+
+### Local Storage
+
+- [How to refresh a React component when local storage has changed](https://michalkotowski.pl/writings/how-to-refresh-a-react-component-when-local-storage-has-changed)

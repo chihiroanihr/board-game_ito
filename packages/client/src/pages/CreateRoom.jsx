@@ -1,13 +1,13 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
+import { useRoom } from "../hooks/useRoom";
 import { useSocket } from "../hooks/useSocket";
 import { outputServerError } from "../utils/utils";
 
 function CreateRoom() {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const { join } = useRoom();
   const { socket } = useSocket();
 
   const handleCreateRoom = async () => {
@@ -19,14 +19,14 @@ function CreateRoom() {
   };
 
   useEffect(() => {
-    socket.on("roomCreated", async (data) => {
+    async function onCreateRoomEvent(data) {
       try {
-        const { success, response } = data;
+        const { success, result } = data;
         if (success) {
-          const { room } = response;
-          navigate("/waiting/" + room.id); // Redirect to the waiting room
+          const { room } = result;
+          join(room);
         } else {
-          outputServerError({ error: response });
+          outputServerError({ error: result });
         }
       } catch (error) {
         outputServerError({
@@ -34,8 +34,14 @@ function CreateRoom() {
           message: "Returned data is missing from the server",
         });
       }
-    });
-  }, [socket]);
+    }
+
+    socket.on("createRoom", onCreateRoomEvent);
+    // Cleanup the socket event listener when the component unmounts
+    return () => {
+      socket.off("createRoom", onCreateRoomEvent);
+    };
+  }, [join, socket]);
 
   return (
     <div>

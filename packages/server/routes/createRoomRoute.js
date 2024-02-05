@@ -45,17 +45,17 @@ const handleCreateRoom = async (user) => {
         const success = await addNewRoom(newRoom);
 
         if (success) {
-          return { success: true, response: { room: newRoom } };
+          return { success: true, result: { user: user, room: newRoom } };
         } else {
           return {
             success: false,
-            response: "[DB Error]: Failed to add new room.",
+            result: "[DB Error]: Failed to add new room.",
           };
         }
       } else {
         return {
           success: false,
-          response: "[DB Error]: Failed to update user's status.",
+          result: "[DB Error]: Failed to update user's status.",
         };
       }
     }
@@ -63,13 +63,13 @@ const handleCreateRoom = async (user) => {
     else {
       return {
         success: false,
-        response: "[DB Error]: Room ID overlaps.",
+        result: "[DB Error]: Room ID overlaps.",
       };
     }
   } catch (error) {
     return {
       success: false,
-      response: "[Server Error]: " + error,
+      result: "[Server Error]: " + error,
     };
   }
 };

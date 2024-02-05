@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { roomIdConfig } from "@board-game-ito/shared";
 
 import { useAuth } from "../hooks/useAuth";
+import { useRoom } from "../hooks/useRoom";
 import { useSocket } from "../hooks/useSocket";
 import { outputServerError } from "../utils/utils";
 
 function JoinRoom() {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const { join } = useRoom();
   const { socket } = useSocket();
 
   // Prepare react-hook-form
@@ -39,14 +39,14 @@ function JoinRoom() {
   };
 
   useEffect(() => {
-    socket.on("userJoined", async (data) => {
+    async function onJoinRoomEvent(data) {
       try {
-        const { success, response } = data;
+        const { success, result } = data;
         if (success) {
-          const { user, room } = response;
-          navigate("/waiting/" + room.id); // Redirect to the waiting room
+          const { room } = result;
+          join(room); // Local Storage & Navigate
         } else {
-          outputServerError({ error: response });
+          outputServerError({ error: result });
         }
       } catch (error) {
         outputServerError({
@@ -54,8 +54,14 @@ function JoinRoom() {
           message: "Returned data is missing from the server",
         });
       }
-    });
-  }, [socket]);
+    }
+
+    socket.on("joinRoom", onJoinRoomEvent);
+    // Cleanup the socket event listener when the component unmounts
+    return () => {
+      socket.off("joinRoom", onJoinRoomEvent);
+    };
+  }, [join, socket]);
 
   return (
     <div>
@@ -74,7 +80,7 @@ function JoinRoom() {
             required: "Room ID is required",
             pattern: {
               value: new RegExp(
-                `^[${roomIdConfig.letterRegex}]{${roomIdConfig.numberOfLetters}}$`
+                `^[${roomIdConfig.letterRegex}]{${roomIdConfig.numLetters}}$`
               ),
               message: roomIdConfig.error_message,
             },
