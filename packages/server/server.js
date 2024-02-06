@@ -1,8 +1,8 @@
 // server/index.js
 import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
 import { createServer } from "node:http";
-// import bodyParser from "body-parser";
-// import cors from "cors";
 import { Server } from "socket.io";
 
 import handleLogin from "./routes/handleLogin.js";
@@ -22,14 +22,14 @@ const PORT = process.env.PORT || 3001;
 // Creating a http server using express
 const app = express();
 
-// app.use(cors());
-// app.use(bodyParser.json());
+app.use(cors());
+app.use(bodyParser.json());
 
 const server = createServer(app);
 // the io variable can be used to do all the necessary things regarding Socket
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "*", // CLIENT_URL
   },
 });
 
