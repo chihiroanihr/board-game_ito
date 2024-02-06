@@ -34,7 +34,6 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log(io.sockets.adapter.rooms);
   console.log("User connected:", socket.id);
 
   socket.on("message", (data) => {
@@ -103,6 +102,8 @@ io.on("connection", (socket) => {
   socket.on("disconnect", async () => {
     console.log("User disconnected:", socket.id);
   });
+
+  // console.log(io.sockets.adapter.rooms);
 });
 
 // Main Route
