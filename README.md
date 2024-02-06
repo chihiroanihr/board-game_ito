@@ -19,3 +19,9 @@
 ### Local Storage
 
 - [How to refresh a React component when local storage has changed](https://michalkotowski.pl/writings/how-to-refresh-a-react-component-when-local-storage-has-changed)
+
+### Socket.io
+
+- [Real-Time Data Exchange: Building a Socket.io Backend Server in Node.js](https://medium.com/@ritikkhndelwal/real-time-data-exchange-building-a-socket-io-backend-server-in-node-js-aff454f13683)
+- [Prevent multiple socket connections and events in React (useContext)](https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-events-in-react-531d)
+- [[Example] Building a chat app with Socket.io and React](https://dev.to/novu/building-a-chat-app-with-socketio-and-react-2edj)
