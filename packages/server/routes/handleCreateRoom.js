@@ -28,6 +28,7 @@ const handleCreateRoom = async (user) => {
     if (!room) {
       // Update user information
       user.status = UserStatusEnum.PENDING;
+      
       /** @api_call - Update user info to database (PUT) */
       const success = await updateUser(user);
 

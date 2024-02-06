@@ -24,7 +24,7 @@ function CreateRoom() {
         const { success, result } = data;
         if (success) {
           const { room } = result;
-          join(room);
+          await join(room);
         } else {
           outputServerError({ error: result });
         }

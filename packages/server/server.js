@@ -1,13 +1,16 @@
 // server/index.js
 import express from "express";
 import { createServer } from "node:http";
-import bodyParser from "body-parser";
-import cors from "cors";
+// import bodyParser from "body-parser";
+// import cors from "cors";
 import { Server } from "socket.io";
 
-import handleLogin from "./routes/registerUserRoute.js";
-import handleCreateRoom from "./routes/createRoomRoute.js";
-import handleJoinRoom from "./routes/joinRoomRoute.js";
+import handleLogin from "./routes/handleLogin.js";
+import handleLogout from "./routes/handleLogout.js";
+import handleCreateRoom from "./routes/handleCreateRoom.js";
+import handleJoinRoom from "./routes/handleJoinRoom.js";
+import handleLeaveRoom from "./routes/handleLeaveRoom.js";
+/** @debug */
 import { deleteAllRooms } from "./controllers/roomController.js";
 import { deleteAllUsers } from "./controllers/userController.js";
 
@@ -31,6 +34,7 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
+  console.log(io.sockets.adapter.rooms);
   console.log("User connected:", socket.id);
 
   socket.on("message", (data) => {
@@ -47,8 +51,9 @@ io.on("connection", (socket) => {
 
   /** @socket - Logout */
   socket.on("logout", async (data) => {
-    const { socketId, user } = data;
-    /** @todo: handle log out function */
+    const { socketId, user, room } = data;
+    const response = await handleLogout(user, room);
+    socket.emit("logout", response);
     console.log(`[Logout]: ${socketId}`);
   });
 
@@ -84,6 +89,14 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("waitingRoom", response);
       console.log(`[Waiting Room]: ${socketId}`);
     }
+  });
+
+  socket.on("leaveRoom", async (data) => {
+    const { socketId, user, room } = data;
+    const response = await handleLeaveRoom(user, room);
+    // Send response
+    socket.emit("leaveRoom", response);
+    console.log(`[Leave Room]: ${socketId}`);
   });
 
   // Disconnect event

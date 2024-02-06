@@ -43,8 +43,8 @@ function JoinRoom() {
       try {
         const { success, result } = data;
         if (success) {
-          const { room } = result;
-          join(room); // Local Storage & Navigate
+          const { room, user } = result;
+          await join(room); // Local Storage & Navigate
         } else {
           outputServerError({ error: result });
         }

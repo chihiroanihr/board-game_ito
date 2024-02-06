@@ -15,8 +15,8 @@ export default function Dashboard() {
     <div>
       {/* Create / Join Room */}
       <h2>Choose an option:</h2>
-      <button onClick={joinRoomHandler}>Join the Room</button>
-      <button onClick={createRoomHandler}>Invite Players to Your Room</button>
+      <button onClick={joinRoomHandler}>Join Room</button>
+      <button onClick={createRoomHandler}>Create Room</button>
     </div>
   );
 }

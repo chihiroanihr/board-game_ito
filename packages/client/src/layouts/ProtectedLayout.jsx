@@ -4,6 +4,7 @@ import { useNavigate, useOutlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useRoom } from "../hooks/useRoom";
 import { useSocket } from "../hooks/useSocket";
+import { outputServerError } from "../utils/utils";
 
 export default function ProtectedLayout() {
   const navigate = useNavigate();
@@ -40,20 +41,72 @@ export default function ProtectedLayout() {
     // Send to socket
     socket.emit("logout", {
       user: user,
+      room: room,
       socketId: socket.id,
     });
-    logout();
+    // logout();
   };
+
+  useEffect(() => {
+    async function onLogoutEvent(data) {
+      try {
+        const { success, result } = data;
+        if (success) {
+          await logout();
+        } else {
+          outputServerError({ error: result });
+        }
+      } catch (error) {
+        outputServerError({
+          error: error,
+          message: "Returned data is missing from the server",
+        });
+      }
+    }
+
+    socket.on("logout", onLogoutEvent);
+
+    // Cleanup the socket event listener when the component unmounts
+    return () => {
+      socket.off("logout", onLogoutEvent);
+    };
+  }, [logout, socket]);
 
   /** @function - Handle leave room */
   const handleLeaveRoom = () => {
     // Send to socket
     socket.emit("leaveRoom", {
       user: user,
+      room: room,
       socketId: socket.id,
     });
-    leave();
+    // leave();
   };
+
+  useEffect(() => {
+    async function onLeaveEvent(data) {
+      try {
+        const { success, result } = data;
+        if (success) {
+          await leave();
+        } else {
+          outputServerError({ error: result });
+        }
+      } catch (error) {
+        outputServerError({
+          error: error,
+          message: "Returned data is missing from the server",
+        });
+      }
+    }
+
+    socket.on("leaveRoom", onLeaveEvent);
+
+    // Cleanup the socket event listener when the component unmounts
+    return () => {
+      socket.off("leaveRoom", onLeaveEvent);
+    };
+  }, [leave, socket]);
 
   return (
     user && (
