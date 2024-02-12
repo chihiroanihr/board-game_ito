@@ -7,6 +7,7 @@ const RoomContext = createContext();
 
 export const RoomProvider = ({ children }) => {
   const navigate = useNavigate();
+
   const [room, setRoom] = useLocalStorage("room", null);
 
   // Call this function when you want to authenticate the user
@@ -19,7 +20,7 @@ export const RoomProvider = ({ children }) => {
   );
 
   // call this function to sign out logged in user
-  const leave = useCallback(() => {
+  const leave = useCallback(async () => {
     setRoom(null);
     navigate("/dashboard", { replace: true });
   }, [navigate, setRoom]);

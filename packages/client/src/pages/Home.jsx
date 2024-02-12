@@ -30,7 +30,6 @@ function Home() {
     // Send to socket
     socket.emit("login", {
       userName: userName,
-      socketId: socket.id,
     });
   };
 
@@ -39,9 +38,9 @@ function Home() {
       // "data" type: User or String
       try {
         const { success, result } = data;
+
         if (success) {
-          const { user } = result;
-          await login(user);
+          await login(result.user);
         } else {
           outputServerError({ error: result });
         }

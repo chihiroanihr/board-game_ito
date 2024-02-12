@@ -14,7 +14,6 @@ function CreateRoom() {
     // Send to socket
     socket.emit("createRoom", {
       user: user,
-      socketId: socket.id,
     });
   };
 
@@ -22,9 +21,9 @@ function CreateRoom() {
     async function onCreateRoomEvent(data) {
       try {
         const { success, result } = data;
+
         if (success) {
-          const { room } = result;
-          await join(room);
+          await join(result.room);
         } else {
           outputServerError({ error: result });
         }

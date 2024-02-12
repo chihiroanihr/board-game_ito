@@ -1,4 +1,3 @@
-import { RoomStatusEnum } from "./RoomEnums";
-import { UserStatusEnum } from "./UserEnums";
+import { RoomStatusEnum, UserStatusEnum } from "./enum";
 
 export { RoomStatusEnum, UserStatusEnum };

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useSocket } from "../hooks/useSocket";
 import { useRoom } from "../hooks/useRoom";
+import { useSocket } from "../hooks/useSocket";
 
 export default function Waiting() {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ export default function Waiting() {
 
   const [newUser, setNewUser] = useState("");
   const [users, setUsers] = useState([]);
+  const [admin, setAdmin] = useState({ id: null, name: null });
 
   useEffect(() => {
     if (!room) {
@@ -19,14 +20,17 @@ export default function Waiting() {
   }, [navigate, room]);
 
   useEffect(() => {
-    async function onWaitingListEvent(data) {
-      const { room, user } = data.result;
+    async function onWaitingListEvent(result) {
+      const { room, user } = result;
       // setUsers((prevUsers) => [...prevUsers, user]);
+      setAdmin({ id: room.createdBy.id, name: room.createdBy.name });
       setUsers(room.players);
       setNewUser(`${user.id}: ${user.name}`);
     }
+
     // Runs whenever a socket event is recieved from the server
     socket.on("waitingRoom", onWaitingListEvent);
+
     // Cleanup the socket event listener when the component unmounts
     return () => {
       socket.off("waitingRoom", onWaitingListEvent);
@@ -40,11 +44,15 @@ export default function Waiting() {
         <p>Room ID: {room.id}</p>
         <div>
           <ul>
-            {users.map((user) => (
-              <li key={user.id}>{user.name}</li>
-            ))}
+            {users.map((user) =>
+              admin.id && admin.id === user.id ? (
+                <li key={user.id}>{user.name} (admin)</li>
+              ) : (
+                <li key={user.id}>{user.name}</li>
+              )
+            )}
           </ul>
-          {newUser} just joined.
+          <p>{newUser} just joined.</p>
         </div>
       </div>
     )

@@ -7,6 +7,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
+
   const [user, setUser] = useLocalStorage("user", null);
 
   // Call this function when you want to authenticate the user
@@ -19,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   );
 
   // call this function to sign out logged in user
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setUser(null);
     navigate("/", { replace: true });
   }, [navigate, setUser]);

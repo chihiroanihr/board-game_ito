@@ -8,9 +8,9 @@ import {
 
 // Import all the pages to be used for routing
 import AuthLayout from "./layouts/AuthLayout";
-import SocketLayout from "./layouts/SocketLayout";
+import ConnectLayout from "./layouts/ConnectLayout";
 import HomeLayout from "./layouts/HomeLayout";
-import ProtectedLayout from "./layouts/ProtectedLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
 import Home from "./pages/Home";
 import CreateRoom from "./pages/CreateRoom";
 import JoinRoom from "./pages/JoinRoom";
@@ -19,7 +19,15 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 
 // Ideally this would be an API call to server to get logged in user data
-const getUserData = () =>
+const getLocalSessionData = () =>
+  new Promise((resolve) =>
+    setTimeout(() => {
+      const user = window.localStorage.getItem("session");
+      resolve(user);
+    }, 3000)
+  );
+
+const getLocalUserData = () =>
   new Promise((resolve) =>
     setTimeout(() => {
       const user = window.localStorage.getItem("user");
@@ -27,7 +35,7 @@ const getUserData = () =>
     }, 3000)
   );
 
-const getRoomData = () =>
+const getLocalRoomData = () =>
   new Promise((resolve) =>
     setTimeout(() => {
       const room = window.localStorage.getItem("room");
@@ -39,18 +47,23 @@ const getRoomData = () =>
 const routes = createBrowserRouter(
   createRoutesFromElements(
     // Layout Route
-    <Route element={<SocketLayout />}>
-      <Route
-        element={<AuthLayout />}
-        loader={() =>
-          defer({ userPromise: getUserData(), roomPromise: getRoomData() })
-        } // defer() allows us to pass promises instead of resolved values before the Route component is rendered.
-      >
+    <Route
+      element={<AuthLayout />}
+      loader={
+        () =>
+          defer({
+            sessionPromise: getLocalSessionData(),
+            userPromise: getLocalUserData(),
+            roomPromise: getLocalRoomData(),
+          }) // defer() allows us to pass promises instead of resolved values before the Route component is rendered.
+      }
+    >
+      <Route element={<ConnectLayout />}>
         <Route element={<HomeLayout />}>
           <Route path="/" element={<Home />} />
         </Route>
 
-        <Route element={<ProtectedLayout />}>
+        <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-room" element={<CreateRoom />} />
           <Route path="/join-room" element={<JoinRoom />} />

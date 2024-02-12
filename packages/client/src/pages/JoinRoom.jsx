@@ -34,7 +34,6 @@ function JoinRoom() {
     socket.emit("joinRoom", {
       user: user,
       roomId: roomId,
-      socketId: socket.id,
     });
   };
 

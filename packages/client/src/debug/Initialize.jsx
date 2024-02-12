@@ -7,9 +7,9 @@ export default function Initialize() {
       method: "DELETE",
     })
       // Success
-      .then((response) => response.json())
-      .then((responseData) => {
-        const { rooms, users } = responseData;
+      // .then((response) => response.json())
+      .then((response) => {
+        const { rooms, users } = response;
 
         if (
           (rooms || !isObjectEmpty(rooms)) &&

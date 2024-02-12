@@ -1,46 +1,32 @@
 import { useEffect } from "react";
-import { useNavigate, useOutlet } from "react-router-dom";
+import { useOutlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
+
 import Initialize from "../debug/Initialize";
 
 export default function HomeLayout() {
-  const navigate = useNavigate();
   const outlet = useOutlet();
-  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  // Check local storage change
-  useEffect(() => {
-    const checkLocalStorage = () => {
-      const storedUser = window.localStorage.getItem("user");
-      if (!storedUser || !user) {
-        logout();
-      }
-    };
+  const { user } = useAuth();
 
-    window.addEventListener("storage", checkLocalStorage);
-    return () => window.removeEventListener("storage", checkLocalStorage);
-  }, [user, navigate, logout]);
-
-  // If user already logged-in
+  // Check user log in status
   useEffect(() => {
     if (user) {
       navigate("/dashboard");
     }
-  }, [user, navigate]);
+  }, [navigate, user]);
 
   return (
     !user && (
       <div>
-        {/* Header */}
         <header>{/* Navigation */}</header>
 
-        {/* Main Section */}
         <main>
           {outlet} {/* Nested routes render here */}
         </main>
 
-        {/* Footer */}
         <footer>Footer Content</footer>
         <Initialize />
       </div>
