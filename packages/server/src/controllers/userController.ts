@@ -1,9 +1,9 @@
 import { ClientSession, ObjectId, ReturnDocument } from "mongodb";
-import { UserStatusEnum } from "@board-game-ito/shared";
+import { UserStatusEnum } from "@board-game-ito/shared/enums";
+import { User } from "@board-game-ito/shared/interfaces";
 
 import { getDB } from "../database/dbConnect";
-import { User } from "../interfaces/IData";
-import { logQueryEvent } from "../utils/log";
+import { logQueryEvent } from "../utils";
 
 export const getUserInfo = async (userId: ObjectId): Promise<User | null> => {
   logQueryEvent("Fetching the user info.");
@@ -17,11 +17,16 @@ export const getUserInfo = async (userId: ObjectId): Promise<User | null> => {
   }
 };
 
-export const insertUser = async (newUserObj: User): Promise<boolean> => {
+export const insertUser = async (
+  newUserObj: User,
+  dbSession: ClientSession | null = null
+): Promise<boolean> => {
   logQueryEvent("Inserting new user.");
 
+  const options = dbSession ? { session: dbSession } : {};
+
   try {
-    const result = await getDB().users.insertOne(newUserObj);
+    const result = await getDB().users.insertOne(newUserObj, options);
     return result.acknowledged; // true or false
   } catch (error) {
     throw error;
@@ -56,9 +61,10 @@ export const updateUserStatus = async (
   newStatus: UserStatusEnum,
   dbSession: ClientSession | null = null
 ): Promise<User | null> => {
-  logQueryEvent("Updating only the user status.");
+  logQueryEvent("Updating only the user status in User.");
 
   try {
+    // Options object
     const options = dbSession
       ? {
           returnDocument: ReturnDocument.AFTER,
@@ -70,7 +76,7 @@ export const updateUserStatus = async (
           includeResultMetadata: false,
         }; // return the updated document
 
-    // result will contain the updated or original (if no modification) document,
+    // Result will contain the updated or original (if no modification) document,
     // or null if no document was found.
     return await getDB().users.findOneAndUpdate(
       { _id: userId }, // Query part: find a user with this _id
@@ -95,11 +101,16 @@ export const updateUserStatus = async (
   }
 };
 
-export const deleteUser = async (userId: ObjectId): Promise<boolean> => {
+export const deleteUser = async (
+  userId: ObjectId,
+  dbSession: ClientSession | null = null
+): Promise<boolean> => {
   logQueryEvent("Deleting the user.");
 
+  const options = dbSession ? { session: dbSession } : {};
+
   try {
-    const result = await getDB().users.deleteOne({ _id: userId });
+    const result = await getDB().users.deleteOne({ _id: userId }, options);
     return result.deletedCount === 1; // true or false
   } catch (error) {
     throw error;

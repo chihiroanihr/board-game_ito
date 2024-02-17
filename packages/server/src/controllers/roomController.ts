@@ -1,8 +1,8 @@
 import { ClientSession } from "mongodb";
+import { Room } from "@board-game-ito/shared/interfaces";
 
 import { getDB } from "../database/dbConnect";
-import { Room } from "../interfaces/IData";
-import { logQueryEvent } from "../utils/log";
+import { logQueryEvent } from "../utils";
 
 export const getRoomInfo = async (roomId: string): Promise<Room | null> => {
   logQueryEvent("Fetching the room info.");
@@ -56,11 +56,19 @@ export const updateRoom = async (
   }
 };
 
-export const deleteRoom = async (roomId: string): Promise<boolean> => {
+export const deleteRoom = async (
+  roomId: string,
+  dbSession: ClientSession | null = null
+): Promise<boolean> => {
   logQueryEvent("Deleting the room.");
 
   try {
-    const result = await getDB().rooms.deleteOne({ _id: roomId });
+    // Options object
+    const options = dbSession ? { session: dbSession } : {};
+
+    // Execute delete
+    const result = await getDB().rooms.deleteOne({ _id: roomId }, options);
+
     return result.deletedCount === 1; // true or false
   } catch (error) {
     throw error;

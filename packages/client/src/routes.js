@@ -22,8 +22,8 @@ import Dashboard from "./pages/Dashboard";
 const getLocalSessionData = () =>
   new Promise((resolve) =>
     setTimeout(() => {
-      const user = window.localStorage.getItem("session");
-      resolve(user);
+      const session = window.localStorage.getItem("session");
+      resolve(session);
     }, 3000)
   );
 

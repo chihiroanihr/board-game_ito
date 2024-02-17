@@ -1,14 +1,15 @@
 import crypto from "crypto";
-
-import { roomIdConfig, userIdConfig } from "@board-game-ito/shared";
+import { roomIdConfig, userIdConfig } from "@board-game-ito/shared/config";
 
 /**
- * @function - generate random room ID.
- * @returns - randomId: String
+ * Generates a random room ID using predefined configuration limits. The ID length is adjusted to be within 6 to 64 characters,
+ * ensuring it follows the constraints set in roomIdConfig. The generated ID is a capitalized hexadecimal string.
+ *
+ * @returns {string} A string representing the random room ID, formatted as a capitalized hexadecimal string to meet length requirements.
  */
-export function generateRandomRoomId() {
+export function generateRandomRoomId(): string {
   // Make sure to have more than 6 letters and less than 64 letters
-  let numLetters = roomIdConfig.numLetters;
+  let numLetters: number = roomIdConfig.numLetters;
   if (numLetters <= 6) {
     numLetters = 6;
   } else if (numLetters >= 64) {
@@ -16,19 +17,21 @@ export function generateRandomRoomId() {
   }
 
   // Generate random string of length given
-  const randomBytes = crypto.randomBytes(numLetters / 2); // Divide by 2 since the resulting string length will be twice the number of bytes generated
-  const randomId = randomBytes.toString("hex").toUpperCase(); // .slice(0, numLetters);
+  const randomBytes: Buffer = crypto.randomBytes(numLetters / 2); // Divide by 2 since the resulting string length will be twice the number of bytes generated
+  const randomId: string = randomBytes.toString("hex").toUpperCase(); // .slice(0, numLetters);
 
   return randomId;
 }
 
 /**
- * @function - generate random user ID.
- * @returns - randomId: String
+ * Creates a random user ID within specified length constraints (6 to 64 characters) as defined in userIdConfig.
+ * The function generates a hexadecimal string of the appropriate length to serve as the user ID.
+ *
+ * @returns {string} A hexadecimal string representing the random user ID, adjusted to specified length constraints.
  */
-export function generateRandomUserId() {
+export function generateRandomUserId(): string {
   // Make sure to have more than 6 letters and less than 64 letters
-  let numLetters = userIdConfig.numLetters;
+  let numLetters: number = userIdConfig.numLetters;
   if (numLetters <= 6) {
     numLetters = 6;
   } else if (numLetters >= 64) {
@@ -36,8 +39,8 @@ export function generateRandomUserId() {
   }
 
   // Generate random string of length given
-  const randomBytes = crypto.randomBytes(numLetters / 2); // Divide by 2 since the resulting string length will be twice the number of bytes generated
-  const randomId = randomBytes.toString("hex"); // .slice(0, numLetters);
+  const randomBytes: Buffer = crypto.randomBytes(numLetters / 2); // Divide by 2 since the resulting string length will be twice the number of bytes generated
+  const randomId: string = randomBytes.toString("hex"); // .slice(0, numLetters);
 
   return randomId;
 }

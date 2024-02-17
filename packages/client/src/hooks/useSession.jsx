@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useLocalStorage } from "./useLocalStorage";
+import { navigateHome } from "../utils";
 
 const SessionContext = createContext();
 
@@ -12,16 +13,16 @@ export const SessionProvider = ({ children }) => {
 
   // Call this function when you want to authenticate the user
   const saveSession = useCallback(
-    async (data) => {
+    (data) => {
       setSession(data);
     },
     [setSession]
   );
 
-  // call this function to sign out logged in user
-  const discardSession = useCallback(async () => {
+  // Call this function when server session expires
+  const discardSession = useCallback(() => {
     setSession(null);
-    navigate("/", { replace: true });
+    navigateHome(navigate);
   }, [navigate, setSession]);
 
   const value = useMemo(

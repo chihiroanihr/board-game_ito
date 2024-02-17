@@ -1,35 +1,29 @@
-import { useEffect } from "react";
-import { useOutlet, useNavigate } from "react-router-dom";
+import { useOutlet } from "react-router-dom";
+
+import LazyComponentWrapper from "../components/LazyComponentWrapper";
 
 import { useAuth } from "../hooks/useAuth";
 
-import Initialize from "../debug/Initialize";
+/** @debug - Initialize DB button: Only for development environment */
+const initializeComponent = () =>
+  import("../components/debug/Initialize").then((module) => module.default);
 
+/**
+ * Layout page for Home
+ * @returns
+ */
 export default function HomeLayout() {
   const outlet = useOutlet();
-  const navigate = useNavigate();
 
   const { user } = useAuth();
 
-  // Check user log in status
-  useEffect(() => {
-    if (user) {
-      navigate("/dashboard");
-    }
-  }, [navigate, user]);
-
+  if (user) return null;
   return (
-    !user && (
-      <div>
-        <header>{/* Navigation */}</header>
-
-        <main>
-          {outlet} {/* Nested routes render here */}
-        </main>
-
-        <footer>Footer Content</footer>
-        <Initialize />
-      </div>
-    )
+    <>
+      {outlet} {/* Nested routes render here */}
+      {process.env.NODE_ENV !== "production" && (
+        <LazyComponentWrapper loadComponent={initializeComponent} />
+      )}
+    </>
   );
 }

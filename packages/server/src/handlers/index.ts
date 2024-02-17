@@ -1,10 +1,10 @@
-import { handleFindSession, handleSaveSession } from "./sessionHandlers.ts";
-import { handleLogin, handleLogout } from "./authHandlers.ts";
+import { handleFindSession, handleSaveSession } from "./sessionHandlers";
+import { handleLogin, handleLogout } from "./authHandlers";
 import {
   handleCreateRoom,
   handleJoinRoom,
   handleLeaveRoom,
-} from "./roomHandlers.ts";
+} from "./roomHandlers";
 
 export {
   handleFindSession,

@@ -8,7 +8,7 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "commonjs",
-    "outDir": "dist", // <- Directory of generated output
+    "outDir": "./dist", // <- Directory of generated output
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "experimentalDecorators": true,

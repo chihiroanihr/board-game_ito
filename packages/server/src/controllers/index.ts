@@ -1,10 +1,14 @@
 import {
   getSessionInfo,
   updateSessionConnected,
+  updateSessionUserId,
+  updateSessionRoomId,
+  updateSessionUserAndRoomId,
   upsertSession,
   insertSession,
   updateSession,
   deleteSession,
+  deleteAllSessions,
 } from "./sessionController";
 
 import {
@@ -29,6 +33,7 @@ import {
 
 import {
   getAllPlayersInRoom,
+  convertPlayerIdsToPlayerObjs,
   insertPlayerInRoom,
   deletePlayerFromRoom,
   updateRoomAdmin,
@@ -37,10 +42,14 @@ import {
 export {
   getSessionInfo,
   updateSessionConnected,
+  updateSessionUserId,
+  updateSessionRoomId,
+  updateSessionUserAndRoomId,
   upsertSession,
   insertSession,
   updateSession,
   deleteSession,
+  deleteAllSessions,
   getUserInfo,
   insertUser,
   updateUser,
@@ -56,6 +65,7 @@ export {
   deleteAllRooms,
   cleanUpIdleRooms,
   getAllPlayersInRoom,
+  convertPlayerIdsToPlayerObjs,
   insertPlayerInRoom,
   deletePlayerFromRoom,
   updateRoomAdmin,

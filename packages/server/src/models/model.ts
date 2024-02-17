@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { RoomStatusEnum, UserStatusEnum } from "@board-game-ito/shared";
+import { RoomStatusEnum, UserStatusEnum } from "@board-game-ito/shared/enums";
 
 const sessionSchema = new mongoose.Schema({
   _id: { type: String, required: true },

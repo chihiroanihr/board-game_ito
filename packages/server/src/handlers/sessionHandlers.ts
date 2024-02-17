@@ -1,13 +1,14 @@
+import { ClientSession } from "mongodb";
 import { Socket } from "socket.io";
+import { User, Room, Session } from "@board-game-ito/shared/interfaces";
 
 import {
   upsertSession,
   getSessionInfo,
   getUserInfo,
   getRoomInfo,
-} from "../controllers/index.js";
-
-import { User, Room, Session } from "../interfaces/IData.js";
+} from "../controllers";
+import { handleDBError } from "../utils";
 
 interface SessionData {
   _id: string;
@@ -31,16 +32,18 @@ const handleFindSession = async (
     const user = userId ? await getUserInfo(userId) : null;
     const room = roomId ? await getRoomInfo(roomId) : null;
 
+    // All success
     return { _id, connected, user, room };
   } catch (error) {
-    throw new Error(
-      `[Server Error]: Failed to fetch session info.\n
-      ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw handleDBError(error, "handleFindSession");
   }
 };
 
-const handleSaveSession = async (socket: Socket): Promise<void> => {
+const handleSaveSession = async (
+  socket: Socket,
+  dbSession: ClientSession | null = null
+): Promise<void> => {
+  console.log(socket.connected);
   try {
     // Create / Update new session info
     const newSessionObj: Session = {
@@ -51,20 +54,18 @@ const handleSaveSession = async (socket: Socket): Promise<void> => {
     };
 
     /** @api_call - Upsert new session (POST & PUT) */
-    const { modified, inserted } = await upsertSession(newSessionObj);
-    if (!modified && !inserted) {
+    const session = await upsertSession(newSessionObj, dbSession);
+    // Error
+    if (!session) {
       throw new Error(
-        `Failed to update / newly insert session info (given session ID might not exist).`
+        `Failed to upsert session info (given session ID might not exist).`
       );
     }
 
     // All success
     return;
   } catch (error) {
-    throw new Error(
-      `[Server Error]: Failed to save session data.\n
-      ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw handleDBError(error, "handleSaveSession");
   }
 };
 

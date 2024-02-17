@@ -1,8 +1,8 @@
 import { ClientSession, ObjectId, ReturnDocument } from "mongodb";
+import { Room, User } from "@board-game-ito/shared/interfaces";
 
 import { getDB } from "../database/dbConnect";
-import { Room } from "../interfaces/IData";
-import { logQueryEvent } from "../utils/log";
+import { logQueryEvent } from "../utils";
 
 export const getAllPlayersInRoom = async (
   roomId: string
@@ -19,6 +19,29 @@ export const getAllPlayersInRoom = async (
     // Return the players array from the room object (an empty array if no players in the room),
     // or null if no room is found
     return room ? room.players : null;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const convertPlayerIdsToPlayerObjs = async (
+  playerIds: Array<ObjectId>
+): Promise<Array<User>> => {
+  logQueryEvent("Converting all players' IDs into User objects.");
+
+  try {
+    // Return array of User objects if each player (user) ID matches with what's in the database
+    const players = await getDB()
+      .users.find({ _id: { $in: playerIds } })
+      .toArray();
+
+    if (players.length !== playerIds.length) {
+      throw new Error(
+        "[Data Integrity Error]: Given player number does not match the returned player number. Please ensure the data consistency."
+      );
+    }
+
+    return players;
   } catch (error) {
     throw error;
   }
@@ -43,7 +66,7 @@ export const insertPlayerInRoom = async (
           includeResultMetadata: false,
         }; // return the updated document
 
-    // result will contain the updated or original (if no modification) document,
+    // Result will contain the updated or original (if no modification) document,
     // or null if no document was found.
     return await getDB().rooms.findOneAndUpdate(
       { _id: roomId },
@@ -87,7 +110,7 @@ export const deletePlayerFromRoom = async (
           includeResultMetadata: false,
         }; // return the updated document
 
-    // result will contain the updated or original (if no modification) document,
+    // Result will contain the updated or original (if no modification) document,
     // or null if no document was found.
     return await getDB().rooms.findOneAndUpdate(
       { _id: roomId },
@@ -117,7 +140,7 @@ export const updateRoomAdmin = async (
   roomId: string,
   dbSession: ClientSession | null = null
 ): Promise<Room | null> => {
-  logQueryEvent("Updating admin of the room.");
+  logQueryEvent("Updating only the room admin in Room.");
 
   try {
     const options = dbSession
@@ -131,7 +154,7 @@ export const updateRoomAdmin = async (
           includeResultMetadata: false,
         }; // return the updated document
 
-    // result will contain the updated or original (if no modification) document,
+    // Result will contain the updated or original (if no modification) document,
     // or null if no document was found.
     return await getDB().rooms.findOneAndUpdate(
       { _id: roomId },

@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useLocalStorage } from "./useLocalStorage";
+import { navigateDashboard, navigateWaiting } from "../utils";
 
 const RoomContext = createContext();
 
@@ -10,28 +11,36 @@ export const RoomProvider = ({ children }) => {
 
   const [room, setRoom] = useLocalStorage("room", null);
 
-  // Call this function when you want to authenticate the user
-  const join = useCallback(
-    async (data) => {
+  // Call this function to join the room
+  const joinRoom = useCallback(
+    (data) => {
       setRoom(data);
-      navigate("/waiting", { replace: true });
+      navigateWaiting(navigate);
     },
     [navigate, setRoom]
   );
 
-  // call this function to sign out logged in user
-  const leave = useCallback(async () => {
+  // call this function to leave from the room
+  const leaveRoom = useCallback(() => {
     setRoom(null);
-    navigate("/dashboard", { replace: true });
+    navigateDashboard(navigate);
   }, [navigate, setRoom]);
+
+  const updateRoom = useCallback(
+    (value) => {
+      setRoom(value);
+    },
+    [setRoom]
+  );
 
   const value = useMemo(
     () => ({
       room,
-      join,
-      leave,
+      joinRoom,
+      leaveRoom,
+      updateRoom,
     }),
-    [join, leave, room]
+    [joinRoom, leaveRoom, room, updateRoom]
   );
 
   return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>;

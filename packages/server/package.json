@@ -2,16 +2,16 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "server.ts",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "ts-node src/server.ts",
+    "dev": "nodemon --exec ts-node src/server.ts",
     "json-server": "json-server db.json --port 3002",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@board-game-ito/shared": "1.0.0",
     "cors": "^2.8.5",
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "json-server": "^1.0.0-alpha.23",
-    "nodemon": "^3.0.3"
+    "nodemon": "^3.0.3",
+    "ts-node": "^10.9.2"
   }
 }

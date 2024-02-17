@@ -1,112 +1,150 @@
-import { useEffect } from "react";
-import { useOutlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useOutlet } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import { useRoom } from "../hooks/useRoom";
 import { useSocket } from "../hooks/useSocket";
-import { outputServerError } from "../utils/utils";
+import { outputServerError, outputResponseTimeoutError } from "../utils";
 
+/**
+ * Layout for Dashboard
+ * @returns
+ */
 export default function DashboardLayout() {
   const outlet = useOutlet();
-  const navigate = useNavigate();
 
   const { user, logout } = useAuth();
-  const { room, leave } = useRoom();
+  const { room, leaveRoom, updateRoom } = useRoom();
   const { socket } = useSocket();
 
-  // Check user log in status
-  useEffect(() => {
-    if (!user) {
-      navigate("/");
-    }
-  }, [navigate, user]);
+  const [loading, setLoading] = useState(false);
 
-  /** @function - Handle logout */
+  // Create a timeout to check if the response is received
+  const timeoutId = setTimeout(() => {
+    setLoading(false);
+    outputResponseTimeoutError();
+  }, 5000);
+
   const handleLogout = () => {
-    // Send to socket
-    socket.emit("logout", {
-      user: user,
-      room: room,
+    setLoading(true); // Set loading to true when the request is initiated
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit("logout", user, async (error, response) => {
+      // socket.emit("logout", user);
+
+      // Clear the timeout as response is received before timeout
+      clearTimeout(timeoutId);
+
+      if (error) {
+        outputServerError({ error });
+      } else {
+        updateRoom(null);
+        logout();
+      }
+
+      setLoading(false); // Set loading to false when the response is received
     });
   };
 
-  useEffect(() => {
-    async function onLogoutEvent(data) {
-      try {
-        const { success, result } = data;
+  // useEffect(() => {
+  //   function onLogoutSuccessEvent(data) {
+  //     try {
+  //       logout();
+  //     } catch (error) {
+  //       outputServerError({ error });
+  //     }
+  //   }
 
-        if (success) {
-          await logout();
-        } else {
-          outputServerError({ error: result });
-        }
-      } catch (error) {
-        outputServerError({
-          error: error,
-          message: "Returned data is missing from the server",
-        });
-      }
-    }
+  //   socket.on("logout_success", onLogoutSuccessEvent);
 
-    socket.on("logout", onLogoutEvent);
+  //   return () => {
+  //     socket.off("logout_success", onLogoutSuccessEvent);
+  //   };
+  // }, [logout, socket]);
 
-    return () => {
-      socket.off("logout", onLogoutEvent);
-    };
-  }, [logout, socket]);
+  // useEffect(() => {
+  //   function onLogoutErrorEvent(error) {
+  //     outputServerError({ error });
+  //   }
 
-  /** @function - Handle leave room */
+  //   socket.on("logout_error", onLogoutErrorEvent);
+
+  //   return () => {
+  //     socket.off("logout_error", onLogoutErrorEvent);
+  //   };
+  // });
+
   const handleLeaveRoom = () => {
-    // Send to socket
-    socket.emit("leaveRoom", {
-      user: user,
-      room: room,
+    setLoading(true); // Set loading to true when the request is initiated
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit("leave-room", user, async (error, response) => {
+      // socket.emit("leave-room", user);
+
+      // Clear the timeout as response is received before timeout
+      clearTimeout(timeoutId);
+
+      if (error) {
+        outputServerError({ error });
+      } else {
+        leaveRoom();
+      }
+
+      setLoading(false); // Set loading to false when the response is received
     });
   };
 
-  useEffect(() => {
-    async function onLeaveEvent(data) {
-      try {
-        const { success, result } = data;
+  // const handleLeaveRoom = () => {
+  //   // Send to socket
+  //   socket.emit("leave-room", user);
+  // };
 
-        if (success) {
-          await leave();
-        } else {
-          outputServerError({ error: result });
-        }
-      } catch (error) {
-        outputServerError({
-          error: error,
-          message: "Returned data is missing from the server",
-        });
-      }
-    }
+  // useEffect(() => {
+  //   async function onLeaveRoomSuccessEvent(data) {
+  //     try {
+  //       leaveRoom();
+  //     } catch (error) {
+  //       outputServerError({ error });
+  //     }
+  //   }
 
-    socket.on("leaveRoom", onLeaveEvent);
+  //   socket.on("leave-room_success", onLeaveRoomSuccessEvent);
 
-    return () => {
-      socket.off("leaveRoom", onLeaveEvent);
-    };
-  }, [leave, socket]);
+  //   return () => {
+  //     socket.off("leave-room_success", onLeaveRoomSuccessEvent);
+  //   };
+  // }, [leaveRoom, socket]);
 
+  // useEffect(() => {
+  //   async function onLeaveRoomErrorEvent(error) {
+  //     outputServerError({ error });
+  //   }
+
+  //   socket.on("leave-room_error", onLeaveRoomErrorEvent);
+
+  //   return () => {
+  //     socket.off("leave-room_error", onLeaveRoomErrorEvent);
+  //   };
+  // }, [leaveRoom, socket]);
+
+  if (!user) return null;
   return (
-    user && (
+    <>
       <div>
-        <header>{/* Navigation */}</header>
+        <h2>Hello, {user.name}</h2>
 
-        <main>
-          <div>
-            <h2>Hello, {user.name}</h2>
-            {/* <Link to="/config">Game Configuration</Link> */}
-            <button onClick={handleLogout}>Leave Game</button>
-            {room && <button onClick={handleLeaveRoom}>Leave Room</button>}
-          </div>
+        <button onClick={handleLogout} disabled={loading}>
+          {loading ? "Loading..." : "Leave Game"}
+        </button>
 
-          <div>{outlet}</div>
-        </main>
-
-        <footer></footer>
+        {room && (
+          <button onClick={handleLeaveRoom} disabled={loading}>
+            {loading ? "Loading..." : "Leave Room"}
+          </button>
+        )}
       </div>
-    )
+
+      <div>{outlet}</div>
+    </>
   );
 }

@@ -1,64 +1,103 @@
-import { useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { useAuth } from "../hooks/useAuth";
 import { useSocket } from "../hooks/useSocket";
-import { outputServerError } from "../utils/utils";
+import { outputServerError, outputResponseTimeoutError } from "../utils";
 
+/**
+ * Main page for Home
+ * @returns
+ */
 function Home() {
   const { login } = useAuth();
   const { socket } = useSocket();
+
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Prepare react-hook-form
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     defaultValues: { name: "" },
   });
 
   // Player name submitted
-  const onSubmit = async (data) => {
-    if (!data || !data.name) {
-      alert("Please enter a valid name.");
+  const onSubmit = (data) => {
+    setLoading(true); // Set loading to true when the request is initiated
+    setErrorMessage(""); // Reset error message
+
+    // Trim any start/end spaces
+    const userName = data.name.trim();
+
+    if (!userName) {
+      setErrorMessage("Please enter a valid name.");
+      setLoading(false);
       return;
     }
 
-    const userName = data.name.trim(); // Trim any start/end spaces
+    /** @socket_send - Send to socket & receive response */
+    socket.emit("login", userName, async (error, userResponse) => {
+      // socket.emit("logout", userName);
 
-    // Send to socket
-    socket.emit("login", {
-      userName: userName,
+      // Clear the timeout as response is received before timeout
+      clearTimeout(
+        // Create a timeout to check if the response is received
+        setTimeout(() => {
+          setLoading(false);
+          outputResponseTimeoutError();
+        }, 5000)
+      );
+
+      if (error) {
+        setErrorMessage("Internal Server Error: Please try again.");
+        outputServerError({ error });
+      } else {
+        login(userResponse); // Login and save user info to local storage
+        reset(); // Optionally reset form fields
+      }
+
+      setLoading(false); // Set loading to false when the response is received
     });
   };
 
-  useEffect(() => {
-    async function onLoginEvent(data) {
-      // "data" type: User or String
-      try {
-        const { success, result } = data;
+  // useEffect(() => {
+  //   async function onLoginSuccessEvent(data) {
+  //     try {
+  //       // "data" type: User
+  //       if (data) {
+  //         login(data);
+  //       } else {
+  //         throw new Error("Returned data is missing from the server.");
+  //       }
+  //     } catch (error) {
+  //       outputServerError({ error });
+  //     }
+  //   }
 
-        if (success) {
-          await login(result.user);
-        } else {
-          outputServerError({ error: result });
-        }
-      } catch (error) {
-        outputServerError({
-          error: error,
-          message: "Returned data is missing from the server",
-        });
-      }
-    }
+  //   socket.on("login_success", onLoginSuccessEvent);
 
-    socket.on("login", onLoginEvent);
+  //   // Cleanup the socket event listener when the component unmounts
+  //   return () => {
+  //     socket.off("login_success", onLoginSuccessEvent);
+  //   };
+  // }, [login, socket]);
 
-    // Cleanup the socket event listener when the component unmounts
-    return () => {
-      socket.off("login", onLoginEvent);
-    };
-  }, [login, socket]);
+  // useEffect(() => {
+  //   async function onLoginErrorEvent(error) {
+  //     outputServerError({ error });
+  //   }
+
+  //   socket.on("login_error", onLoginErrorEvent);
+
+  //   return () => {
+  //     socket.off("login_error", onLoginErrorEvent);
+  //   };
+  // });
 
   return (
     <div>
@@ -78,16 +117,21 @@ function Home() {
             required: "Name is required.",
             pattern: {
               value: /^\s*\S[\s\S]*$/,
-              message: "Entered value cannot onl contain spaces.",
+              message: "Entered value cannot only contain spaces.",
             },
           })}
         />
 
         {/* Validation Error */}
-        {errors.name && <p>{errors.name.message}</p>}
+        {errors.name && <p className="error">{errors.name.message}</p>}
+
+        {/* Form Request Error */}
+        {errorMessage && <p className="error">{errorMessage}</p>}
 
         {/* Submit Button */}
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Loading..." : "Submit"}
+        </button>
       </form>
     </div>
   );

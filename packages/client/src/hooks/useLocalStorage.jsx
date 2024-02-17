@@ -6,34 +6,42 @@ import { useState } from "react";
 export const useLocalStorage = (keyName, defaultValue) => {
   const [storedValue, setStoredValue] = useState(() => {
     try {
-      // If key already exists in local storage
+      // * If key already exists in local storage
+      // [1] Retrieve value from local storage
       const value = window.localStorage.getItem(keyName);
+
+      // [2] Return the stored value as state variable
       if (value) {
-        return JSON.parse(value); // store existing value
+        return JSON.parse(value);
       }
-      // If key does not exist in local storage
+
+      // * If key does not exist in local storage
       else {
-        window.localStorage.setItem(keyName, JSON.stringify(defaultValue)); // store key value
-        window.dispatchEvent(new Event("storage")); // fire an storage event after value change
+        // [1] Store new key-value pairs to local storage
+        window.localStorage.setItem(keyName, JSON.stringify(defaultValue)); // store newß key value
+
+        /** @todo - When local storage manually changes */
+        // window.dispatchEvent(new Event("storage")); // fire an storage event after value change
+
+        // [2] Return the stored value as state variable
         return defaultValue;
       }
     } catch (error) {
-      // Error storing to local storage
       console.log(error);
-      return defaultValue;
+      return defaultValue; // No local storage, only store as state variable
     }
   });
 
-  // Handler to modify state value
+  // Handler (setter) to modify state value
   const handleSetValue = (newValue) => {
     try {
-      // Set new key to local storage
-      window.localStorage.setItem(keyName, JSON.stringify(newValue)); // store key value
+      // [1] Set new value to local storage
+      window.localStorage.setItem(keyName, JSON.stringify(newValue));
     } catch (error) {
-      // Error storing to local storage
       console.log(error);
     }
-    // Store it as state
+
+    // [2] Store it as state variable
     setStoredValue(newValue);
   };
 
