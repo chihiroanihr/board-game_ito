@@ -175,13 +175,62 @@ const handleSocketSession = (socket: Socket) => {
   });
 };
 
+const disconnectionTimeouts = new Map(); // Store timeouts by socket ID
+
 /** @socket_handler - Connect */
 const handleSocketConnection = (socket: Socket, io: Server) => {
+  // When a socket reconnects, clear the disconnection timeout if it exists
+  const timeout = disconnectionTimeouts.get(socket.userId);
+  if (timeout) {
+    clearTimeout(timeout);
+    disconnectionTimeouts.delete(socket.userId);
+    logSocketEvent("Disconnection Timeout Cleared", socket);
+  }
+
   /** @debug */
   addConnectedSocket(socket.id);
   notifyConnectedSocket(socket);
   notifySocketsToAll(io);
   logSocketEvent("User Connected", socket);
+};
+
+const socketLeaveRoomTimer = async (socket: Socket): Promise<void> => {
+  // Set a timeout to wait for reconnection
+  const timeout = setTimeout(async () => {
+    // Start a new session for the transaction
+    const dbSession = getDB().startSession();
+
+    try {
+      if (socket.userId && socket.roomId) {
+        /** @db_call - Remove player from the room after 1 minute */
+        const { user, room } = await handleLeaveRoom(
+          socket.sessionId,
+          socket.userId,
+          socket.roomId,
+          dbSession
+        );
+
+        // Update socket info & notify others in the room
+        socketLeaveRoom(socket, user, room);
+        logSocketEvent("Leave Room", socket);
+      }
+    } catch (error) {
+      // If an error occurs, abort the transaction if it exists
+      if (dbSession && dbSession.inTransaction())
+        await dbSession.abortTransaction();
+
+      handleServerError(error, "handleSocketDisconnect");
+    } finally {
+      // End the session whether success or failure
+      await dbSession.endSession();
+
+      // Remove sockets from the timeouts
+      disconnectionTimeouts.delete(socket.userId);
+    }
+  }, 10000); // 10 sec
+
+  disconnectionTimeouts.set(socket.id, timeout);
+  logSocketEvent("Disconnection Timeout Set", socket);
 };
 
 /** @socket_handler - Disconnect */
@@ -190,23 +239,34 @@ const handleSocketDisconnect = (socket: Socket, io: Server) => {
     socket.connected = false; /** @socket_update */
 
     try {
-      /** @db_call - Update session if user registered */
-      socket.userId && (await handleSaveSession(socket));
+      if (socket.userId) {
+        // If user registered in room
+        if (socket.roomId) {
+          /** @db_call - Update session if user registered */
+          await handleSaveSession(socket);
+
+          /** @todo - No need to let other players in the room know. After 1 min of user disconnected, just leave room. */
+          await socketLeaveRoomTimer(socket);
+        }
+
+        /** @db_call - Update session if user registered */
+        await handleSaveSession(socket);
+      }
     } catch (error) {
       handleServerError(error, "handleSocketDisconnect");
       /** @todo - Delete session or Save every user info to localstorage for emergency */
     } finally {
       // Despite error happens, you must notify to game room that player has disconnected.
-      if (socket.roomId) {
-        /** @db_call */
-        const user = socket.userId ? await getUserInfo(socket.userId) : null;
-        const room = await getRoomInfo(socket.roomId);
+      // if (socket.userId && socket.roomId) {
+      //   /** @db_call */
+      //   const user = await getUserInfo(socket.userId);
+      //   const room = await getRoomInfo(socket.roomId);
 
-        /** @socket_emit - Notify others in the room */
-        socket
-          .to(socket.roomId)
-          .emit("player-disconnected", { user: user, room: room });
-      }
+      //   /** @socket_emit - Notify others in the room */
+      //   socket
+      //     .to(socket.roomId)
+      //     .emit("player-disconnected", { user: user, room: room });
+      // }
 
       /** @debug */
       removeConnectedSocket(socket.id);
@@ -268,7 +328,7 @@ const handleSocketLogin = (socket: Socket, io: Server) => {
 
 /** @socket_handler - Logout */
 const handleSocketLogout = (socket: Socket, io: Server) => {
-  socket.on("logout", async (user: User, callback: Function) => {
+  socket.on("logout", async (callback: Function) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
 
@@ -283,7 +343,7 @@ const handleSocketLogout = (socket: Socket, io: Server) => {
       // If room exists then leave room fist
       if (socket.roomId) {
         /** @db_call - Remove player from the room */
-        const updatedRoom = await handleLeaveRoom(
+        const { user, room } = await handleLeaveRoom(
           socket.sessionId,
           socket.userId,
           socket.roomId,
@@ -291,7 +351,7 @@ const handleSocketLogout = (socket: Socket, io: Server) => {
         ); // room obj or null if room deleted
 
         // Update socket info & notify others in the room
-        socketLeaveRoom(socket, user, updatedRoom);
+        socketLeaveRoom(socket, user, room);
         // socket.emit("leave-room_success");
 
         /** @debug */
@@ -463,7 +523,7 @@ const handleSocketWaitRoom = (socket: Socket) => {
 
 /** @socket_handler - Leave Room */
 const handleSocketLeaveRoom = (socket: Socket) => {
-  socket.on("leave-room", async (user: User, callback: Function) => {
+  socket.on("leave-room", async (callback: Function) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
 
@@ -478,7 +538,7 @@ const handleSocketLeaveRoom = (socket: Socket) => {
       dbSession.startTransaction();
 
       /** @db_call - Remove player from the room */
-      const updatedRoom = await handleLeaveRoom(
+      const { user, room } = await handleLeaveRoom(
         socket.sessionId,
         socket.userId,
         socket.roomId,
@@ -489,7 +549,7 @@ const handleSocketLeaveRoom = (socket: Socket) => {
       await dbSession.commitTransaction();
 
       // Update socket info & notify others in the room
-      socketLeaveRoom(socket, user, updatedRoom);
+      socketLeaveRoom(socket, user, room);
 
       /** @socket_emit - Send back result to client */
       callback(null); //  socket.emit("leave-room_success");

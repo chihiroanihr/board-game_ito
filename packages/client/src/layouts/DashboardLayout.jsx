@@ -29,8 +29,8 @@ export default function DashboardLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("logout", user, async (error, response) => {
-      // socket.emit("logout", user);
+    socket.emit("logout", async (error, response) => {
+      // socket.emit("logout");
 
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
@@ -84,8 +84,8 @@ export default function DashboardLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("leave-room", user, async (error, response) => {
-      // socket.emit("leave-room", user);
+    socket.emit("leave-room", async (error, response) => {
+      // socket.emit("leave-room");
 
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);

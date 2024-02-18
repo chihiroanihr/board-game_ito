@@ -16,8 +16,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "cp ../../.env .env && react-scripts start",
-    "build": "cp ../../.env .env && react-scripts build",
+    "start": "shx cp ../../.env .env && react-scripts start",
+    "build": "shx cp ../../.env .env && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -40,6 +40,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "shx": "^0.3.4"
   }
 }

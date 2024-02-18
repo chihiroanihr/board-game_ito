@@ -172,7 +172,7 @@ export const handleLeaveRoom = async (
   userId: ObjectId,
   roomId: string,
   dbSession: ClientSession | null = null
-): Promise<Room | null> => {
+): Promise<{ user: User; room: Room | null }> => {
   let updatedRoom: Room | null;
 
   try {
@@ -182,6 +182,18 @@ export const handleLeaveRoom = async (
     if (!room)
       throw new Error(
         "Failed to obtain room info (given room might not exist)."
+      );
+
+    /** @api_call - Update user status (PUT) */
+    const updatedUser = await updateUserStatus(
+      userId,
+      UserStatusEnum.IDLE,
+      dbSession
+    );
+    // Error
+    if (!updatedUser)
+      throw new Error(
+        "Failed to update user's status (given user might not exist)."
       );
 
     /** @api_call - Delete user (player) from the room (DELETE) */
@@ -237,7 +249,7 @@ export const handleLeaveRoom = async (
     }
 
     // All success
-    return updatedRoom;
+    return { user: updatedUser, room: updatedRoom };
   } catch (error) {
     throw handleDBError(error, "handleLeaveRoom");
   }
