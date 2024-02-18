@@ -19,14 +19,14 @@ export default function DashboardLayout() {
 
   const [loading, setLoading] = useState(false);
 
-  // Create a timeout to check if the response is received
-  const timeoutId = setTimeout(() => {
-    setLoading(false);
-    outputResponseTimeoutError();
-  }, 5000);
-
   const handleLogout = () => {
     setLoading(true); // Set loading to true when the request is initiated
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      outputResponseTimeoutError();
+    }, 5000);
 
     /** @socket_send - Send to socket & receive response */
     socket.emit("logout", user, async (error, response) => {
@@ -76,6 +76,12 @@ export default function DashboardLayout() {
 
   const handleLeaveRoom = () => {
     setLoading(true); // Set loading to true when the request is initiated
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      outputResponseTimeoutError();
+    }, 5000);
 
     /** @socket_send - Send to socket & receive response */
     socket.emit("leave-room", user, async (error, response) => {

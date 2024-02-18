@@ -34,7 +34,7 @@ function JoinRoom() {
     setLoading(true);
     setErrorMessage(""); // Reset error message
 
-    const roomId = data.roomId.trim();
+    const roomId = data.roomId.trim().toUpperCase();
 
     if (!roomId) {
       setErrorMessage("Please enter a valid Room ID.");
@@ -42,18 +42,18 @@ function JoinRoom() {
       return;
     }
 
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      outputResponseTimeoutError();
+    }, 5000);
+
     /** @socket_send - Send to socket & receive response */
     socket.emit("join-room", roomId, async (error, response) => {
       // socket.emit("join-room", roomId);
 
       // Clear the timeout as response is received before timeout
-      clearTimeout(
-        // Create a timeout to check if the response is received
-        setTimeout(() => {
-          setLoading(false);
-          outputResponseTimeoutError();
-        }, 5000)
-      );
+      clearTimeout(timeoutId);
 
       if (error) {
         setErrorMessage("Internal Server Error: Please try again.");

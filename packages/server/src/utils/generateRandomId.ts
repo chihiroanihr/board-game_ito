@@ -1,5 +1,6 @@
 import crypto from "crypto";
-import { roomIdConfig, userIdConfig } from "@board-game-ito/shared/config";
+
+import { roomIdConfig, userIdConfig } from "@board-game-ito/shared";
 
 /**
  * Generates a random room ID using predefined configuration limits. The ID length is adjusted to be within 6 to 64 characters,

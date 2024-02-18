@@ -7,8 +7,8 @@
   "author": "",
   "private": true,
   "scripts": {
-    "clean": "rimraf dist",
-    "build": "npm run clean && tsc",
+    "clean": "rimraf ./dist/*",
+    "build": "npm run clean && tsc --build",
     "postinstall": "npm run build",
     "watch": "tsc --watch"
   },

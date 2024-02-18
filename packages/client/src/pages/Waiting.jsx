@@ -66,7 +66,7 @@ export default function Waiting() {
       setPlayers((prevPlayers) => [...prevPlayers, player]);
 
       // Store new player
-      setNewPlayer(`${player._id}: ${player.name}`);
+      setNewPlayer(player);
 
       // Enable start button if more than 4 players
       if (players.length >= 4) {
@@ -115,7 +115,7 @@ export default function Waiting() {
       updateRoom(room);
 
       // If admin changed then set new admin
-      if (room.createdBy.toString() !== adminId.toString()) {
+      if (room.createdBy.toString() !== adminId?.toString()) {
         setAdminId(room.createdBy);
       }
 
@@ -127,7 +127,7 @@ export default function Waiting() {
       );
 
       // Store player left
-      setPlayerLeft(`${player._id}: ${player.name}`);
+      setPlayerLeft(player);
     }
 
     // Runs whenever a socket event is recieved from the server
@@ -144,18 +144,18 @@ export default function Waiting() {
   const handleStartGame = () => {
     setLoading(true);
 
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      outputResponseTimeoutError();
+    }, 5000);
+
     // Send to socket
     socket.emit("start-game", room, async (error, response) => {
       // socket.emit("start-game", room);
 
       // Clear the timeout as response is received before timeout
-      clearTimeout(
-        // Create a timeout to check if the response is received
-        setTimeout(() => {
-          setLoading(false);
-          outputResponseTimeoutError();
-        }, 5000)
-      );
+      clearTimeout(timeoutId);
 
       if (error) {
         outputServerError({ error });
@@ -194,10 +194,19 @@ export default function Waiting() {
         {playerLeft && <p>{playerLeft.name} just left.</p>}
       </div>
 
-      {myself._id.toString() === adminId.toString() && (
-        <button onClick={handleStartGame} disabled={allowStart && loading}>
-          {loading ? "Loading..." : "Start Game"}
-        </button>
+      {adminId && adminId.toString() === myself._id.toString() && (
+        <>
+          {!allowStart && (
+            <p>
+              You need to have <b>{4 - players.length}</b> more players to begin
+              the game.
+            </p>
+          )}
+
+          <button onClick={handleStartGame} disabled={!allowStart || loading}>
+            {loading ? "Loading..." : "Start Game"}
+          </button>
+        </>
       )}
     </div>
   );

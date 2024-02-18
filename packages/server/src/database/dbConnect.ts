@@ -1,9 +1,20 @@
-import dotenv from "dotenv";
-import path from "path";
 import { MongoClient, Collection, Db } from "mongodb";
-import { Session, User, Room } from "@board-game-ito/shared/interfaces";
 
-dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
+import { Session, User, Room } from "@board-game-ito/shared";
+
+import { loadEnv } from "@util";
+
+// Load .env first
+try {
+  loadEnv();
+  if (process.env.NODE_ENV !== "production")
+    console.log("[*] .env file loaded successfully");
+} catch (error) {
+  if (process.env.NODE_ENV !== "production")
+    console.error("[!] Failed to load the .env file: ", error);
+
+  process.exit(1); // Exit with error
+}
 
 interface DatabaseCollections {
   sessions: Collection<Session>;
@@ -68,3 +79,60 @@ export const closeDB = async (): Promise<void> => {
     console.log("[*] MongoDB connection closed.");
   }
 };
+
+// import { MongoClient } from "mongodb";
+// import { loadEnv } from "@util";
+
+// // Ensuring environment variables are loaded at the start
+// loadEnv();
+
+// // Simplified interface, assuming it's already defined in "@board-game-ito/shared"
+// import { Session, User, Room } from "@board-game-ito/shared";
+
+// // Singleton pattern for MongoDB client
+// class DBClient {
+//   private static client: MongoClient;
+//   private static DB_CONN_URI = process.env.MONGODB_CONNECTION_URL || "";
+//   private static DB_NAME = process.env.MONGODB_DATABASE_NAME || "";
+
+//   static async initialize() {
+//     if (!this.client) {
+//       try {
+//         console.log("...Connecting to MongoDB...");
+//         this.client = await MongoClient.connect(this.DB_CONN_URI);
+//         console.log("[*] Connected to db.");
+//       } catch (error) {
+//         console.error("[!] Error connecting to MongoDB:", error);
+//         throw error;
+//       }
+//     }
+//   }
+
+//   static getCollections() {
+//     if (!this.client) {
+//       throw new Error("[!] Database not initialized.");
+//     }
+
+//     const db = this.client.db(this.DB_NAME);
+
+//     return {
+//       sessions: db.collection<Session>("sessions"),
+//       users: db.collection<User>("users"),
+//       rooms: db.collection<Room>("rooms"),
+//       startSession: () => this.client.startSession(),
+//     };
+//   }
+
+//   static async closeDB() {
+//     if (this.client) {
+//       await this.client.close();
+//       console.log("[*] MongoDB connection closed.");
+//     }
+//   }
+// }
+
+// export const {
+//   initialize: connectDB,
+//   getCollections: getDB,
+//   closeDB,
+// } = DBClient;

@@ -1,12 +1,4 @@
-import { handleServerError, handleDBError } from "./error";
-import { logSocketEvent, logQueryEvent } from "./log";
 import { generateRandomUserId, generateRandomRoomId } from "./generateRandomId";
+import loadEnv from "./envLoader";
 
-export {
-  handleServerError,
-  handleDBError,
-  logSocketEvent,
-  logQueryEvent,
-  generateRandomUserId,
-  generateRandomRoomId,
-};
+export { generateRandomUserId, generateRandomRoomId, loadEnv };

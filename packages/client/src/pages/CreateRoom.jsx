@@ -19,18 +19,18 @@ function CreateRoom() {
   const handleCreateRoom = () => {
     setLoading(true);
 
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      outputResponseTimeoutError();
+    }, 5000);
+
     // Send to socket
     socket.emit("create-room", async (error, response) => {
       // socket.emit("create-room", user);
 
       // Clear the timeout as response is received before timeout
-      clearTimeout(
-        // Create a timeout to check if the response is received
-        setTimeout(() => {
-          setLoading(false);
-          outputResponseTimeoutError();
-        }, 5000)
-      );
+      clearTimeout(timeoutId);
 
       const { user, room } = response;
 
