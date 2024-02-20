@@ -1,58 +1,21 @@
 import crypto from "crypto";
 import { Server, Socket } from "socket.io";
-import { ObjectId } from "mongodb";
+import { ClientSession } from "mongodb";
 
 import { User, Room } from "@board-game-ito/shared";
 
+import * as handler from "@handler";
+import * as controller from "@controller";
+import * as debug from "@debug";
+
 import { getDB } from "../database/dbConnect";
-
-import {
-  handleFindSession,
-  handleSaveSession,
-  handleLogin,
-  handleLogout,
-  handleCreateRoom,
-  handleJoinRoom,
-  handleLeaveRoom,
-} from "@handler";
-
-import {
-  updateSessionConnected,
-  getUserInfo,
-  getRoomInfo,
-  convertPlayerIdsToPlayerObjs,
-  deleteAllRooms,
-  deleteAllUsers,
-  deleteAllSessions,
-} from "@controller";
-
-/** @debug */
-import {
-  logSocketEvent,
-  handleServerError,
-  handleDBError,
-  addConnectedSocket,
-  removeConnectedSocket,
-  addLoggedInSocket,
-  removeLoggedInSocket,
-  notifySocketsToAll,
-  notifyConnectedSocket,
-  notifyDisconnectedSocket,
-  notifyLoggedInSocket,
-  notifyLoggedOutSocket,
-  initializeSocketSets,
-} from "@debug";
 
 declare module "socket.io" {
   interface Socket {
     sessionId: string;
     connected: boolean;
-    userId: ObjectId | null;
-    roomId: string | null;
-    restoredSession?: {
-      user: User | null;
-      room: Room | null;
-    };
+    user: User | null;
+    room: Room | null;
   }
 }
 
@@ -63,47 +26,44 @@ function initializeSocketSession(
   /** @socket_update */
   socket.sessionId = sessionId ?? crypto.randomUUID(); // you can re-use session ID
   socket.connected = true;
-  socket.userId = null;
-  socket.roomId = null;
-  socket.restoredSession = { user: null, room: null }; // Store session information to send to client on initial connect
+  socket.user = null;
+  socket.room = null;
 }
 
 async function checkAndRestoreSession(
   socket: Socket,
   sessionId: string
 ): Promise<boolean> {
-  /** @db_call - Find existing session from the database */
-  const session = await handleFindSession(sessionId);
-
-  // Session found - restore session info
-  if (session && typeof session === "object") {
-    /** @db_call - Update session connection status */
-    const { matched, modified } = await updateSessionConnected(sessionId, true);
-
+  // [1] Find existing session from the database
+  const session = await handler.handleFindSession(sessionId);
+  // * Session found - restore session info
+  if (session) {
+    // [2] Update session connection status
+    const { matched, modified } = await controller.saveSessionConnected(
+      sessionId,
+      true
+    );
     // Error
     if (!matched && !modified) {
-      throw handleDBError(
+      throw debug.handleDBError(
         new Error(
           "Failed to update session connection status (given session ID might not exist)."
         ),
         "checkAndRestoreSession"
       );
     }
-
-    /** @socket_update - Restore session logic */
+    /** [3] @socket_update - Restore session logic */
     socket.sessionId = session._id;
     socket.connected = true;
-    socket.userId = session.user?._id ?? null;
-    socket.roomId = session.room?._id ?? null;
-    socket.restoredSession = { user: session.user, room: session.room };
+    socket.user = session.user;
+    socket.room = session.room;
     // Don't forget to join the socket to room if room ID exists
     session.room?._id && socket.join(session.room._id);
 
-    /** @debug */ logSocketEvent("User Session Restored", socket);
+    debug.logSocketEvent("User Session Restored", socket);
     return true;
   }
-
-  // Session not found
+  // * Session not found
   return false;
 }
 
@@ -111,30 +71,33 @@ const socketHandlers = (io: Server) => {
   // Prevent from current Socket.IO session to change every time the low-level connection between the client and the server is severed.
   io.use(async (socket: Socket, next) => {
     try {
-      // Session ID (private) which will be used to authenticate the user upon reconnection
-      const sessionId = socket.handshake.auth.sessionId; /** @socket_call */
-
-      // Session ID found from the client - assign session info to socket
-      if (sessionId) {
+      // [1] Extract session ID (private) sent from client which will be used to authenticate the user upon reconnection
+      const sessionId = socket.handshake.auth.sessionId;
+      // * Session ID not found from the client
+      if (!sessionId) {
+        // [2] Create a new session
+        initializeSocketSession(socket);
+        debug.logSocketEvent("User Session Created", socket);
+      }
+      // * Session ID found from the client
+      else {
+        // [2] Assign session info to socket
         const sessionRestored = await checkAndRestoreSession(socket, sessionId);
-
-        // No matching session found from the server - create a new session
+        // * No matching session ID found from the server
         if (!sessionRestored) {
+          // [3] Create a new session
           initializeSocketSession(socket, sessionId);
-          logSocketEvent("User Session Created", socket); /** @debug */
+          debug.logSocketEvent(
+            "User Session Created (no matching session)",
+            socket
+          );
         }
       }
-
-      // Session ID not found from the client - create a new session
-      else {
-        initializeSocketSession(socket);
-        logSocketEvent("User Session Created", socket); /** @debug */
-      }
-
       next();
     } catch (error) {
-      handleServerError(error, "io.use()");
-      next(new Error("Internal server error")); // Pass an error to the next middleware
+      debug.handleServerError(error, "io.use()");
+      // Pass an error to the next middleware
+      next(new Error("Internal server error"));
     }
   });
 
@@ -160,8 +123,8 @@ const socketHandlers = (io: Server) => {
 
     /** @debug */
     console.log(`\n[*] ${io.engine.clientsCount} sockets connected.`);
-    // console.log(io.sockets.adapter.rooms);
     console.log(socket.rooms);
+    // console.log(io.sockets.adapter.rooms);
   });
 };
 
@@ -170,109 +133,73 @@ const handleSocketSession = (socket: Socket) => {
   /** @socket_emit - Send session info */
   socket.emit("session", {
     sessionId: socket.sessionId,
-    user: socket.restoredSession?.user,
-    room: socket.restoredSession?.room,
+    user: socket.user,
+    room: socket.room,
   });
 };
 
-const disconnectionTimeouts = new Map(); // Store timeouts by socket ID
-
 /** @socket_handler - Connect */
 const handleSocketConnection = (socket: Socket, io: Server) => {
-  // When a socket reconnects, clear the disconnection timeout if it exists
-  const timeout = disconnectionTimeouts.get(socket.userId);
-  if (timeout) {
-    clearTimeout(timeout);
-    disconnectionTimeouts.delete(socket.userId);
-    logSocketEvent("Disconnection Timeout Cleared", socket);
-  }
-
-  /** @debug */
-  addConnectedSocket(socket.id);
-  notifyConnectedSocket(socket);
-  notifySocketsToAll(io);
-  logSocketEvent("User Connected", socket);
+  debug.addConnectedSocket(socket.id);
+  debug.notifyConnectedSocket(socket);
+  debug.notifySocketsToAll(io);
+  debug.logSocketEvent("User Connected", socket);
 };
 
-const socketLeaveRoomTimer = async (socket: Socket): Promise<void> => {
-  // Set a timeout to wait for reconnection
-  const timeout = setTimeout(async () => {
-    // Start a new session for the transaction
-    const dbSession = getDB().startSession();
-
-    try {
-      if (socket.userId && socket.roomId) {
-        /** @db_call - Remove player from the room after 1 minute */
-        const { user, room } = await handleLeaveRoom(
-          socket.sessionId,
-          socket.userId,
-          socket.roomId,
-          dbSession
-        );
-
-        // Update socket info & notify others in the room
-        socketLeaveRoom(socket, user, room);
-        logSocketEvent("Leave Room", socket);
-      }
-    } catch (error) {
-      // If an error occurs, abort the transaction if it exists
-      if (dbSession && dbSession.inTransaction())
-        await dbSession.abortTransaction();
-
-      handleServerError(error, "handleSocketDisconnect");
-    } finally {
-      // End the session whether success or failure
-      await dbSession.endSession();
-
-      // Remove sockets from the timeouts
-      disconnectionTimeouts.delete(socket.userId);
+const disconnectLeaveRoom = async (
+  socket: Socket,
+  dbSession: ClientSession
+): Promise<void> => {
+  try {
+    if (socket.user?._id && socket.room?._id) {
+      // [1] Remove player from the room after 1 minute
+      const { user, room } = await handler.handleLeaveRoom(
+        socket.sessionId,
+        socket.user._id,
+        socket.room._id,
+        dbSession
+      );
+      // [2] Update socket info & notify others in the room
+      socketLeaveRoom(socket, user, room);
+      debug.logSocketEvent("Leave Room", socket);
     }
-  }, 10000); // 10 sec
-
-  disconnectionTimeouts.set(socket.id, timeout);
-  logSocketEvent("Disconnection Timeout Set", socket);
+  } catch (error) {
+    debug.handleServerError(error, "handleSocketDisconnect");
+  }
 };
 
 /** @socket_handler - Disconnect */
 const handleSocketDisconnect = (socket: Socket, io: Server) => {
   socket.on("disconnect", async () => {
-    socket.connected = false; /** @socket_update */
-
+    // [1] Must update socket connected status first
+    socket.connected = false;
+    // Start a new session for the transaction
+    const dbSession = getDB().startSession();
     try {
-      if (socket.userId) {
-        // If user registered in room
-        if (socket.roomId) {
-          /** @db_call - Update session if user registered */
-          await handleSaveSession(socket);
-
-          /** @todo - No need to let other players in the room know. After 1 min of user disconnected, just leave room. */
-          await socketLeaveRoomTimer(socket);
-        }
-
-        /** @db_call - Update session if user registered */
-        await handleSaveSession(socket);
+      // * If user already registered
+      if (socket.user?._id) {
+        // Start a transaction session
+        dbSession.startTransaction();
+        // [2] If user in room and room is not playing, then just leave room
+        socket.room?._id && (await disconnectLeaveRoom(socket, dbSession));
+        // [3] Update session
+        await handler.handleSaveSession(socket);
+        // Commit the transaction
+        await dbSession.commitTransaction();
+        debug.removeConnectedSocket(socket.id);
+        debug.notifyDisconnectedSocket(socket);
+        debug.notifySocketsToAll(io);
+        debug.logSocketEvent("User Disconnected", socket);
       }
     } catch (error) {
-      handleServerError(error, "handleSocketDisconnect");
-      /** @todo - Delete session or Save every user info to localstorage for emergency */
+      /** @todo - Delete session or Save every user info to local storage for emergency */
+      // If an error occurs, abort the transaction if it exists
+      if (dbSession && dbSession.inTransaction())
+        await dbSession.abortTransaction();
+      debug.handleServerError(error, "handleSocketDisconnect");
     } finally {
-      // Despite error happens, you must notify to game room that player has disconnected.
-      // if (socket.userId && socket.roomId) {
-      //   /** @db_call */
-      //   const user = await getUserInfo(socket.userId);
-      //   const room = await getRoomInfo(socket.roomId);
-
-      //   /** @socket_emit - Notify others in the room */
-      //   socket
-      //     .to(socket.roomId)
-      //     .emit("player-disconnected", { user: user, room: room });
-      // }
-
-      /** @debug */
-      removeConnectedSocket(socket.id);
-      notifyDisconnectedSocket(socket);
-      notifySocketsToAll(io);
-      logSocketEvent("User Disconnected", socket);
+      // End the session whether success or failure
+      await dbSession.endSession();
     }
   });
 };
@@ -282,43 +209,31 @@ const handleSocketLogin = (socket: Socket, io: Server) => {
   socket.on("login", async (userName: string, callback: Function) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
-
     try {
       // Start a transaction session
       dbSession.startTransaction();
-
-      /** @db_call - Add new user */
-      const newUserObj = await handleLogin(
-        socket.sessionId,
-        userName,
-        dbSession
-      );
-
-      /** @socket_update - Register new user info to socket */
-      socket.userId = newUserObj._id;
+      // [1] Add new user
+      const newUserObj = await handler.handleLogin(userName, dbSession);
+      /** [2] @socket_update - Register new user info to socket */
+      socket.user = newUserObj;
       socket.connected = true;
-
-      /** @db_call - Save session */
-      await handleSaveSession(socket, dbSession);
-
+      // [3] Save session
+      await handler.handleSaveSession(socket, dbSession);
       // Commit the transaction
       await dbSession.commitTransaction();
-
       /** @socket_emit - Send back result to client */
-      callback(null, newUserObj); // socket.emit("login_success", newUserObj);
-
-      /** @debug */
-      addLoggedInSocket(socket.id);
-      notifyLoggedInSocket(socket);
-      notifySocketsToAll(io);
-      logSocketEvent("Login", socket);
+      callback(null, newUserObj);
+      debug.addLoggedInSocket(socket.id);
+      debug.notifyLoggedInSocket(socket);
+      debug.notifySocketsToAll(io);
+      debug.logSocketEvent("Login", socket);
     } catch (error) {
       // If an error occurs, abort the transaction if it exists
       if (dbSession && dbSession.inTransaction())
         await dbSession.abortTransaction();
-
-      handleServerError(error, "handleSocketLogin");
-      callback(error, null); // socket.emit("login_error", error.message);
+      /** @socket_emit - Send back error to client */
+      callback(error, null);
+      debug.handleServerError(error, "handleSocketLogin");
     } finally {
       // End the session whether success or failure
       await dbSession.endSession();
@@ -331,62 +246,49 @@ const handleSocketLogout = (socket: Socket, io: Server) => {
   socket.on("logout", async (callback: Function) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
-
     try {
-      // Check if the user is connected to the socket
-      if (!socket.userId)
+      // * If user is not connected
+      if (!socket.user?._id)
         throw new Error("[Socket Error]: User is not connected.");
 
       // Start a transaction session
       dbSession.startTransaction();
-
-      // If room exists then leave room fist
-      if (socket.roomId) {
-        /** @db_call - Remove player from the room */
-        const { user, room } = await handleLeaveRoom(
+      // * If user has room
+      if (socket.room?._id) {
+        // (1) Remove player from the room (Return : Room | null (room deleted))
+        const { user, room } = await handler.handleLeaveRoom(
           socket.sessionId,
-          socket.userId,
-          socket.roomId,
+          socket.user._id,
+          socket.room._id,
           dbSession
-        ); // room obj or null if room deleted
-
-        // Update socket info & notify others in the room
+        );
+        // (2) Update socket info & notify others in the room
         socketLeaveRoom(socket, user, room);
-        // socket.emit("leave-room_success");
-
-        /** @debug */
-        logSocketEvent("Leave Room", socket);
+        debug.logSocketEvent("Leave Room", socket);
       }
-
-      /** @db_call - Delete user */
-      await handleLogout(socket.userId, dbSession);
-
-      /** @socket_update - Initialize socket information */
-      socket.userId = null;
-      socket.roomId = null;
+      // [1] Delete user
+      await handler.handleLogout(socket.user._id, dbSession);
+      /** [2] @socket_update - Initialize socket information */
+      socket.user = null;
+      socket.room = null;
       socket.connected = false;
-
-      /** @db_call - Save session */
-      await handleSaveSession(socket, dbSession);
-
+      // [3] Save session
+      await handler.handleSaveSession(socket, dbSession);
       // Commit the transaction
       await dbSession.commitTransaction();
-
-      /** @socket_emit - Send back result to client */
-      callback(null); // socket.emit("logout_success");
-
-      /** @debug */
-      removeLoggedInSocket(socket.id);
-      notifyLoggedOutSocket(socket);
-      notifySocketsToAll(io);
-      logSocketEvent("Logout", socket);
+      /** [4] @socket_emit - Send back result to client */
+      callback(null);
+      debug.removeLoggedInSocket(socket.id);
+      debug.notifyLoggedOutSocket(socket);
+      debug.notifySocketsToAll(io);
+      debug.logSocketEvent("Logout", socket);
     } catch (error) {
       // If an error occurs, abort the transaction if it exists
       if (dbSession && dbSession.inTransaction())
         await dbSession.abortTransaction();
-
-      handleServerError(error, "handleSocketLogout");
-      callback(error, null); // socket.emit("logout_error", error.message);
+      /** @socket_emit - Send back error to client */
+      callback(error);
+      debug.handleServerError(error, "handleSocketLogout");
     } finally {
       // End the session whether success or failure
       await dbSession.endSession();
@@ -399,37 +301,35 @@ const handleSocketCreateRoom = (socket: Socket) => {
   socket.on("create-room", async (callback: Function) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
-
     try {
-      // Check if the user is connected to the socket
-      if (!socket.userId)
+      // * If user is not connected
+      if (!socket.user?._id)
         throw new Error("[Socket Error]: User is not connected.");
 
       // Start a transaction session
       dbSession.startTransaction();
-
-      /** @db_call - Create new room */
-      const { user, room } = await handleCreateRoom(
+      // [1] Create new room
+      const { user, room } = await handler.handleCreateRoom(
         socket.sessionId,
-        socket.userId,
+        socket.user._id,
         dbSession
       );
-
+      // [3] Save session
+      await handler.handleSaveSession(socket, dbSession);
       // Commit the transaction
       await dbSession.commitTransaction();
-
-      // Update socket info & notify others in the room
+      // [4] Update socket info & notify others in the room
       socketJoinRoom(socket, user, room);
-
-      /** @socket_emit - Send back result to client */
-      callback(null, { user, room }); // socket.emit("create-room_success", { user, room });
+      /** [5] @socket_emit - Send back result to client */
+      callback(null, { user, room });
+      debug.logSocketEvent("Create Room", socket);
     } catch (error) {
       // If an error occurs, abort the transaction if it exists
       if (dbSession && dbSession.inTransaction())
         await dbSession.abortTransaction();
-
-      handleServerError(error, "handleSocketCreateRoom");
-      callback(error, null); // socket.emit("create-room_error", error.message);
+      /** @socket_emit - Send back result to client */
+      callback(error, null);
+      debug.handleServerError(error, "handleSocketCreateRoom");
     } finally {
       // End the session whether success or failure
       await dbSession.endSession();
@@ -442,56 +342,46 @@ const handleSocketJoinRoom = (socket: Socket) => {
   socket.on("join-room", async (roomId: string, callback: Function) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
-
     try {
-      // Check if the user is connected to the socket
-      if (!socket.userId)
+      // * If user is not connected
+      if (!socket.user?._id)
         throw new Error("[Socket Error]: User is not connected.");
 
       // Start a transaction session
       dbSession.startTransaction();
-
-      /** @db_call - Join room */
-      const response = await handleJoinRoom(
+      // [1] Join room
+      const response = await handler.handleJoinRoom(
         socket.sessionId,
-        socket.userId,
+        socket.user._id,
         roomId,
         dbSession
       );
-
-      // [1] User can join room
+      // * If user can join room
       if (typeof response === "object") {
+        // [2] Extract the result
         const { user, room } = response;
-
-        // Update socket info & notify others in the room
+        // [3] Update socket info & notify others in the room
         socketJoinRoom(socket, user, room);
-
-        /** @socket_emit - Send back result to client */
-        callback(null, { user, room }); // socket.emit("join-room_success", { user, room });
+        // [4] Save session
+        await handler.handleSaveSession(socket, dbSession);
+        /** [5] @socket_emit - Send back result to client */
+        callback(null, { user, room });
+        debug.logSocketEvent("Join Room", socket);
       }
-
-      // [2] User cannot join room
-      else if (typeof response === "string") {
-        /** @socket_emit - Send back result to client */
-        callback(null, response); // socket.emit("join-room_failure", response);
-      }
-
-      // Response error
+      // * If user cannot join room  // else if (typeof response === "string")
       else {
-        throw new Error(
-          "[Response Error]: Response is invalid or unsuccessful."
-        );
+        /** [2] @socket_emit - Send back result to client */
+        callback(null, response);
       }
-
       // Commit the transaction
       await dbSession.commitTransaction();
     } catch (error) {
       // If an error occurs, abort the transaction if it exists
       if (dbSession && dbSession.inTransaction())
         await dbSession.abortTransaction();
-
-      handleServerError(error, "handleSocketJoinRoom");
-      callback(error, null); // socket.emit("join-room_error", error.message);
+      /** @socket_emit - Send back error to client */
+      callback(error, null);
+      debug.handleServerError(error, "handleSocketJoinRoom");
     } finally {
       // End the session whether success or failure
       await dbSession.endSession();
@@ -503,20 +393,24 @@ const handleSocketJoinRoom = (socket: Socket) => {
 const handleSocketWaitRoom = (socket: Socket) => {
   socket.on("wait-room", async (room: Room, callback: Function) => {
     try {
-      // Check if the user is connected to the socket
-      if (!socket.userId)
+      // * If user is not connected
+      if (!socket.user?._id)
         throw new Error("[Socket Error]: User is not connected.");
-      if (!socket.roomId)
+      // * If user is not in room
+      if (!socket.room?._id)
         throw new Error("[Socket Error]: Room is not connected.");
 
-      /** @db_call - Convert player IDs to User objects */
-      const players = await convertPlayerIdsToPlayerObjs(room.players);
-
+      // [1] Convert all player IDs to User objects
+      const players = await controller.convertPlayerIdsToPlayerObjs(
+        room.players
+      );
       /** @socket_emit - Send back result to client */
-      callback(null, players); // socket.emit("wait-room_success", response);
+      callback(null, players);
+      debug.logSocketEvent("Wait Room", socket);
     } catch (error) {
-      handleServerError(error, "handleSocketWaitRoom");
-      callback(error, null); // socket.emit("wait-room_error", error.message);
+      /** @socket_emit - Send back error to client */
+      callback(error, null);
+      debug.handleServerError(error, "handleSocketWaitRoom");
     }
   });
 };
@@ -526,43 +420,39 @@ const handleSocketLeaveRoom = (socket: Socket) => {
   socket.on("leave-room", async (callback: Function) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
-
     try {
-      // Check if the user and room is connected to the socket
-      if (!socket.userId)
+      // * If user is not connected
+      if (!socket.user?._id)
         throw new Error("[Socket Error]: User is not connected.");
-      if (!socket.roomId)
+      // * If user is not in room
+      if (!socket.room?._id)
         throw new Error("[Socket Error]: Room is not connected.");
 
       // Start a transaction session
       dbSession.startTransaction();
-
-      /** @db_call - Remove player from the room */
-      const { user, room } = await handleLeaveRoom(
+      // [1] Remove player from the room (Return: Room | null (if room deleted))
+      const { user, room } = await handler.handleLeaveRoom(
         socket.sessionId,
-        socket.userId,
-        socket.roomId,
+        socket.user._id,
+        socket.room._id,
         dbSession
-      ); // room obj or null if room deleted
-
+      );
+      // [2] Update socket info & notify others in the room
+      socketLeaveRoom(socket, user, room);
+      // [3] Save session
+      await handler.handleSaveSession(socket, dbSession);
       // Commit the transaction
       await dbSession.commitTransaction();
-
-      // Update socket info & notify others in the room
-      socketLeaveRoom(socket, user, room);
-
       /** @socket_emit - Send back result to client */
-      callback(null); //  socket.emit("leave-room_success");
-
-      /** @debug */
-      logSocketEvent("Leave Room", socket);
+      callback(null);
+      debug.logSocketEvent("Leave Room", socket);
     } catch (error) {
       // If an error occurs, abort the transaction if it exists
       if (dbSession && dbSession.inTransaction())
         await dbSession.abortTransaction();
-
-      handleServerError(error, "handleSocketLeaveRoom");
-      callback(error, null); //socket.emit("leave-room_error", error.message);
+      /** @socket_emit - Send back error to client */
+      callback(error);
+      debug.handleServerError(error, "handleSocketLeaveRoom");
     } finally {
       // End the session whether success or failure
       await dbSession.endSession();
@@ -576,48 +466,40 @@ const handleSocketInitialize = (socket: Socket, io: Server) => {
     if (process.env.NODE_ENV !== "production") {
       // Start a new session for the transaction
       const dbSession = getDB().startSession();
-
       try {
         // Start a transaction session
         dbSession.startTransaction();
-
-        /** @db_call - Delete all rooms, users, and sessions */
+        // [1] Delete all rooms, users, and sessions
         // Use Promise.all to wait for both requests to complete
         const results = await Promise.all([
-          deleteAllRooms(),
-          deleteAllUsers(),
-          deleteAllSessions(),
+          controller.deleteAllRooms(),
+          controller.deleteAllUsers(),
+          controller.deleteAllSessions(),
         ]);
-
-        // Simplify the response based on the delete operations' success
+        // [2] Simplify the response based on the delete operations' success
         const [roomsDeleted, usersDeleted, sessionsDeleted] = results.map(
-          (result) => !!result
+          (result: boolean) => !!result
         );
-
         // Commit the transaction
         await dbSession.commitTransaction();
-
-        /** @socket_emit - Send back result to client */
-        callback(null, { roomsDeleted, usersDeleted, sessionsDeleted }); // socket.emit("initialize_success", {roomsDeleted, usersDeleted, sessionsDeleted});
-
-        /** @socket_update - Initialize socket */
+        /** [3] @socket_emit - Send back result to client */
+        callback(null, { roomsDeleted, usersDeleted, sessionsDeleted });
+        /** [4] @socket_update - Initialize socket */
         socket.sessionId = "";
         socket.connected = false;
-        socket.userId = null;
-        socket.roomId = null;
-        socket.restoredSession = { user: null, room: null }; // Store session information to send to client on initial connect
+        socket.user = null;
+        socket.room = null;
 
-        /** @debug */
-        initializeSocketSets();
-        notifySocketsToAll(io);
-        logSocketEvent("Initialize", socket);
+        debug.initializeSocketSets();
+        debug.notifySocketsToAll(io);
+        debug.logSocketEvent("Initialize", socket);
       } catch (error) {
         // If an error occurs, abort the transaction if it exists
         if (dbSession && dbSession.inTransaction())
           await dbSession.abortTransaction();
-
-        handleServerError(error, "handleSocketInitialize");
-        callback(error, null); // socket.emit("initialize_error", error.message);
+        /** @socket_emit - Send back error to client */
+        callback(error, null);
+        debug.handleServerError(error, "handleSocketInitialize");
       } finally {
         // End the session whether success or failure
         await dbSession.endSession();
@@ -627,14 +509,11 @@ const handleSocketInitialize = (socket: Socket, io: Server) => {
 };
 
 const socketJoinRoom = (socket: Socket, user: User, room: Room): void => {
-  /** @socket_update */
-  // Update socket info
-  socket.roomId = room._id;
-  // Join the user to a socket room
+  /** [1] @socket_update - Update socket info */
+  socket.room = room;
+  /** [2] @socket_update - Join the user to a socket room */
   socket.join(room._id);
-
-  /** @socket_emit */
-  // Notify others in the room
+  /** [3] @socket_emit - Notify others in the room */
   socket.to(room._id).emit("new-player", { user, room });
 };
 
@@ -643,16 +522,14 @@ const socketLeaveRoom = (
   user: User,
   room: Room | null
 ): void => {
-  // Check if the room is connected to the socket
-  if (socket.roomId) {
-    /** @socket_update - Leave the user from the socket room */
-    socket.leave(socket.roomId);
-
-    /** @socket_emit - Notify others in the room */
-    room && socket.to(socket.roomId).emit("player-left", { user, room });
-
-    /** @socket_update - Update socket info */
-    socket.roomId = null;
+  // * If room exists
+  if (socket.room) {
+    /** [1] @socket_update - Leave the user from the socket room */
+    socket.leave(socket.room._id);
+    /** [2] @socket_emit - Notify others in the room */
+    room && socket.to(socket.room._id).emit("player-left", { user, room });
+    /** [3] @socket_update - Update socket info */
+    socket.room = null;
   }
 };
 

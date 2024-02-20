@@ -8,7 +8,7 @@ import {
 } from "@board-game-ito/shared";
 
 import {
-  updateSessionRoomId,
+  saveSessionRoomId,
   updateUserStatus,
   getRoomInfo,
   updateRoomAdmin,
@@ -16,7 +16,7 @@ import {
   deleteRoom,
   insertPlayerInRoom,
   deletePlayerFromRoom,
-} from "src/database/controllers";
+} from "@controller";
 
 import { generateRandomRoomId } from "@util";
 import { handleDBError } from "@debug";
@@ -84,7 +84,7 @@ export const handleCreateRoom = async (
     }
 
     /** @api_call - Update only the room ID in session (PUT) */
-    const updatedSession = await updateSessionRoomId(
+    const updatedSession = await saveSessionRoomId(
       sessionId,
       newRoomObj._id,
       dbSession
@@ -148,7 +148,7 @@ export const handleJoinRoom = async (
         );
 
       /** @api_call - Update only the room ID in session (PUT) */
-      const updatedSession = await updateSessionRoomId(
+      const updatedSession = await saveSessionRoomId(
         sessionId,
         roomId,
         dbSession
@@ -237,7 +237,7 @@ export const handleLeaveRoom = async (
     }
 
     /** @api_call - Update only the room ID in session (PUT) */
-    const updatedSession = await updateSessionRoomId(
+    const updatedSession = await saveSessionRoomId(
       sessionId,
       null, // Initialize room ID
       dbSession

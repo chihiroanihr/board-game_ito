@@ -18,7 +18,7 @@ export const getSessionInfo = async (
   }
 };
 
-export const updateSessionConnected = async (
+export const saveSessionConnected = async (
   sessionId: string,
   connected: boolean
 ): Promise<{ matched: boolean; modified: boolean }> => {
@@ -39,7 +39,7 @@ export const updateSessionConnected = async (
   }
 };
 
-export const updateSessionUserId = async (
+export const saveSessionUserId = async (
   sessionId: string,
   userId: ObjectId | null,
   dbSession: ClientSession | null = null
@@ -70,7 +70,7 @@ export const updateSessionUserId = async (
   }
 };
 
-export const updateSessionRoomId = async (
+export const saveSessionRoomId = async (
   sessionId: string,
   roomId: string | null,
   dbSession: ClientSession | null = null
@@ -101,7 +101,7 @@ export const updateSessionRoomId = async (
   }
 };
 
-export const updateSessionUserAndRoomId = async (
+export const saveSessionUserAndRoomId = async (
   sessionId: string,
   userId: ObjectId,
   roomId: string,
@@ -182,7 +182,7 @@ export const insertSession = async (
   }
 };
 
-export const updateSession = async (
+export const saveSession = async (
   newSessionObj: Session
 ): Promise<{ matched: boolean; modified: boolean }> => {
   logQueryEvent("Updating the session info.");

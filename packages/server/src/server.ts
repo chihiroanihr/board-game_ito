@@ -4,7 +4,8 @@ import cors from "cors";
 import { createServer, Server as HTTPServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 
-import { connectDB, closeDB, getDB } from "./database/dbConnect";
+import { connectDB, closeDB } from "./database/dbConnect";
+import router from "./routes/routeHandlers";
 import socketHandlers from "./socket/socketHandlers";
 
 import { loadEnv } from "@util";
@@ -26,67 +27,43 @@ const SERVER_URL: string = `${process.env.SERVER_PORT}`;
 const CLIENT_URL: string | undefined =
   process.env.NODE_ENV === "production" ? undefined : "*"; // "undefined" means the URL will be computed from the `window.location` object
 
-const createApp = (): Express => {
-  const app = express();
-  app.use(cors());
-  app.use(express.json());
+// Creating a http server using express
+const app: Express = express();
+// Middlewares
+app.use(cors());
+app.use(express.json()); // Using express.json() instead of bodyParser.json() due to deprecation.
+app.use(router); // Mount the routes
 
-  app.get("/", (req, res) => res.status(200).send("Server Side."));
+// HTTP server initialization
+const server: HTTPServer = createServer(app);
 
-  return app;
-};
+// Socket.io server initialization
+const io: SocketIOServer = new SocketIOServer(server, {
+  // CORS allows HTTP requests sent by the frontent (specified in origin) to reach the server.
+  cors: { origin: CLIENT_URL ?? "*" },
+});
 
-const setupSocketIO = (
-  server: HTTPServer,
-  clientUrl: string | null = null
-): SocketIOServer => {
-  const io = new SocketIOServer(server, { cors: { origin: clientUrl ?? "*" } });
+// Main Route
+app.get("/", async (req, res) => {
+  res.status(200).send("Server Side.");
+});
 
-  // Call the function to initialize sockets
-  socketHandlers(io);
-
-  return io;
-};
-
-// // Creating a http server using express
-// const app: Express = express();
-// // Middlewares
-// app.use(cors());
-// app.use(express.json()); // Using express.json() instead of bodyParser.json() since its deprecated.
-
-// // HTTP server initialization
-// const server: HTTPServer = createServer(app);
-
-// // Socket.io server initialization
-// const io: SocketIOServer = new SocketIOServer(server, {
-//   // CORS allows HTTP requests sent by the frontent (specified in origin) to reach the server.
-//   cors: {
-//     origin: CLIENT_URL,
-//   },
-// });
-
-// // Main Route
-// app.get("/", async (req, res) => {
-//   res.status(200).send("Server Side.");
-// });
+// Initial session
+app.get("/api/session", (req, res) => {
+  const sessionId = req.headers.authorization?.replace("Bearer ", "");
+  // Now you have the sessionId and can process the request accordingly
+});
 
 /**
  * Start Server
  */
-const startServer = async (
-  port: string,
-  clientUrl: string | undefined
-): Promise<void> => {
-  const app = createApp();
-  const server = createServer(app);
-
+const startServer = async (): Promise<void> => {
   try {
     // Connect to the Database
     await connectDB(); // This will establish the connection and set the db variable in dbConnect module.
 
     // Call the function to initialize sockets
-    setupSocketIO(server, clientUrl);
-    // socketHandlers(io);
+    socketHandlers(io);
 
     // Open Server
     const serverInstance = server.listen(SERVER_URL, () =>
@@ -142,4 +119,4 @@ function setupGracefulShutdown(serverInstance: HTTPServer) {
   });
 }
 
-startServer(SERVER_URL, CLIENT_URL);
+startServer();

@@ -2,12 +2,11 @@ import { ClientSession, ObjectId } from "mongodb";
 
 import { User, UserStatusEnum } from "@board-game-ito/shared";
 
-import { insertUser, deleteUser } from "src/database/controllers";
+import { insertUser, deleteUser } from "@controller";
 
 import { handleDBError } from "@debug";
 
 export const handleLogin = async (
-  sessionId: string,
   userName: string,
   dbSession: ClientSession | null = null
 ): Promise<User> => {
