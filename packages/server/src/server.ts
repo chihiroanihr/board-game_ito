@@ -43,24 +43,23 @@ const io: SocketIOServer = new SocketIOServer(server, {
   cors: { origin: CLIENT_URL ?? "*" },
 });
 
-// Main Route
-app.get("/", async (req, res) => {
-  res.status(200).send("Server Side.");
-});
-
-// Initial session
-app.get("/api/session", (req, res) => {
-  const sessionId = req.headers.authorization?.replace("Bearer ", "");
-  // Now you have the sessionId and can process the request accordingly
-});
-
 /**
  * Start Server
  */
 const startServer = async (): Promise<void> => {
   try {
-    // Connect to the Database
-    await connectDB(); // This will establish the connection and set the db variable in dbConnect module.
+    // Connect to the DB: Create a promise that resolves when the database connection is established
+    const dbConnectionPromise = connectDB();
+
+    // Create a promise that rejects after 10 seconds
+    const timeoutPromise = new Promise<void>((resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error("Database connection timeout."));
+      }, 10000); // 10 seconds
+    }); // Comment out the timeout throw error to see the real error issues.
+
+    // Wait for either the database connection or the timeout
+    await Promise.race([dbConnectionPromise, timeoutPromise]);
 
     // Call the function to initialize sockets
     socketHandlers(io);

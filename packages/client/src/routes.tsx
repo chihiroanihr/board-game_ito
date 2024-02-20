@@ -1,5 +1,3 @@
-import React from "react";
-
 // Import React Router
 import {
   Route,

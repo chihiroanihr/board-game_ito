@@ -43,19 +43,34 @@ export default function ConnectLayout() {
   const { room, discardRoom, updateRoom } = useRoom();
 
   const [sessionDataFetched, setSessionDataFetched] = useState<boolean>(false);
+  const [connectionTimeout, setConnectionTimeout] = useState<boolean>(false);
 
   // ========== Initial Connect | Browser Refreshed ========== //
 
   // [1] Connect attempt: Send session ID if exists
   useEffect(() => {
+    // Set a timeout for the connection attempt
+    const timeoutId = setTimeout(() => {
+      setConnectionTimeout(true);
+    }, 10000); // 10 seconds
+
+    const onConnect = () => {
+      clearTimeout(timeoutId); // Cleanup the timeout if the connection is established before the timeout
+    };
+
     // If session ID exists, then attach the session ID to the next reconnection attempts
     socket.auth = sessionId ? { sessionId } : {};
 
     // Connect to socket server (No-op if the socket is already connected)
     socket.connect();
 
+    // Handshake connection success
+    socket.on("connect", onConnect);
+
     // Cleanup the socket event listener when the component unmounts
     return () => {
+      clearTimeout(timeoutId);
+      socket.off("connect", onConnect);
       socket.disconnect();
     };
   }, [sessionId, socket]);
@@ -95,15 +110,16 @@ export default function ConnectLayout() {
    */
   useEffect(() => {
     function onErrorEvent(error: any) {
+      console.log(error);
       outputServerError({ error });
     }
 
     // Receive
-    socket.on("error", onErrorEvent);
+    socket.on("server-error", onErrorEvent);
 
     // Cleanup the socket event listener when the component unmounts
     return () => {
-      socket.off("error", onErrorEvent);
+      socket.off("server-error", onErrorEvent);
     };
   }, [socket]);
 
@@ -111,7 +127,9 @@ export default function ConnectLayout() {
 
   useEffect(() => {
     // If user is not logged in, redirect to the home page.
-    if (!user) {
+    if (!sessionId || !user) {
+      room && discardRoom(); // leave room
+      user && discardUser(); // logout
       navigateHome(navigate);
     }
     // If user is logged in but not part of a room, redirect to the dashboard.
@@ -122,24 +140,13 @@ export default function ConnectLayout() {
     else {
       navigateWaiting(navigate);
     }
-  }, [navigate, room, user]);
+  }, [discardRoom, discardUser, navigate, room, sessionId, user]);
 
   // ================ Local Storage Manually Modified ================ //
 
   // Check local storage
   useEffect(() => {
     const checkLocalStorage = () => {
-      // if (!sessionId) {
-      //   room && discardRoom(); // leave room
-      //   user && discardUser(); // then logout
-      //   navigateHome(navigate); // navigate
-      // } else if (!user) {
-      //   room && discardRoom();
-      //   navigateHome(navigate);
-      // } else if (!room) {
-      //   navigateDashboard(navigate);
-      // }
-
       // Restore local storage value when deleted manually
       updateSession(sessionId);
       updateUser(user);
@@ -165,5 +172,14 @@ export default function ConnectLayout() {
     navigate,
   ]);
 
-  return !sessionDataFetched ? <Loader /> : <Outlet />;
+  return !sessionDataFetched ? (
+    connectionTimeout ? (
+      /** @todo - (navigate to) Error Component */
+      <div>Error</div>
+    ) : (
+      <Loader />
+    )
+  ) : (
+    <Outlet />
+  );
 }

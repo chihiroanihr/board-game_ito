@@ -109,6 +109,8 @@ const socketHandlers = (io: Server) => {
 
   // The io variable can be used to do all the necessary things regarding Socket
   io.on("connection", (socket) => {
+    socket.emit("connected");
+
     // Socket handling logic (moved from the previous file)
     handleSocketConnection(socket, io);
     handleSocketSession(socket);

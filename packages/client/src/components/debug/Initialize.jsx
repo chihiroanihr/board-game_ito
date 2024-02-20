@@ -1,11 +1,7 @@
 import { useState } from "react";
 
 import { useSocket } from "../../hooks/useSocket";
-import {
-  outputServerError,
-  isObjectEmpty,
-  outputResponseTimeoutError,
-} from "../../utils";
+import { outputServerError, outputResponseTimeoutError } from "../../utils";
 
 export default function Initialize() {
   const { socket } = useSocket();
@@ -23,24 +19,20 @@ export default function Initialize() {
 
     /** @socket_send - Send to socket & receive response */
     socket.emit("initialize", async (error, response) => {
-      // socket.emit("initialize");
-
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 
-      const { rooms, users, sessions } = response;
+      const { roomsDeleted, usersDeleted, sessionsDeleted } = response;
 
       if (error) {
         outputServerError({ error });
       } else {
-        if (
-          (rooms || !isObjectEmpty(rooms)) &&
-          (users || !isObjectEmpty(users)) &&
-          (sessions || isObjectEmpty(sessions))
-        ) {
+        if (roomsDeleted || usersDeleted || sessionsDeleted) {
           alert("[Success]: Successfully initialized Mongo DB.");
         } else {
-          alert("[Error]: Could not initialize database.");
+          alert(
+            "[Error]: Could not initialize database (Database could be already empty)."
+          );
         }
       }
 
