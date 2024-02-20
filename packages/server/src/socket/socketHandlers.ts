@@ -24,7 +24,7 @@ function initializeSocketSession(
   sessionId: string | null = null
 ): void {
   /** @socket_update */
-  socket.sessionId = sessionId ?? crypto.randomUUID(); // you can re-use session ID
+  socket.sessionId = crypto.randomUUID(); // OR you can re-use session ID by sessionId ?? crypto.randomUUID()
   socket.connected = true;
   socket.user = null;
   socket.room = null;
