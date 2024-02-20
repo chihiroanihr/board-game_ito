@@ -23,6 +23,7 @@
     "nodemon": "^3.0.3"
   },
   "dependencies": {
-    "install-packages": "^0.2.5"
+    "install-packages": "^0.2.5",
+    "mongodb": "^6.3.0"
   }
 }
