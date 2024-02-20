@@ -17,8 +17,8 @@ type SessionProviderProps = {
 
 type SessionContextType = {
   sessionId: SessionIdType;
-  updateSession: (data: SessionIdType) => void;
-  discardSession: () => void;
+  updateSessionId: (data: SessionIdType) => void;
+  discardSessionId: () => void;
 };
 
 // Create a context with a default empty value.
@@ -35,7 +35,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
   );
 
   // Call this function when you want to authenticate the user
-  const updateSession = useCallback(
+  const updateSessionId = useCallback(
     (data: SessionIdType) => {
       setSessionId(data);
     },
@@ -43,17 +43,17 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
   );
 
   // Call this function when server sessionId expires
-  const discardSession = useCallback(() => {
+  const discardSessionId = useCallback(() => {
     setSessionId(null);
   }, [setSessionId]);
 
   const value = useMemo(
     () => ({
       sessionId,
-      updateSession,
-      discardSession,
+      updateSessionId,
+      discardSessionId,
     }),
-    [updateSession, discardSession, sessionId]
+    [updateSessionId, discardSessionId, sessionId]
   );
 
   return (

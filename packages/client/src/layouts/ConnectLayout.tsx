@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 import Loader from "../components/Loader";
@@ -38,7 +38,7 @@ export default function ConnectLayout() {
   const { socket } = useSocket();
 
   // Retrieve local storage values
-  const { sessionId, updateSession, discardSession } = useSession();
+  const { sessionId, updateSessionId, discardSessionId } = useSession();
   const { user, discardUser, updateUser } = useAuth();
   const { room, discardRoom, updateRoom } = useRoom();
 
@@ -47,19 +47,19 @@ export default function ConnectLayout() {
 
   // ========== Initial Connect | Browser Refreshed ========== //
 
+  // If session ID exists, then attach the session ID to the next reconnection attempts
+  socket.auth = sessionId ? { sessionId } : {};
+
   // [1] Connect attempt: Send session ID if exists
   useEffect(() => {
     // Set a timeout for the connection attempt
     const timeoutId = setTimeout(() => {
-      setConnectionTimeout(true);
+      setConnectionTimeout(true); // Connection error
     }, 10000); // 10 seconds
 
     const onConnect = () => {
       clearTimeout(timeoutId); // Cleanup the timeout if the connection is established before the timeout
     };
-
-    // If session ID exists, then attach the session ID to the next reconnection attempts
-    socket.auth = sessionId ? { sessionId } : {};
 
     // Connect to socket server (No-op if the socket is already connected)
     socket.connect();
@@ -73,7 +73,7 @@ export default function ConnectLayout() {
       socket.off("connect", onConnect);
       socket.disconnect();
     };
-  }, [sessionId, socket]);
+  }, [socket]);
 
   // [2] Receive response (session ID) from socket server
   /**
@@ -86,7 +86,7 @@ export default function ConnectLayout() {
       socket.auth = { sessionId };
 
       // Store it in the localStorage
-      updateSession(sessionId);
+      updateSessionId(sessionId);
       updateUser(user);
       updateRoom(room);
 
@@ -100,7 +100,7 @@ export default function ConnectLayout() {
     return () => {
       socket.off("session", onSessionEvent);
     };
-  }, [room, updateSession, socket, updateRoom, updateUser, user]);
+  }, [room, updateSessionId, socket, updateRoom, updateUser, user]);
 
   // Connection error handling
   /**
@@ -110,16 +110,15 @@ export default function ConnectLayout() {
    */
   useEffect(() => {
     function onErrorEvent(error: any) {
-      console.log(error);
       outputServerError({ error });
     }
 
     // Receive
-    socket.on("server-error", onErrorEvent);
+    socket.on("error", onErrorEvent);
 
     // Cleanup the socket event listener when the component unmounts
     return () => {
-      socket.off("server-error", onErrorEvent);
+      socket.off("error", onErrorEvent);
     };
   }, [socket]);
 
@@ -148,7 +147,7 @@ export default function ConnectLayout() {
   useEffect(() => {
     const checkLocalStorage = () => {
       // Restore local storage value when deleted manually
-      updateSession(sessionId);
+      updateSessionId(sessionId);
       updateUser(user);
       updateRoom(room);
     };
@@ -160,10 +159,10 @@ export default function ConnectLayout() {
       window.removeEventListener("storage", checkLocalStorage);
     };
   }, [
-    discardSession,
+    discardSessionId,
     discardRoom,
     room,
-    updateSession,
+    updateSessionId,
     sessionId,
     updateRoom,
     updateUser,
