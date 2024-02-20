@@ -15,12 +15,18 @@
     "server": "npm --prefix packages/server start",
     "server-dev": "npm --prefix packages/server run dev",
     "dev": "concurrently \"npm run server-dev\" \"npm run client\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "tsc -b -w -i",
+    "eslint": "eslint src/**/**.{ts,tsx}",
+    "eslint:fix": "eslint src/**/**.{ts,tsx} --fix"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
     "concurrently": "^8.2.2",
-    "nodemon": "^3.0.3"
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.3",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^7.0.2"
   },
   "dependencies": {
     "install-packages": "^0.2.5",
