@@ -1,20 +1,33 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+
+import { User } from "@board-game-ito/shared";
 
 import { useAuth } from "../hooks/useAuth";
 import { useSocket } from "../hooks/useSocket";
-import { outputServerError, outputResponseTimeoutError } from "../utils";
+import {
+  navigateDashboard,
+  outputServerError,
+  outputResponseTimeoutError,
+} from "../utils";
+
+type FormDataType = {
+  name: string;
+};
 
 /**
  * Main page for Home
  * @returns
  */
 function Home() {
-  const { login } = useAuth();
-  const { socket } = useSocket();
+  const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const { socket } = useSocket();
+  const { user, updateUser } = useAuth();
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   // Prepare react-hook-form
   const {
@@ -22,12 +35,12 @@ function Home() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({
+  } = useForm<FormDataType>({
     defaultValues: { name: "" },
   });
 
   // Player name submitted
-  const onSubmit = (data) => {
+  const onSubmit = (data: FormDataType) => {
     setLoading(true); // Set loading to true when the request is initiated
     setErrorMessage(""); // Reset error message
 
@@ -47,7 +60,7 @@ function Home() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("login", userName, async (error, userResponse) => {
+    socket.emit("login", userName, async (error: any, userResponse: User) => {
       // socket.emit("logout", userName);
 
       // Clear the timeout as response is received before timeout
@@ -57,8 +70,9 @@ function Home() {
         setErrorMessage("Internal Server Error: Please try again.");
         outputServerError({ error });
       } else {
-        login(userResponse); // Login and save user info to local storage
         reset(); // Optionally reset form fields
+        updateUser(userResponse); // Login and save user info to local storage
+        navigateDashboard(navigate); // Navigate
       }
 
       setLoading(false); // Set loading to false when the response is received
@@ -70,7 +84,9 @@ function Home() {
   //     try {
   //       // "data" type: User
   //       if (data) {
-  //         login(data);
+  //         reset(); // Optionally reset form fields
+  //         updateUser(data);
+  //         navigateDashboard(navigate); // Navigate
   //       } else {
   //         throw new Error("Returned data is missing from the server.");
   //       }
@@ -85,7 +101,7 @@ function Home() {
   //   return () => {
   //     socket.off("login_success", onLoginSuccessEvent);
   //   };
-  // }, [login, socket]);
+  // }, [updateUser, navigate, socket]);
 
   // useEffect(() => {
   //   async function onLoginErrorEvent(error) {
@@ -99,6 +115,7 @@ function Home() {
   //   };
   // });
 
+  if (user) return null;
   return (
     <div>
       <h1>Welcome to ITO Game</h1>

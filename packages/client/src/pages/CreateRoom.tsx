@@ -1,20 +1,34 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { User, Room } from "@board-game-ito/shared";
 
 import { useAuth } from "../hooks/useAuth";
 import { useRoom } from "../hooks/useRoom";
 import { useSocket } from "../hooks/useSocket";
-import { outputServerError, outputResponseTimeoutError } from "../utils";
+import {
+  navigateWaiting,
+  outputServerError,
+  outputResponseTimeoutError,
+} from "../utils";
+
+type SocketEventType = {
+  user: User;
+  room: Room;
+};
 
 /**
  * Subpage for Dashboard
  * @returns
  */
 function CreateRoom() {
-  const { updateUser } = useAuth();
-  const { joinRoom } = useRoom();
-  const { socket } = useSocket();
+  const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
+  const { socket } = useSocket();
+  const { updateUser } = useAuth();
+  const { updateRoom } = useRoom();
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleCreateRoom = () => {
     setLoading(true);
@@ -26,23 +40,27 @@ function CreateRoom() {
     }, 5000);
 
     // Send to socket
-    socket.emit("create-room", async (error, response) => {
-      // socket.emit("create-room", user);
+    socket.emit(
+      "create-room",
+      async (error: any, response: SocketEventType) => {
+        // socket.emit("create-room", user);
 
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
+        // Clear the timeout as response is received before timeout
+        clearTimeout(timeoutId);
 
-      const { user, room } = response;
+        const { user, room } = response;
 
-      if (error) {
-        outputServerError({ error });
-      } else {
-        updateUser(user); // Store updated user info to local storage
-        joinRoom(room); // Store room info to local storage and redirect
+        if (error) {
+          outputServerError({ error });
+        } else {
+          updateUser(user); // Store updated user info to local storage
+          updateRoom(room); // Store room info to local storage and redirect
+          navigateWaiting(navigate); // Navigate
+        }
+
+        setLoading(false);
       }
-
-      setLoading(false);
-    });
+    );
   };
 
   // useEffect(() => {
@@ -51,7 +69,9 @@ function CreateRoom() {
   //       const { user, room } = data;
 
   //       if (user && room) {
-  //         joinRoom(room);
+  //         updateUser(user); // Store updated user info to local storage
+  //         updateRoom(room); // Store room info to local storage and redirect
+  //         navigateWaiting(navigate); // Navigate
   //       } else {
   //         throw new Error("Returned data is missing from the server.");
   //       }
@@ -65,7 +85,7 @@ function CreateRoom() {
   //   return () => {
   //     socket.off("create-room_success", onCreateRoomSuccessEvent);
   //   };
-  // }, [joinRoom, socket]);
+  // }, [updateRoom, socket]);
 
   // useEffect(() => {
   //   async function onCreateRoomErrorEvent(error) {
@@ -77,7 +97,7 @@ function CreateRoom() {
   //   return () => {
   //     socket.off("create-room_error", onCreateRoomErrorEvent);
   //   };
-  // }, [joinRoom, socket]);
+  // }, [updateRoom, socket]);
 
   return (
     <div>

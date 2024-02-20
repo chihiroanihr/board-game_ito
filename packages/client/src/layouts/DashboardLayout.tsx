@@ -1,10 +1,15 @@
-import { useState } from "react";
-import { useOutlet } from "react-router-dom";
+import React, { useState } from "react";
+import { useOutlet, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import { useRoom } from "../hooks/useRoom";
 import { useSocket } from "../hooks/useSocket";
-import { outputServerError, outputResponseTimeoutError } from "../utils";
+import {
+  navigateHome,
+  navigateDashboard,
+  outputServerError,
+  outputResponseTimeoutError,
+} from "../utils";
 
 /**
  * Layout for Dashboard
@@ -12,12 +17,13 @@ import { outputServerError, outputResponseTimeoutError } from "../utils";
  */
 export default function DashboardLayout() {
   const outlet = useOutlet();
+  const navigate = useNavigate();
 
-  const { user, logout } = useAuth();
-  const { room, leaveRoom, updateRoom } = useRoom();
   const { socket } = useSocket();
+  const { user, discardUser } = useAuth();
+  const { room, discardRoom } = useRoom();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleLogout = () => {
     setLoading(true); // Set loading to true when the request is initiated
@@ -29,7 +35,7 @@ export default function DashboardLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("logout", async (error, response) => {
+    socket.emit("logout", async (error: any) => {
       // socket.emit("logout");
 
       // Clear the timeout as response is received before timeout
@@ -38,8 +44,9 @@ export default function DashboardLayout() {
       if (error) {
         outputServerError({ error });
       } else {
-        updateRoom(null);
-        logout();
+        room && discardRoom();
+        user && discardUser();
+        navigateHome(navigate); // navigate
       }
 
       setLoading(false); // Set loading to false when the response is received
@@ -49,7 +56,9 @@ export default function DashboardLayout() {
   // useEffect(() => {
   //   function onLogoutSuccessEvent(data) {
   //     try {
-  //       logout();
+  //       room && discardRoom();
+  //       user && discardUser();
+  //       navigateHome(navigate); // navigate
   //     } catch (error) {
   //       outputServerError({ error });
   //     }
@@ -60,7 +69,7 @@ export default function DashboardLayout() {
   //   return () => {
   //     socket.off("logout_success", onLogoutSuccessEvent);
   //   };
-  // }, [logout, socket]);
+  // }, [discardRoom, discardUser, navigate, socket]);
 
   // useEffect(() => {
   //   function onLogoutErrorEvent(error) {
@@ -84,7 +93,7 @@ export default function DashboardLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("leave-room", async (error, response) => {
+    socket.emit("leave-room", async (error: any) => {
       // socket.emit("leave-room");
 
       // Clear the timeout as response is received before timeout
@@ -93,7 +102,8 @@ export default function DashboardLayout() {
       if (error) {
         outputServerError({ error });
       } else {
-        leaveRoom();
+        discardRoom();
+        navigateDashboard(navigate);
       }
 
       setLoading(false); // Set loading to false when the response is received
@@ -108,7 +118,8 @@ export default function DashboardLayout() {
   // useEffect(() => {
   //   async function onLeaveRoomSuccessEvent(data) {
   //     try {
-  //       leaveRoom();
+  //       discardRoom();
+  //       navigateDashboard(navigate);
   //     } catch (error) {
   //       outputServerError({ error });
   //     }
@@ -119,7 +130,7 @@ export default function DashboardLayout() {
   //   return () => {
   //     socket.off("leave-room_success", onLeaveRoomSuccessEvent);
   //   };
-  // }, [leaveRoom, socket]);
+  // }, [discardRoom, navigate, socket]);
 
   // useEffect(() => {
   //   async function onLeaveRoomErrorEvent(error) {
@@ -131,7 +142,7 @@ export default function DashboardLayout() {
   //   return () => {
   //     socket.off("leave-room_error", onLeaveRoomErrorEvent);
   //   };
-  // }, [leaveRoom, socket]);
+  // }, [discardRoom, navigate, socket]);
 
   if (!user) return null;
   return (

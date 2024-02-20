@@ -1,23 +1,42 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { roomIdConfig } from "@board-game-ito/shared";
+
+import { User, Room, roomIdConfig } from "@board-game-ito/shared";
 
 import { useAuth } from "../hooks/useAuth";
 import { useRoom } from "../hooks/useRoom";
 import { useSocket } from "../hooks/useSocket";
-import { outputServerError, outputResponseTimeoutError } from "../utils";
+import {
+  navigateWaiting,
+  outputServerError,
+  outputResponseTimeoutError,
+} from "../utils";
+
+type FormDataType = {
+  roomId: string;
+};
+
+type SocketEventType =
+  | {
+      user: User;
+      room: Room;
+    }
+  | string;
 
 /**
  * Subpage for Dashboard
  * @returns
  */
 function JoinRoom() {
-  const { updateUser } = useAuth();
-  const { joinRoom } = useRoom();
-  const { socket } = useSocket();
+  const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const { socket } = useSocket();
+  const { updateUser } = useAuth();
+  const { updateRoom } = useRoom();
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   // Prepare react-hook-form
   const {
@@ -25,12 +44,12 @@ function JoinRoom() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({
+  } = useForm<FormDataType>({
     defaultValues: { roomId: "" },
   });
 
   // Room ID Submitted
-  const onSubmit = (data) => {
+  const onSubmit = (data: FormDataType) => {
     setLoading(true);
     setErrorMessage(""); // Reset error message
 
@@ -49,33 +68,38 @@ function JoinRoom() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("join-room", roomId, async (error, response) => {
-      // socket.emit("join-room", roomId);
+    socket.emit(
+      "join-room",
+      roomId,
+      async (error: any, response: SocketEventType) => {
+        // socket.emit("join-room", roomId);
 
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
+        // Clear the timeout as response is received before timeout
+        clearTimeout(timeoutId);
 
-      if (error) {
-        setErrorMessage("Internal Server Error: Please try again.");
-        outputServerError({ error });
-      } else {
-        // User can join room
-        if (typeof response === "object") {
-          const { user, room } = response;
+        if (error) {
+          setErrorMessage("Internal Server Error: Please try again.");
+          outputServerError({ error });
+        } else {
+          // User can join room
+          if (typeof response === "object") {
+            const { user, room } = response;
 
-          updateUser(user); // Store updated user info to local storage
-          joinRoom(room); // Save room info to local storage and navigate
+            updateUser(user); // Store updated user info to local storage
+            updateRoom(room); // Save room info to local storage and navigate
+            navigateWaiting(navigate); // Navigate
+          }
+          // User cannot join room
+          else {
+            setErrorMessage(response);
+          }
+
+          reset(); // Optionally reset form fields
         }
-        // User cannot join room
-        else {
-          setErrorMessage(response);
-        }
 
-        reset(); // Optionally reset form fields
+        setLoading(false);
       }
-
-      setLoading(false);
-    });
+    );
   };
 
   // useEffect(() => {
@@ -86,7 +110,9 @@ function JoinRoom() {
   //         const { user, room } = data;
 
   //         if (user && room) {
-  //           joinRoom(room); // Save room info to local storage and navigate
+  //           updateUser(user); // Store updated user info to local storage
+  //           updateRoom(room); // Save room info to local storage and navigate
+  //           navigateWaiting(navigate); // Navigate
   //         } else {
   //           throw new Error("Returned data is missing from the server.");
   //         }
@@ -106,7 +132,7 @@ function JoinRoom() {
   //   return () => {
   //     socket.off("join-room_success", onJoinRoomSuccessEvent);
   //   };
-  // }, [joinRoom, socket]);
+  // }, [updateRoom, socket]);
 
   // useEffect(() => {
   //   async function onJoinRoomErrorEvent(error) {
@@ -118,7 +144,7 @@ function JoinRoom() {
   //   return () => {
   //     socket.off("join-room_error", onJoinRoomErrorEvent);
   //   };
-  // }, [joinRoom, socket]);
+  // }, [updateRoom, socket]);
 
   return (
     <div>

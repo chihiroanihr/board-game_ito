@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { navigateJoinRoom, navigateCreateRoom } from "../utils";
@@ -10,7 +10,7 @@ import { navigateJoinRoom, navigateCreateRoom } from "../utils";
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const joinRoomHandler = () => {
     setLoading(true);

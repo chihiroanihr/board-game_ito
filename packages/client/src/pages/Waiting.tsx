@@ -1,22 +1,29 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { ObjectId } from "mongodb";
+import { User, Room } from "@board-game-ito/shared";
 
 import { useAuth } from "../hooks/useAuth";
 import { useRoom } from "../hooks/useRoom";
 import { useSocket } from "../hooks/useSocket";
 import { outputServerError, outputResponseTimeoutError } from "../utils";
 
+type SocketEventType = {
+  user: User;
+  room: Room;
+};
+
 export default function Waiting() {
+  const { socket } = useSocket();
   const { user: myself } = useAuth();
   const { room, updateRoom } = useRoom();
-  const { socket } = useSocket();
 
-  const [adminId, setAdminId] = useState();
-  const [players, setPlayers] = useState([]);
-  const [newPlayer, setNewPlayer] = useState();
-  const [playerLeft, setPlayerLeft] = useState();
+  const [adminId, setAdminId] = useState<ObjectId>();
+  const [players, setPlayers] = useState<Array<User>>([]);
+  const [newPlayer, setNewPlayer] = useState<User>();
+  const [playerLeft, setPlayerLeft] = useState<User>();
 
-  const [loading, setLoading] = useState(false);
-  const [allowStart, setAllowStart] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [allowStart, setAllowStart] = useState<boolean>(false);
 
   /**
    * [1] Myself arrives
@@ -33,17 +40,22 @@ export default function Waiting() {
    *    - (Set other room config info, etc.)
    */
   useEffect(() => {
-    socket.emit("wait-room", room, async (error, responsePlayers) => {
-      if (error) {
-        outputServerError({ error });
-      } else {
-        // Add admin
-        setAdminId(room.createdBy);
+    room &&
+      socket.emit(
+        "wait-room",
+        room,
+        async (error: any, responsePlayers: Array<User>) => {
+          if (error) {
+            outputServerError({ error });
+          } else {
+            // Add admin
+            setAdminId(room.createdBy);
 
-        // Add list of players
-        setPlayers(responsePlayers);
-      }
-    });
+            // Add list of players
+            setPlayers(responsePlayers);
+          }
+        }
+      );
   }, [room, socket]);
 
   /**
@@ -56,7 +68,7 @@ export default function Waiting() {
    * - Display message that new user has arrived
    */
   useEffect(() => {
-    async function onNewPlayerArriveEvent(data) {
+    async function onNewPlayerArriveEvent(data: SocketEventType) {
       const { user: player, room } = data;
 
       // Update room in the local storage first
@@ -103,7 +115,7 @@ export default function Waiting() {
    *    - Display message that new user has left
    */
   useEffect(() => {
-    async function onPlayerLeaveEvent(data) {
+    async function onPlayerLeaveEvent(data: SocketEventType) {
       // Disable start button if less than 4 players
       if (players.length <= 4) {
         setAllowStart(false);
@@ -151,7 +163,7 @@ export default function Waiting() {
     }, 5000);
 
     // Send to socket
-    socket.emit("start-game", room, async (error, response) => {
+    socket.emit("start-game", room, async (error: any, response: any) => {
       // socket.emit("start-game", room);
 
       // Clear the timeout as response is received before timeout
@@ -176,14 +188,14 @@ export default function Waiting() {
       <div>
         <ul>
           {players.map((player, index) =>
-            adminId && adminId.toString() === player._id.toString() ? (
+            adminId?.toString() === player._id.toString() ? (
               // Admin
-              <li key={player._id}>
+              <li key={player._id.toString()}>
                 {index + 1}. {player.name} (admin)
               </li>
             ) : (
               // Participants
-              <li key={player._id}>
+              <li key={player._id.toString()}>
                 {index + 1}. {player.name}
               </li>
             )
@@ -194,7 +206,7 @@ export default function Waiting() {
         {playerLeft && <p>{playerLeft.name} just left.</p>}
       </div>
 
-      {adminId && adminId.toString() === myself._id.toString() && (
+      {adminId?.toString() === myself?._id.toString() && (
         <>
           {!allowStart && (
             <p>
