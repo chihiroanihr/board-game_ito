@@ -4,8 +4,7 @@
   "description": "",
   "author": "Rhina Kim <chihiroanihr@gmail.com>",
   "license": "ISC",
-  "keywords": [],
-  "main": "index.js",
+  "keywords": [], 
   "workspaces": [
     "./packages/*"
   ],
