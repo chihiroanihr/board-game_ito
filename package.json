@@ -2,34 +2,58 @@
   "name": "board-game_ito",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "author": "Rhina Kim",
+  "author": "Rhina Kim <chihiroanihr@gmail.com>",
   "license": "ISC",
   "keywords": [],
+  "main": "index.js",
   "workspaces": [
-    "packages/*"
+    "./packages/*"
   ],
   "scripts": {
-    "install-packages": "npm install --legacy-peer-deps",
-    "client": "npm --prefix packages/client start --host=192.168.1.205:3000",
-    "server": "npm --prefix packages/server start",
-    "server-dev": "npm --prefix packages/server run dev",
-    "dev": "concurrently \"npm run server-dev\" \"npm run client\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "tsc -b -w -i",
+    "install:client": "cd client && npm install",
+    "install:server": "cd server && npm install",
+    "postinstall": "npm run install:client && npm run install:server",
+    "build": "npm run build -w client && npm run build -w server && npm run build -w shared",
+    "build-ts": "tsc --build",
+    "build-ts--flags": "tsc -b -w -i",
+    "build-ts--verbose": "tsc --build --verbose",
+    "build:client": "npm run build -w client",
+    "build:client:check": "npm run build:check -w client",
+    "build:server": "npm run build -w server",
+    "build:server:check": "npm run build:check -w server",
+    "build:shared": "npm run build -w shared",
+    "build:shared:check": "npm run build:check -w shared",
+    "build:shared:watch": "npm run build:watch -w shared",
+    "clean": "npm run clean -ws",
+    "clean:client": "npm run clean -w client",
+    "clean:server": "npm run clean -w server",
+    "clean:shared": "npm run clean -w shared",
+    "clean-modules": "rimraf node_modules",
+    "start:dev": "concurrently --kill-others \"npm run build:shared:watch\" \"npm run start:dev:server\" \"npm run start:dev:client\"",
+    "start:dev:client": "npm run start:dev -w client",
+    "start:dev:server": "npm run start:dev -w server",
+    "start:server": "npm run start -w server",
     "eslint": "eslint src/**/**.{ts,tsx}",
-    "eslint:fix": "eslint src/**/**.{ts,tsx} --fix"
+    "eslint:fix": "eslint src/**/**.{ts,tsx} --fix",
+    "format:check": "prettier --list-different './packages/{client,server,shared}/**/*.{js,ts,jsx,tsx}' './**/*.json'",
+    "format:fix": "prettier --write './packages/{client,server,shared}/**/*.{js,ts,jsx,tsx}' './**/*.json'",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm run server-dev\" \"npm run client\""
+  },
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "mongodb": "^6.3.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
-    "nodemon": "^3.0.3",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
     "typescript-eslint": "^7.0.2"
-  },
-  "dependencies": {
-    "install-packages": "^0.2.5",
-    "mongodb": "^6.3.0"
   }
 }

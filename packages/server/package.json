@@ -1,20 +1,22 @@
 {
-  "name": "@board-game-ito/server",
+  "name": "@bgi/server",
   "version": "1.0.0",
   "description": "",
-  "main": "src/server.ts",
-  "scripts": {
-    "start": "ts-node -r tsconfig-paths/register src/server.ts",
-    "dev": "nodemon",
-    "build": "tsc",
-    "json-server": "json-server db.json --port 3002",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "author": "Rhina Kim <chihiroanihr@gmail.com>",
   "keywords": [],
-  "author": "",
   "license": "ISC",
+  "main": "dist/index.js",
+  "private": "true",
+  "scripts": {
+    "build": "npm run clean && tsc -p ./tsconfig.server.json",
+    "build:check": "tsc -p ./tsconfig.server.json --noEmit",
+    "clean": "rimraf dist",
+    "start": "node dist/index.js",
+    "dev": "nodemon",
+    "start:dev": "nodemon src/server.ts"
+  },
   "dependencies": {
-    "@board-game-ito/shared": "1.0.0",
+    "@bgi/shared": "file:../shared",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
@@ -24,9 +26,7 @@
     "socket.io": "^4.7.4"
   },
   "devDependencies": {
-    "json-server": "^1.0.0-alpha.23",
     "nodemon": "^3.0.3",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "ts-node": "^10.9.2"
   }
 }

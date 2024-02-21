@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    /* Visit https://aka.ms/tsconfig to read more about this file */
+    "jsx": "react",
+    "allowJs": true
+    // "paths": {
+    //   "@bgi/shared": ["../shared/src"]
+    // }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "extends": "../../tsconfig.base.json"
+}

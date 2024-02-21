@@ -1,12 +1,6 @@
 {
-  "ignore": [
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "public/*",
-    ".git",
-    "node_modules/*"
-  ],
-  "watch": ["src"],
-  "exec": "node -r tsconfig-paths/register -r ts-node/register ./src/server.ts",
-  "ext": "ts, js"
+  "ignore": ["**/*.test.ts", "**/*.spec.ts", "public/*", ".git", "node_modules/*"],
+  "exec": "ts-node src/server.ts",
+  "watch": ["src/", "../shared/src"],
+  "ext": "ts"
 }

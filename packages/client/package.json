@@ -1,28 +1,15 @@
 {
-  "name": "@board-game-ito/client",
+  "name": "@bgi/client",
   "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@board-game-ito/shared": "^1.0.0",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.19",
-    "@types/react": "^18.2.56",
-    "@types/react-dom": "^18.2.19",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-hook-form": "^7.50.0",
-    "react-router-dom": "^6.22.0",
-    "react-scripts": "5.0.1",
-    "socket.io-client": "^4.7.4",
-    "typescript": "^5.3.3",
-    "web-vitals": "^2.1.4"
-  },
+  "description": "",
+  "author": "Rhina Kim <chihiroanihr@gmail.com>",
+  "license": "ISC",
+  "keywords": [],
   "scripts": {
+    "build": "npm run clean && react-scripts build",
+    "build:check": "tsc -p ./tsconfig.client.json --noEmit",
+    "clean": "rimraf dist",
     "start": "shx cp ../../.env .env && react-scripts start",
-    "build": "shx cp ../../.env .env && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -44,8 +31,24 @@
       "last 1 safari version"
     ]
   },
+  "dependencies": {
+    "@bgi/shared": "file:../shared",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.19",
+    "@types/react": "^18.2.56",
+    "@types/react-dom": "^18.2.19",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.50.0",
+    "react-router-dom": "^6.22.0",
+    "react-scripts": "5.0.1",
+    "socket.io-client": "^4.7.4",
+    "web-vitals": "^2.1.4"
+  },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "shx": "^0.3.4"
   }
 }

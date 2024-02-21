@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@controller": ["./src/database/controllers", "./src/database/controllers/*"],
+      "@handler": ["./src/database/handlers", "./src/database/handlers/*"],
+      "@util": ["./src/utils", "src/utils/*"],
+      "@debug": ["./src/debug", "./src/debug/*"],
+      "@/*": ["./src/*"]
+    } /* Specify a set of entries that re-map imports to additional lookup locations. */,
+    "outDir": "./dist" /* Specify an output folder for all emitted files. */
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "extends": "../../tsconfig.base.json"
+}

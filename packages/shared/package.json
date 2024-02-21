@@ -1,20 +1,16 @@
 {
-  "name": "@board-game-ito/shared",
+  "name": "@bgi/shared",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
-  "keywords": [],
-  "author": "",
-  "private": true,
-  "scripts": {
-    "clean": "rimraf ./dist/*",
-    "build": "npm run clean && tsc --build",
-    "postinstall": "npm run build",
-    "watch": "tsc --watch"
-  },
+  "author": "Rhina Kim <chihiroanihr@gmail.com>",
   "license": "ISC",
-  "devDependencies": {
-    "rimraf": "^5.0.5",
-    "typescript": "^5.3.3"
+  "keywords": [],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npm run clean && tsc -p ./tsconfig.shared.json",
+    "build:check": "tsc -p ./tsconfig.shared.json --noEmit",
+    "build:watch": "tsc -p ./tsconfig.shared.json --watch",
+    "clean": "rimraf dist"
   }
 }

@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@bgi/shared": ["./packages/shared/src"]
+    }
+  },
+  "extends": "./tsconfig.base.json"
+}

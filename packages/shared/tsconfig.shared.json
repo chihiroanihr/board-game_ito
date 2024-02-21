@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist", // Directory of generated output
+    "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "extends": "../../tsconfig.base.json"
+}
