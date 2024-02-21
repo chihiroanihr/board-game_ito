@@ -1,16 +1,12 @@
-import {
-  isObjectEmpty,
-  outputServerError,
-  outputResponseTimeoutError,
-} from "./utils";
+import { isObjectEmpty, outputServerError, outputResponseTimeoutError } from './utils';
 
 import {
   navigateHome,
   navigateDashboard,
   navigateCreateRoom,
   navigateJoinRoom,
-  navigateWaiting,
-} from "./navigate";
+  navigateWaiting
+} from './navigate';
 
 export {
   isObjectEmpty,
@@ -20,5 +16,5 @@ export {
   navigateDashboard,
   navigateCreateRoom,
   navigateJoinRoom,
-  navigateWaiting,
+  navigateWaiting
 };

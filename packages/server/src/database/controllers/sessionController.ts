@@ -1,15 +1,12 @@
-import { ClientSession, ObjectId, ReturnDocument } from "mongodb";
+import { ClientSession, ObjectId, ReturnDocument } from 'mongodb';
 
-import { Session } from "@board-game-ito/shared";
+import { Session } from '@bgi/shared';
 
-import { getDB } from "../dbConnect";
+import { getDB } from '../dbConnect';
+import { logQueryEvent } from '@debug';
 
-import { logQueryEvent } from "@debug";
-
-export const getSessionInfo = async (
-  sessionId: string
-): Promise<Session | null> => {
-  logQueryEvent("Fetching the session info.");
+export const getSessionInfo = async (sessionId: string): Promise<Session | null> => {
+  logQueryEvent('Fetching the session info.');
 
   try {
     return await getDB().sessions.findOne({ _id: sessionId }); // session object or null
@@ -22,7 +19,7 @@ export const saveSessionConnected = async (
   sessionId: string,
   connected: boolean
 ): Promise<{ matched: boolean; modified: boolean }> => {
-  logQueryEvent("Updating only the session connection status.");
+  logQueryEvent('Updating only the session connection status.');
 
   try {
     const result = await getDB().sessions.updateOne(
@@ -32,7 +29,7 @@ export const saveSessionConnected = async (
 
     return {
       matched: result.matchedCount > 0,
-      modified: result.modifiedCount > 0,
+      modified: result.modifiedCount > 0
     }; // true or false
   } catch (error) {
     throw error;
@@ -44,18 +41,18 @@ export const saveSessionUserId = async (
   userId: ObjectId | null,
   dbSession: ClientSession | null = null
 ): Promise<Session | null> => {
-  logQueryEvent("Updating only the user ID in session.");
+  logQueryEvent('Updating only the user ID in session.');
 
   try {
     const options = dbSession
       ? {
           returnDocument: ReturnDocument.AFTER,
           session: dbSession,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }
       : {
           returnDocument: ReturnDocument.AFTER,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }; // return the updated document
 
     // Result will contain the updated or original (if no modification) document,
@@ -75,18 +72,18 @@ export const saveSessionRoomId = async (
   roomId: string | null,
   dbSession: ClientSession | null = null
 ): Promise<Session | null> => {
-  logQueryEvent("Updating only the room ID in session.");
+  logQueryEvent('Updating only the room ID in session.');
 
   try {
     const options = dbSession
       ? {
           returnDocument: ReturnDocument.AFTER,
           session: dbSession,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }
       : {
           returnDocument: ReturnDocument.AFTER,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }; // return the updated document
 
     // Result will contain the updated or original (if no modification) document,
@@ -107,18 +104,18 @@ export const saveSessionUserAndRoomId = async (
   roomId: string,
   dbSession: ClientSession | null = null
 ): Promise<Session | null> => {
-  logQueryEvent("Updating both the user ID and room ID in session.");
+  logQueryEvent('Updating both the user ID and room ID in session.');
 
   try {
     const options = dbSession
       ? {
           returnDocument: ReturnDocument.AFTER,
           session: dbSession,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }
       : {
           returnDocument: ReturnDocument.AFTER,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }; // return the updated document
 
     // Result will contain the updated or original (if no modification) document,
@@ -137,7 +134,7 @@ export const upsertSession = async (
   newSessionObj: Session,
   dbSession: ClientSession | null = null
 ): Promise<Session | null> => {
-  logQueryEvent("Upserting new session.");
+  logQueryEvent('Upserting new session.');
 
   try {
     // Destructure sessionId from newSessionObj and store the rest of the properties in sessionData
@@ -149,30 +146,24 @@ export const upsertSession = async (
           returnDocument: ReturnDocument.AFTER,
           upsert: true,
           session: dbSession,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }
       : {
           returnDocument: ReturnDocument.AFTER,
           upsert: true,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }; // return the updated document
 
     // Result will contain the updated or original (if no modification) document,
     // or null if no document was found.
-    return await getDB().sessions.findOneAndUpdate(
-      { _id: _id },
-      { $set: sessionData },
-      options
-    );
+    return await getDB().sessions.findOneAndUpdate({ _id: _id }, { $set: sessionData }, options);
   } catch (error) {
     throw error;
   }
 };
 
-export const insertSession = async (
-  newSessionObj: Session
-): Promise<boolean> => {
-  logQueryEvent("Inserting new session.");
+export const insertSession = async (newSessionObj: Session): Promise<boolean> => {
+  logQueryEvent('Inserting new session.');
 
   try {
     const result = await getDB().sessions.insertOne(newSessionObj);
@@ -185,20 +176,17 @@ export const insertSession = async (
 export const saveSession = async (
   newSessionObj: Session
 ): Promise<{ matched: boolean; modified: boolean }> => {
-  logQueryEvent("Updating the session info.");
+  logQueryEvent('Updating the session info.');
 
   try {
     // Destructure sessionId from newSessionObj and store the rest of the properties in sessionData
     const { _id, ...sessionData } = newSessionObj;
 
-    const result = await getDB().sessions.updateOne(
-      { _id: _id },
-      { $set: sessionData }
-    );
+    const result = await getDB().sessions.updateOne({ _id: _id }, { $set: sessionData });
 
     return {
       matched: result.matchedCount > 0,
-      modified: result.modifiedCount > 0,
+      modified: result.modifiedCount > 0
     }; // true or false
   } catch (error) {
     throw error;
@@ -206,7 +194,7 @@ export const saveSession = async (
 };
 
 export const deleteSession = async (sessionId: string): Promise<boolean> => {
-  logQueryEvent("Deleting the session.");
+  logQueryEvent('Deleting the session.');
 
   try {
     const result = await getDB().sessions.deleteOne({ _id: sessionId });
@@ -217,7 +205,7 @@ export const deleteSession = async (sessionId: string): Promise<boolean> => {
 };
 
 export const deleteAllSessions = async (): Promise<boolean> => {
-  logQueryEvent("Deleting all sessions.");
+  logQueryEvent('Deleting all sessions.');
 
   try {
     const result = await getDB().sessions.deleteMany({});

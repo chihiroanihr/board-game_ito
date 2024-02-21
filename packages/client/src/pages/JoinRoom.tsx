@@ -1,17 +1,13 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 
-import { User, Room, roomIdConfig } from "@board-game-ito/shared";
+import { User, Room, roomIdConfig } from '@bgi/shared';
 
-import { useAuth } from "../hooks/useAuth";
-import { useRoom } from "../hooks/useRoom";
-import { useSocket } from "../hooks/useSocket";
-import {
-  navigateWaiting,
-  outputServerError,
-  outputResponseTimeoutError,
-} from "../utils";
+import { useAuth } from '../hooks/useAuth';
+import { useRoom } from '../hooks/useRoom';
+import { useSocket } from '../hooks/useSocket';
+import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '../utils';
 
 type FormDataType = {
   roomId: string;
@@ -36,27 +32,27 @@ function JoinRoom() {
   const { updateRoom } = useRoom();
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Prepare react-hook-form
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
+    reset
   } = useForm<FormDataType>({
-    defaultValues: { roomId: "" },
+    defaultValues: { roomId: '' }
   });
 
   // Room ID Submitted
   const onSubmit = (data: FormDataType) => {
     setLoading(true);
-    setErrorMessage(""); // Reset error message
+    setErrorMessage(''); // Reset error message
 
     const roomId = data.roomId.trim().toUpperCase();
 
     if (!roomId) {
-      setErrorMessage("Please enter a valid Room ID.");
+      setErrorMessage('Please enter a valid Room ID.');
       setLoading(false);
       return;
     }
@@ -68,38 +64,34 @@ function JoinRoom() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit(
-      "join-room",
-      roomId,
-      async (error: any, response: SocketEventType) => {
-        // socket.emit("join-room", roomId);
+    socket.emit('join-room', roomId, async (error: any, response: SocketEventType) => {
+      // socket.emit("join-room", roomId);
 
-        // Clear the timeout as response is received before timeout
-        clearTimeout(timeoutId);
+      // Clear the timeout as response is received before timeout
+      clearTimeout(timeoutId);
 
-        if (error) {
-          setErrorMessage("Internal Server Error: Please try again.");
-          outputServerError({ error });
-        } else {
-          // User can join room
-          if (typeof response === "object") {
-            const { user, room } = response;
+      if (error) {
+        setErrorMessage('Internal Server Error: Please try again.');
+        outputServerError({ error });
+      } else {
+        // User can join room
+        if (typeof response === 'object') {
+          const { user, room } = response;
 
-            updateUser(user); // Store updated user info to local storage
-            updateRoom(room); // Save room info to local storage and navigate
-            navigateWaiting(navigate); // Navigate
-          }
-          // User cannot join room
-          else {
-            setErrorMessage(response);
-          }
-
-          reset(); // Optionally reset form fields
+          updateUser(user); // Store updated user info to local storage
+          updateRoom(room); // Save room info to local storage and navigate
+          navigateWaiting(navigate); // Navigate
+        }
+        // User cannot join room
+        else {
+          setErrorMessage(response);
         }
 
-        setLoading(false);
+        reset(); // Optionally reset form fields
       }
-    );
+
+      setLoading(false);
+    });
   };
 
   // useEffect(() => {
@@ -159,14 +151,12 @@ function JoinRoom() {
           id="roomId"
           placeholder={roomIdConfig.placeholder}
           // Validate the roomId with react-hook-form
-          {...register("roomId", {
-            required: "Room ID is required",
+          {...register('roomId', {
+            required: 'Room ID is required',
             pattern: {
-              value: new RegExp(
-                `^[${roomIdConfig.letterRegex}]{${roomIdConfig.numLetters}}$`
-              ),
-              message: roomIdConfig.error_message,
-            },
+              value: new RegExp(`^[${roomIdConfig.letterRegex}]{${roomIdConfig.numLetters}}$`),
+              message: roomIdConfig.error_message
+            }
           })}
         />
 
@@ -178,7 +168,7 @@ function JoinRoom() {
 
         {/* Submit Button */}
         <button type="submit" disabled={loading}>
-          {loading ? "Loading..." : "Join Room"}
+          {loading ? 'Loading...' : 'Join Room'}
         </button>
       </form>
     </div>

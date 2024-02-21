@@ -1,53 +1,53 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
-import { useSocket } from "../../hooks/useSocket";
+import { useSocket } from '../../hooks/useSocket';
 
 const SocketsConnected = () => {
   const { socket } = useSocket();
 
-  const [socketsUpdated, setSocketsUpdated] = useState([]);
-  const [socketConnected, setSocketConnected] = useState();
-  const [socketDisconnected, setSocketDisconnected] = useState();
+  const [socketsUpdated, setSocketsUpdated] = useState<string[]>([]);
+  const [socketConnected, setSocketConnected] = useState<string>();
+  const [socketDisconnected, setSocketDisconnected] = useState<string>();
 
   useEffect(() => {
-    async function onSocketsUpdateEvent(data) {
+    async function onSocketsUpdateEvent(data: string[]) {
       setSocketsUpdated(data);
     }
 
-    socket.on("sockets-connected", onSocketsUpdateEvent);
+    socket.on('sockets-connected', onSocketsUpdateEvent);
     // Cleanup the socket event listener when the component unmounts
     return () => {
-      socket.off("sockets-connected", onSocketsUpdateEvent);
+      socket.off('sockets-connected', onSocketsUpdateEvent);
     };
   }, [socket]);
 
   useEffect(() => {
-    async function onNewSocketEvent(data) {
+    async function onNewSocketEvent(data: string) {
       setSocketConnected(data);
 
       // Clear the connected message after few seconds
       setTimeout(() => setSocketConnected(undefined), 3000);
     }
 
-    socket.on("socket-connected", onNewSocketEvent);
+    socket.on('socket-connected', onNewSocketEvent);
     // Cleanup the socket event listener when the component unmounts
     return () => {
-      socket.off("socket-connected", onNewSocketEvent);
+      socket.off('socket-connected', onNewSocketEvent);
     };
   }, [socket]);
 
   useEffect(() => {
-    async function onRemoveSocketEvent(data) {
+    async function onRemoveSocketEvent(data: string) {
       setSocketDisconnected(data);
 
       // Clear the disconnected message after few seconds
       setTimeout(() => setSocketDisconnected(undefined), 3000);
     }
 
-    socket.on("socket-disconnected", onRemoveSocketEvent);
+    socket.on('socket-disconnected', onRemoveSocketEvent);
     // Cleanup the socket event listener when the component unmounts
     return () => {
-      socket.off("socket-disconnected", onRemoveSocketEvent);
+      socket.off('socket-disconnected', onRemoveSocketEvent);
     };
   }, [socket]);
 
@@ -66,9 +66,7 @@ const SocketsConnected = () => {
 
         {socketConnected && <p>[+] {socketConnected} just connected.</p>}
 
-        {socketDisconnected && (
-          <p>[-] {socketDisconnected} just disconnected.</p>
-        )}
+        {socketDisconnected && <p>[-] {socketDisconnected} just disconnected.</p>}
       </div>
     </div>
   );

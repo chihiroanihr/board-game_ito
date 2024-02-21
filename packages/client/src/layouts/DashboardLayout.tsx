@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useOutlet, useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useOutlet, useNavigate } from 'react-router-dom';
 
-import { useAuth } from "../hooks/useAuth";
-import { useRoom } from "../hooks/useRoom";
-import { useSocket } from "../hooks/useSocket";
+import { useAuth } from '../hooks/useAuth';
+import { useRoom } from '../hooks/useRoom';
+import { useSocket } from '../hooks/useSocket';
 import {
   navigateHome,
   navigateDashboard,
   outputServerError,
-  outputResponseTimeoutError,
-} from "../utils";
+  outputResponseTimeoutError
+} from '../utils';
 
 /**
  * Layout for Dashboard
@@ -35,7 +35,7 @@ export default function DashboardLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("logout", async (error: any) => {
+    socket.emit('logout', async (error: any) => {
       // socket.emit("logout");
 
       // Clear the timeout as response is received before timeout
@@ -93,7 +93,7 @@ export default function DashboardLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("leave-room", async (error: any) => {
+    socket.emit('leave-room', async (error: any) => {
       // socket.emit("leave-room");
 
       // Clear the timeout as response is received before timeout
@@ -151,12 +151,12 @@ export default function DashboardLayout() {
         <h2>Hello, {user.name}</h2>
 
         <button onClick={handleLogout} disabled={loading}>
-          {loading ? "Loading..." : "Leave Game"}
+          {loading ? 'Loading...' : 'Leave Game'}
         </button>
 
         {room && (
           <button onClick={handleLeaveRoom} disabled={loading}>
-            {loading ? "Loading..." : "Leave Room"}
+            {loading ? 'Loading...' : 'Leave Room'}
           </button>
         )}
       </div>

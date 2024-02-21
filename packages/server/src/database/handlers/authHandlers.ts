@@ -1,10 +1,9 @@
-import { ClientSession, ObjectId } from "mongodb";
+import { ClientSession, ObjectId } from 'mongodb';
 
-import { User, UserStatusEnum } from "@board-game-ito/shared";
+import { User, UserStatusEnum } from '@bgi/shared';
 
-import { insertUser, deleteUser } from "@controller";
-
-import { handleDBError } from "@debug";
+import * as controller from '@controller';
+import * as debug from '@debug';
 
 export const handleLogin = async (
   userName: string,
@@ -16,22 +15,20 @@ export const handleLogin = async (
       _id: new ObjectId(), // Unique user ID
       name: userName,
       status: UserStatusEnum.IDLE,
-      creationTime: new Date(),
+      creationTime: new Date()
     };
 
     /** @api_call - Append new user info to database (POST) */
-    const success = await insertUser(newUserObj, dbSession);
+    const success = await controller.insertUser(newUserObj, dbSession);
     // Error
     if (!success) {
-      throw new Error(
-        "Failed to insert new user (there might be duplicates in the database)."
-      );
+      throw new Error('Failed to insert new user (there might be duplicates in the database).');
     }
 
     // All success
     return newUserObj;
   } catch (error) {
-    throw handleDBError(error, "handleLogin");
+    throw debug.handleDBError(error, 'handleLogin');
   }
 };
 
@@ -43,17 +40,15 @@ export const handleLogout = async (
 
   try {
     /** @api_call - Delete the user (DELETE) */
-    const success = await deleteUser(userId, dbSession);
+    const success = await controller.deleteUser(userId, dbSession);
     // Error
     if (!success) {
-      throw new Error(
-        "Failed to delete the user (given user might not exist)."
-      );
+      throw new Error('Failed to delete the user (given user might not exist).');
     }
 
     // All success
     return;
   } catch (error) {
-    throw handleDBError(error, "handleLogout");
+    throw debug.handleDBError(error, 'handleLogout');
   }
 };

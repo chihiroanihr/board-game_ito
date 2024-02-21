@@ -1,20 +1,18 @@
+import React from 'react';
+
 // Import React Router
-import {
-  Route,
-  createBrowserRouter,
-  createRoutesFromElements,
-} from "react-router-dom";
+import { Route, createBrowserRouter, createRoutesFromElements } from 'react-router-dom';
 
 // Import all the pages to be used for routing
-import CommonLayout from "./layouts/CommonLayout";
-import ConnectLayout from "./layouts/ConnectLayout";
-import DashboardLayout from "./layouts/DashboardLayout";
-import Home from "./pages/Home";
-import CreateRoom from "./pages/CreateRoom";
-import JoinRoom from "./pages/JoinRoom";
-import Waiting from "./pages/Waiting";
-import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
+import CommonLayout from './layouts/CommonLayout';
+import ConnectLayout from './layouts/ConnectLayout';
+import DashboardLayout from './layouts/DashboardLayout';
+import Home from './pages/Home';
+import CreateRoom from './pages/CreateRoom';
+import JoinRoom from './pages/JoinRoom';
+import Waiting from './pages/Waiting';
+import NotFound from './pages/NotFound';
+import Dashboard from './pages/Dashboard';
 
 const routes = createBrowserRouter(
   createRoutesFromElements(

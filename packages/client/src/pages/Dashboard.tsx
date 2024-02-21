@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { navigateJoinRoom, navigateCreateRoom } from "../utils";
+import { navigateJoinRoom, navigateCreateRoom } from '../utils';
 
 /**
  * Main page for Dashboard
@@ -29,10 +29,10 @@ export default function Dashboard() {
       {/* Create / Join Room */}
       <h2>Choose an option:</h2>
       <button onClick={joinRoomHandler} disabled={loading}>
-        {loading ? "Loading..." : "Join Room"}
+        {loading ? 'Loading...' : 'Join Room'}
       </button>
       <button onClick={createRoomHandler} disabled={loading}>
-        {loading ? "Loading..." : "Create Room"}
+        {loading ? 'Loading...' : 'Create Room'}
       </button>
     </div>
   );

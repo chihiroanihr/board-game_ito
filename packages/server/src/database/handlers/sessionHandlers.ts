@@ -1,16 +1,10 @@
-import { ClientSession } from "mongodb";
-import { Socket } from "socket.io";
+import { ClientSession } from 'mongodb';
+import { Socket } from 'socket.io';
 
-import { User, Room, Session } from "@board-game-ito/shared";
+import { User, Room, Session } from '@bgi/shared';
 
-import {
-  upsertSession,
-  getSessionInfo,
-  getUserInfo,
-  getRoomInfo,
-} from "@controller";
-
-import { handleDBError } from "@debug";
+import * as controller from '@controller';
+import * as debug from '@debug';
 
 interface SessionData {
   _id: string;
@@ -19,25 +13,23 @@ interface SessionData {
   room: Room | null;
 }
 
-const handleFindSession = async (
-  sessionId: string
-): Promise<SessionData | null> => {
+const handleFindSession = async (sessionId: string): Promise<SessionData | null> => {
   try {
     /** @api_call - Fetch session info (GET) */
-    const session = await getSessionInfo(sessionId);
+    const session = await controller.getSessionInfo(sessionId);
 
     // If session does not exist
     if (!session) return null;
 
     // If session exists
     const { _id, userId, roomId, connected } = session;
-    const user = userId ? await getUserInfo(userId) : null;
-    const room = roomId ? await getRoomInfo(roomId) : null;
+    const user = userId ? await controller.getUserInfo(userId) : null;
+    const room = roomId ? await controller.getRoomInfo(roomId) : null;
 
     // All success
     return { _id, connected, user, room };
   } catch (error) {
-    throw handleDBError(error, "handleFindSession");
+    throw debug.handleDBError(error, 'handleFindSession');
   }
 };
 
@@ -52,22 +44,20 @@ const handleSaveSession = async (
       _id: socket.sessionId,
       userId: socket.user?._id ?? null,
       roomId: socket.room?._id ?? null,
-      connected: socket.connected,
+      connected: socket.connected
     };
 
     /** @api_call - Upsert new session (POST & PUT) */
-    const session = await upsertSession(newSessionObj, dbSession);
+    const session = await controller.upsertSession(newSessionObj, dbSession);
     // Error
     if (!session) {
-      throw new Error(
-        `Failed to upsert session info (given session ID might not exist).`
-      );
+      throw new Error(`Failed to upsert session info (given session ID might not exist).`);
     }
 
     // All success
     return;
   } catch (error) {
-    throw handleDBError(error, "handleSaveSession");
+    throw debug.handleDBError(error, 'handleSaveSession');
   }
 };
 

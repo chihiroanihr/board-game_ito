@@ -1,6 +1,6 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
-import { roomIdConfig, userIdConfig } from "@board-game-ito/shared";
+import { roomIdConfig, userIdConfig } from '@bgi/shared';
 
 /**
  * Generates a random room ID using predefined configuration limits. The ID length is adjusted to be within 6 to 64 characters,
@@ -19,7 +19,7 @@ export function generateRandomRoomId(): string {
 
   // Generate random string of length given
   const randomBytes: Buffer = crypto.randomBytes(numLetters / 2); // Divide by 2 since the resulting string length will be twice the number of bytes generated
-  const randomId: string = randomBytes.toString("hex").toUpperCase(); // .slice(0, numLetters);
+  const randomId: string = randomBytes.toString('hex').toUpperCase(); // .slice(0, numLetters);
 
   return randomId;
 }
@@ -41,7 +41,7 @@ export function generateRandomUserId(): string {
 
   // Generate random string of length given
   const randomBytes: Buffer = crypto.randomBytes(numLetters / 2); // Divide by 2 since the resulting string length will be twice the number of bytes generated
-  const randomId: string = randomBytes.toString("hex"); // .slice(0, numLetters);
+  const randomId: string = randomBytes.toString('hex'); // .slice(0, numLetters);
 
   return randomId;
 }

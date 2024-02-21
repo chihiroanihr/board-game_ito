@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { ObjectId } from "mongodb";
-import { User, Room } from "@board-game-ito/shared";
+import React, { useEffect, useState } from 'react';
+import { ObjectId } from 'mongodb';
+import { User, Room } from '@bgi/shared';
 
-import { useAuth } from "../hooks/useAuth";
-import { useRoom } from "../hooks/useRoom";
-import { useSocket } from "../hooks/useSocket";
-import { outputServerError, outputResponseTimeoutError } from "../utils";
+import { useAuth } from '../hooks/useAuth';
+import { useRoom } from '../hooks/useRoom';
+import { useSocket } from '../hooks/useSocket';
+import { outputServerError, outputResponseTimeoutError } from '../utils';
 
 type SocketEventType = {
   user: User;
@@ -41,21 +41,17 @@ export default function Waiting() {
    */
   useEffect(() => {
     room &&
-      socket.emit(
-        "wait-room",
-        room,
-        async (error: any, responsePlayers: Array<User>) => {
-          if (error) {
-            outputServerError({ error });
-          } else {
-            // Add admin
-            setAdminId(room.createdBy);
+      socket.emit('wait-room', room, async (error: any, responsePlayers: Array<User>) => {
+        if (error) {
+          outputServerError({ error });
+        } else {
+          // Add admin
+          setAdminId(room.createdBy);
 
-            // Add list of players
-            setPlayers(responsePlayers);
-          }
+          // Add list of players
+          setPlayers(responsePlayers);
         }
-      );
+      });
   }, [room, socket]);
 
   /**
@@ -87,10 +83,10 @@ export default function Waiting() {
     }
 
     // Runs whenever a socket event is recieved from the server
-    socket.on("new-player", onNewPlayerArriveEvent);
+    socket.on('new-player', onNewPlayerArriveEvent);
 
     return () => {
-      socket.off("new-player", onNewPlayerArriveEvent);
+      socket.off('new-player', onNewPlayerArriveEvent);
     };
   }, [players, socket, updateRoom]);
 
@@ -133,9 +129,7 @@ export default function Waiting() {
 
       // Remove player from the list of players
       setPlayers((prevPlayers) =>
-        prevPlayers.filter(
-          (prevPlayer) => prevPlayer._id.toString() !== player._id.toString()
-        )
+        prevPlayers.filter((prevPlayer) => prevPlayer._id.toString() !== player._id.toString())
       );
 
       // Store player left
@@ -143,10 +137,10 @@ export default function Waiting() {
     }
 
     // Runs whenever a socket event is recieved from the server
-    socket.on("player-left", onPlayerLeaveEvent);
+    socket.on('player-left', onPlayerLeaveEvent);
 
     return () => {
-      socket.off("player-left", onPlayerLeaveEvent);
+      socket.off('player-left', onPlayerLeaveEvent);
     };
   }, [adminId, players, socket, updateRoom]);
 
@@ -163,7 +157,7 @@ export default function Waiting() {
     }, 5000);
 
     // Send to socket
-    socket.emit("start-game", room, async (error: any, response: any) => {
+    socket.emit('start-game', room, async (error: any, response: any) => {
       // socket.emit("start-game", room);
 
       // Clear the timeout as response is received before timeout
@@ -210,13 +204,12 @@ export default function Waiting() {
         <>
           {!allowStart && (
             <p>
-              You need to have <b>{4 - players.length}</b> more players to begin
-              the game.
+              You need to have <b>{4 - players.length}</b> more players to begin the game.
             </p>
           )}
 
           <button onClick={handleStartGame} disabled={!allowStart || loading}>
-            {loading ? "Loading..." : "Start Game"}
+            {loading ? 'Loading...' : 'Start Game'}
           </button>
         </>
       )}

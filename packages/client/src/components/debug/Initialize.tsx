@@ -1,12 +1,18 @@
-import { useState } from "react";
+import React, { useState } from 'react';
 
-import { useSocket } from "../../hooks/useSocket";
-import { outputServerError, outputResponseTimeoutError } from "../../utils";
+import { useSocket } from '../../hooks/useSocket';
+import { outputServerError, outputResponseTimeoutError } from '../../utils';
+
+type SocketEventType = {
+  roomsDeleted: boolean;
+  usersDeleted: boolean;
+  sessionsDeleted: boolean;
+};
 
 export default function Initialize() {
   const { socket } = useSocket();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const initializeHandler = async () => {
     setLoading(true);
@@ -18,21 +24,19 @@ export default function Initialize() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit("initialize", async (error, response) => {
+    socket.emit('initialize', async (error: any, response: SocketEventType) => {
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 
       const { roomsDeleted, usersDeleted, sessionsDeleted } = response;
 
       if (error) {
-        outputServerError({ error });
+        outputServerError(error);
       } else {
         if (roomsDeleted || usersDeleted || sessionsDeleted) {
-          alert("[Success]: Successfully initialized Mongo DB.");
+          alert('[Success]: Successfully initialized Mongo DB.');
         } else {
-          alert(
-            "[Error]: Could not initialize database (Database could be already empty)."
-          );
+          alert('[Error]: Could not initialize database (Database could be already empty).');
         }
       }
 
@@ -42,7 +46,7 @@ export default function Initialize() {
 
   return (
     <button onClick={initializeHandler} disabled={loading}>
-      {loading ? "Loading..." : "Initialize Data"}
+      {loading ? 'Loading...' : 'Initialize Data'}
     </button>
   );
 }

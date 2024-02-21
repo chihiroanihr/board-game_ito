@@ -1,16 +1,12 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { User, Room } from "@board-game-ito/shared";
+import { User, Room } from '@bgi/shared';
 
-import { useAuth } from "../hooks/useAuth";
-import { useRoom } from "../hooks/useRoom";
-import { useSocket } from "../hooks/useSocket";
-import {
-  navigateWaiting,
-  outputServerError,
-  outputResponseTimeoutError,
-} from "../utils";
+import { useAuth } from '../hooks/useAuth';
+import { useRoom } from '../hooks/useRoom';
+import { useSocket } from '../hooks/useSocket';
+import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '../utils';
 
 type SocketEventType = {
   user: User;
@@ -40,27 +36,24 @@ function CreateRoom() {
     }, 5000);
 
     // Send to socket
-    socket.emit(
-      "create-room",
-      async (error: any, response: SocketEventType) => {
-        // socket.emit("create-room", user);
+    socket.emit('create-room', async (error: any, response: SocketEventType) => {
+      // socket.emit("create-room", user);
 
-        // Clear the timeout as response is received before timeout
-        clearTimeout(timeoutId);
+      // Clear the timeout as response is received before timeout
+      clearTimeout(timeoutId);
 
-        const { user, room } = response;
+      const { user, room } = response;
 
-        if (error) {
-          outputServerError({ error });
-        } else {
-          updateUser(user); // Store updated user info to local storage
-          updateRoom(room); // Store room info to local storage and redirect
-          navigateWaiting(navigate); // Navigate
-        }
-
-        setLoading(false);
+      if (error) {
+        outputServerError({ error });
+      } else {
+        updateUser(user); // Store updated user info to local storage
+        updateRoom(room); // Store room info to local storage and redirect
+        navigateWaiting(navigate); // Navigate
       }
-    );
+
+      setLoading(false);
+    });
   };
 
   // useEffect(() => {
@@ -103,7 +96,7 @@ function CreateRoom() {
     <div>
       {/** @todo - All room config settings */}
       <button onClick={handleCreateRoom} disabled={loading}>
-        {loading ? "Loading..." : "Create Room"}
+        {loading ? 'Loading...' : 'Create Room'}
       </button>
     </div>
   );

@@ -1,20 +1,15 @@
-import { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 
-import Loader from "../components/Loader";
+import Loader from '../components/Loader';
 
-import { useSession } from "../hooks/useSession";
-import { useAuth } from "../hooks/useAuth";
-import { useRoom } from "../hooks/useRoom";
-import { useSocket } from "../hooks/useSocket";
-import {
-  navigateHome,
-  navigateDashboard,
-  navigateWaiting,
-  outputServerError,
-} from "../utils";
+import { useSession } from '../hooks/useSession';
+import { useAuth } from '../hooks/useAuth';
+import { useRoom } from '../hooks/useRoom';
+import { useSocket } from '../hooks/useSocket';
+import { navigateHome, navigateDashboard, navigateWaiting, outputServerError } from '../utils';
 
-import { User, Room } from "@board-game-ito/shared";
+import { User, Room } from '@bgi/shared';
 
 // type SessionIdType = string | null;
 // type UserDataType = User | null;
@@ -65,12 +60,12 @@ export default function ConnectLayout() {
     socket.connect();
 
     // Handshake connection success
-    socket.on("connect", onConnect);
+    socket.on('connect', onConnect);
 
     // Cleanup the socket event listener when the component unmounts
     return () => {
       clearTimeout(timeoutId);
-      socket.off("connect", onConnect);
+      socket.off('connect', onConnect);
       socket.disconnect();
     };
   }, [socket]);
@@ -94,11 +89,11 @@ export default function ConnectLayout() {
     }
 
     // Receive
-    socket.on("session", onSessionEvent);
+    socket.on('session', onSessionEvent);
 
     // Cleanup the socket event listener when the component unmounts
     return () => {
-      socket.off("session", onSessionEvent);
+      socket.off('session', onSessionEvent);
     };
   }, [room, updateSessionId, socket, updateRoom, updateUser, user]);
 
@@ -114,11 +109,11 @@ export default function ConnectLayout() {
     }
 
     // Receive
-    socket.on("error", onErrorEvent);
+    socket.on('error', onErrorEvent);
 
     // Cleanup the socket event listener when the component unmounts
     return () => {
-      socket.off("error", onErrorEvent);
+      socket.off('error', onErrorEvent);
     };
   }, [socket]);
 
@@ -153,10 +148,10 @@ export default function ConnectLayout() {
     };
 
     // Listen for event: when local storage (manually) changes
-    window.addEventListener("storage", checkLocalStorage);
+    window.addEventListener('storage', checkLocalStorage);
 
     return () => {
-      window.removeEventListener("storage", checkLocalStorage);
+      window.removeEventListener('storage', checkLocalStorage);
     };
   }, [
     discardSessionId,
@@ -168,7 +163,7 @@ export default function ConnectLayout() {
     updateUser,
     user,
     discardUser,
-    navigate,
+    navigate
   ]);
 
   return !sessionDataFetched ? (

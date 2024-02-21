@@ -1,15 +1,8 @@
-import React, {
-  ReactNode,
-  Context,
-  createContext,
-  useContext,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { ReactNode, Context, createContext, useContext, useMemo, useCallback } from 'react';
 
-import { Room } from "@board-game-ito/shared";
+import { Room } from '@bgi/shared';
 
-import { useLocalStorage } from "./useLocalStorage";
+import { useLocalStorage } from './useLocalStorage';
 
 type RoomDataType = Room | null;
 
@@ -29,7 +22,7 @@ const RoomContext: Context<RoomContextType | undefined> = createContext<
 >(undefined);
 
 export const RoomProvider: React.FC<RoomProviderProps> = ({ children }) => {
-  const [room, setRoom] = useLocalStorage<Room | null>("room", null);
+  const [room, setRoom] = useLocalStorage<Room | null>('room', null);
 
   // Call this function to leave from the room
   const discardRoom = useCallback(() => {
@@ -48,7 +41,7 @@ export const RoomProvider: React.FC<RoomProviderProps> = ({ children }) => {
     () => ({
       room,
       discardRoom,
-      updateRoom,
+      updateRoom
     }),
     [discardRoom, room, updateRoom]
   );
@@ -61,7 +54,7 @@ export const useRoom = (): RoomContextType => {
 
   if (context === undefined) {
     /** @todo - Handle error */
-    throw new Error("useRoom must be used within a RoomProvider.");
+    throw new Error('useRoom must be used within a RoomProvider.');
   }
 
   return context;

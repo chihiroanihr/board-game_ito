@@ -1,13 +1,12 @@
-import { ClientSession, ObjectId, ReturnDocument } from "mongodb";
+import { ClientSession, ObjectId, ReturnDocument } from 'mongodb';
 
-import { User, UserStatusEnum } from "@board-game-ito/shared";
+import { User, UserStatusEnum } from '@bgi/shared';
 
-import { getDB } from "../dbConnect";
-
-import { logQueryEvent } from "@debug";
+import { getDB } from '../dbConnect';
+import { logQueryEvent } from '@debug';
 
 export const getUserInfo = async (userId: ObjectId): Promise<User | null> => {
-  logQueryEvent("Fetching the user info.");
+  logQueryEvent('Fetching the user info.');
 
   try {
     return await getDB().users.findOne({ _id: userId }); // user object or null (not found)
@@ -22,7 +21,7 @@ export const insertUser = async (
   newUserObj: User,
   dbSession: ClientSession | null = null
 ): Promise<boolean> => {
-  logQueryEvent("Inserting new user.");
+  logQueryEvent('Inserting new user.');
 
   const options = dbSession ? { session: dbSession } : {};
 
@@ -37,20 +36,17 @@ export const insertUser = async (
 export const updateUser = async (
   newUserObj: User
 ): Promise<{ matched: boolean; modified: boolean }> => {
-  logQueryEvent("Updating the user.");
+  logQueryEvent('Updating the user.');
 
   try {
     // Destructure userId from newUserObj and store the rest of the properties in userData
     const { _id, ...userData } = newUserObj;
 
-    const result = await getDB().users.updateOne(
-      { _id: _id },
-      { $set: userData }
-    );
+    const result = await getDB().users.updateOne({ _id: _id }, { $set: userData });
 
     return {
       matched: result.matchedCount > 0,
-      modified: result.modifiedCount > 0,
+      modified: result.modifiedCount > 0
     }; // true or false
   } catch (error) {
     throw error;
@@ -62,7 +58,7 @@ export const updateUserStatus = async (
   newStatus: UserStatusEnum,
   dbSession: ClientSession | null = null
 ): Promise<User | null> => {
-  logQueryEvent("Updating only the user status in User.");
+  logQueryEvent('Updating only the user status in User.');
 
   try {
     // Options object
@@ -70,11 +66,11 @@ export const updateUserStatus = async (
       ? {
           returnDocument: ReturnDocument.AFTER,
           session: dbSession,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }
       : {
           returnDocument: ReturnDocument.AFTER,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }; // return the updated document
 
     // Result will contain the updated or original (if no modification) document,
@@ -84,19 +80,6 @@ export const updateUserStatus = async (
       { $set: { status: newStatus } }, // Update part: set the new status
       options
     );
-
-    // const updateOptions = dbSession ? { session: dbSession } : {};
-
-    // const result = await getDB().users.updateOne(
-    //   { _id: userId }, // Query part: find a user with this _id
-    //   { $set: { status: newStatus } }, // Update part: set the new status
-    //   updateOptions
-    // );
-
-    // return {
-    //   matched: result.matchedCount > 0,
-    //   modified: result.modifiedCount > 0,
-    // }; // true or false
   } catch (error) {
     throw error;
   }
@@ -106,7 +89,7 @@ export const deleteUser = async (
   userId: ObjectId,
   dbSession: ClientSession | null = null
 ): Promise<boolean> => {
-  logQueryEvent("Deleting the user.");
+  logQueryEvent('Deleting the user.');
 
   const options = dbSession ? { session: dbSession } : {};
 
@@ -119,7 +102,7 @@ export const deleteUser = async (
 };
 
 export const getAllUsers = async (): Promise<Array<User>> => {
-  logQueryEvent("Fetching all users.");
+  logQueryEvent('Fetching all users.');
 
   try {
     return await getDB().users.find({}).toArray(); // Array with elements or empty array
@@ -129,7 +112,7 @@ export const getAllUsers = async (): Promise<Array<User>> => {
 };
 
 export const deleteAllUsers = async (): Promise<boolean> => {
-  logQueryEvent("Deleting all users.");
+  logQueryEvent('Deleting all users.');
 
   try {
     const result = await getDB().users.deleteMany({});

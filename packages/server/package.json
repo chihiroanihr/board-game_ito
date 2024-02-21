@@ -12,7 +12,6 @@
     "build:check": "tsc -p ./tsconfig.server.json --noEmit",
     "clean": "rimraf dist",
     "start": "node dist/index.js",
-    "dev": "nodemon",
     "start:dev": "nodemon src/server.ts"
   },
   "dependencies": {
@@ -27,6 +26,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.3",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "@types/express": "^4.17.21"
   }
 }

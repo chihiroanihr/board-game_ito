@@ -1,15 +1,12 @@
-import { ClientSession, ObjectId, ReturnDocument } from "mongodb";
+import { ClientSession, ObjectId, ReturnDocument } from 'mongodb';
 
-import { Room, User } from "@board-game-ito/shared";
+import { Room, User } from '@bgi/shared';
 
-import { getDB } from "../dbConnect";
+import { getDB } from '../dbConnect';
+import { logQueryEvent } from '@debug';
 
-import { logQueryEvent } from "@debug";
-
-export const getAllPlayersInRoom = async (
-  roomId: string
-): Promise<Array<ObjectId> | null> => {
-  logQueryEvent("Fetching all players in the room.");
+export const getAllPlayersInRoom = async (roomId: string): Promise<Array<ObjectId> | null> => {
+  logQueryEvent('Fetching all players in the room.');
 
   try {
     // Fetch the room and project only the players array
@@ -46,7 +43,7 @@ export const convertPlayerIdsToPlayerObjs = async (
 
     if (players.length !== playerIds.length) {
       throw new Error(
-        "[Data Integrity Error]: Given player number does not match the returned player number. Please ensure the data consistency."
+        '[Data Integrity Error]: Given player number does not match the returned player number. Please ensure the data consistency.'
       );
     }
 
@@ -61,18 +58,18 @@ export const insertPlayerInRoom = async (
   roomId: string,
   dbSession: ClientSession | null = null
 ): Promise<Room | null> => {
-  logQueryEvent("Inserting new player in the room.");
+  logQueryEvent('Inserting new player in the room.');
 
   try {
     const options = dbSession
       ? {
           returnDocument: ReturnDocument.AFTER,
           session: dbSession,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }
       : {
           returnDocument: ReturnDocument.AFTER,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }; // return the updated document
 
     // Result will contain the updated or original (if no modification) document,
@@ -82,19 +79,6 @@ export const insertPlayerInRoom = async (
       { $addToSet: { players: userId } }, // `$addToSet` adds the user without creating duplicates
       options
     );
-
-    // const options = dbSession ? { session: dbSession } : undefined;
-
-    // const result = await getDB().rooms.updateOne(
-    //   { _id: roomId },
-    //   { $addToSet: { players: userId } }, // `$addToSet` adds the user without creating duplicates
-    //   options
-    // );
-
-    // return {
-    //   matched: result.matchedCount > 0,
-    //   modified: result.modifiedCount > 0,
-    // }; // true or false
   } catch (error) {
     throw error;
   }
@@ -105,18 +89,18 @@ export const deletePlayerFromRoom = async (
   roomId: string,
   dbSession: ClientSession | null = null
 ): Promise<Room | null> => {
-  logQueryEvent("Deleting the player from the room.");
+  logQueryEvent('Deleting the player from the room.');
 
   try {
     const options = dbSession
       ? {
           returnDocument: ReturnDocument.AFTER,
           session: dbSession,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }
       : {
           returnDocument: ReturnDocument.AFTER,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }; // return the updated document
 
     // Result will contain the updated or original (if no modification) document,
@@ -126,19 +110,6 @@ export const deletePlayerFromRoom = async (
       { $pull: { players: userId } }, // `$pull` operator removes the user ID from the array
       options
     );
-
-    // const options = dbSession ? { session: dbSession } : undefined;
-
-    // const result = await getDB().rooms.updateOne(
-    //   { _id: roomId },
-    //   { $pull: { players: userId } }, // `$pull` operator removes the user ID from the array
-    //   options
-    // );
-
-    // return {
-    //   matched: result.matchedCount > 0,
-    //   modified: result.modifiedCount > 0,
-    // }; // true or false
   } catch (error) {
     throw error;
   }
@@ -149,18 +120,18 @@ export const updateRoomAdmin = async (
   roomId: string,
   dbSession: ClientSession | null = null
 ): Promise<Room | null> => {
-  logQueryEvent("Updating only the room admin in Room.");
+  logQueryEvent('Updating only the room admin in Room.');
 
   try {
     const options = dbSession
       ? {
           returnDocument: ReturnDocument.AFTER,
           session: dbSession,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }
       : {
           returnDocument: ReturnDocument.AFTER,
-          includeResultMetadata: false,
+          includeResultMetadata: false
         }; // return the updated document
 
     // Result will contain the updated or original (if no modification) document,
@@ -170,19 +141,6 @@ export const updateRoomAdmin = async (
       { $set: { createdBy: userId } },
       options
     );
-
-    // const options = dbSession ? { session: dbSession } : undefined;
-
-    // const result = await getDB().rooms.updateOne(
-    //   { _id: roomId },
-    //   { $set: { createdBy: userId } },
-    //   options
-    // );
-
-    // return {
-    //   matched: result.matchedCount > 0,
-    //   modified: result.modifiedCount > 0,
-    // }; // true or false
   } catch (error) {
     throw error;
   }

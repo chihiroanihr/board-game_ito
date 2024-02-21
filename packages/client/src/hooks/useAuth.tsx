@@ -1,15 +1,8 @@
-import React, {
-  ReactNode,
-  Context,
-  createContext,
-  useContext,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { ReactNode, Context, createContext, useContext, useMemo, useCallback } from 'react';
 
-import { User } from "@board-game-ito/shared";
+import { User } from '@bgi/shared';
 
-import { useLocalStorage } from "./useLocalStorage";
+import { useLocalStorage } from './useLocalStorage';
 
 type UserDataType = User | null;
 
@@ -29,7 +22,7 @@ const AuthContext: Context<AuthContextType | undefined> = createContext<
 >(undefined);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useLocalStorage<UserDataType>("user", null);
+  const [user, setUser] = useLocalStorage<UserDataType>('user', null);
 
   // Call this function when you want to authenticate the user
 
@@ -50,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     () => ({
       user,
       discardUser,
-      updateUser,
+      updateUser
     }),
     [discardUser, user, updateUser]
   );
@@ -63,7 +56,7 @@ export const useAuth = (): AuthContextType => {
 
   if (context === undefined) {
     /** @todo - Handle error */
-    throw new Error("useAuth must be used within a AuthProvider.");
+    throw new Error('useAuth must be used within a AuthProvider.');
   }
 
   return context;
