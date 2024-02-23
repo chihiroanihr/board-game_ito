@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import Loader from '../components/Loader';
-
-import { useSession } from '../hooks/useSession';
-import { useAuth } from '../hooks/useAuth';
-import { useRoom } from '../hooks/useRoom';
-import { useSocket } from '../hooks/useSocket';
-import { navigateHome, navigateDashboard, navigateWaiting, outputServerError } from '../utils';
-
 import { User, Room } from '@bgi/shared';
+
+import { Loader } from '@/component';
+import { useSession, useAuth, useRoom, useSocket } from '@/hook';
+import { navigateHome, navigateDashboard, navigateWaiting, outputServerError } from '@/util';
 
 // type SessionIdType = string | null;
 // type UserDataType = User | null;

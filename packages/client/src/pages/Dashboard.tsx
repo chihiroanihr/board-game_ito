@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { navigateJoinRoom, navigateCreateRoom } from '../utils';
+import { navigateJoinRoom, navigateCreateRoom } from '@/util';
 
 /**
  * Main page for Dashboard

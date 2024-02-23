@@ -1,7 +1,7 @@
 import React from 'react';
 import { useOutlet, useLocation } from 'react-router-dom';
 
-import LazyComponentWrapper from '../components/LazyComponentWrapper';
+import { LazyComponentWrapper } from '@/component';
 
 /** @debug - Display amount of sockets connected: Only for development environment */
 const socketsConnectedComponent = () =>

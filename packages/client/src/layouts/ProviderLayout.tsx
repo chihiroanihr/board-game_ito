@@ -1,12 +1,8 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode } from 'react';
 
 // Import all providers (hooks)
-import { SessionProvider } from "../hooks/useSession";
-import { AuthProvider } from "../hooks/useAuth";
-import { RoomProvider } from "../hooks/useRoom";
-import { SocketProvider } from "../hooks/useSocket";
-
-import { socket } from "../service/socket";
+import { SessionProvider, AuthProvider, RoomProvider, SocketProvider } from '@/hook';
+import { socket } from '../service/socket';
 
 interface ProviderLayoutProps {
   children: ReactNode; // This tells TypeScript that children are allowed as props

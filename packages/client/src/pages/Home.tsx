@@ -4,9 +4,8 @@ import { useForm } from 'react-hook-form';
 
 import { User } from '@bgi/shared';
 
-import { useAuth } from '../hooks/useAuth';
-import { useSocket } from '../hooks/useSocket';
-import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '../utils';
+import { useAuth, useSocket } from '@/hook';
+import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '@/util';
 
 type FormDataType = {
   name: string;

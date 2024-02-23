@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { User, Room } from '@bgi/shared';
 
-import { useAuth } from '../hooks/useAuth';
-import { useRoom } from '../hooks/useRoom';
-import { useSocket } from '../hooks/useSocket';
-import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '../utils';
+import { useAuth, useRoom, useSocket } from '@/hook';
+import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/util';
 
 type SocketEventType = {
   user: User;

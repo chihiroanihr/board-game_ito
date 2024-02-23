@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ObjectId } from 'mongodb';
 import { User, Room } from '@bgi/shared';
 
-import { useAuth } from '../hooks/useAuth';
-import { useRoom } from '../hooks/useRoom';
-import { useSocket } from '../hooks/useSocket';
-import { outputServerError, outputResponseTimeoutError } from '../utils';
+import { useAuth, useRoom, useSocket } from '@/hook';
+import { outputServerError, outputResponseTimeoutError } from '@/util';
 
 type SocketEventType = {
   user: User;

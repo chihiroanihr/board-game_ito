@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-import { useSocket } from '../../hooks/useSocket';
-import { outputServerError, outputResponseTimeoutError } from '../../utils';
+import { useSocket } from '@/hook';
+import { outputServerError, outputResponseTimeoutError } from '@/util';
 
 type SocketEventType = {
   roomsDeleted: boolean;
