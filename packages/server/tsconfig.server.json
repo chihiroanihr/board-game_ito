@@ -3,7 +3,7 @@
     "paths": {
       "@controller": ["./src/database/controllers", "./src/database/controllers/*"],
       "@handler": ["./src/database/handlers", "./src/database/handlers/*"],
-      "@util": ["./src/utils", "src/utils/*"],
+      "@util": ["./src/utils", "./src/utils/*"],
       "@debug": ["./src/debug", "./src/debug/*"],
       "@/*": ["./src/*"]
     } /* Specify a set of entries that re-map imports to additional lookup locations. */,

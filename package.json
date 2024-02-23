@@ -9,15 +9,16 @@
     "./packages/*"
   ],
   "scripts": {
+    "install-local-package": "npm install --save @bgi/shared -w @bgi/client && npm install --save @bgi/shared -w @bgi/server",
     "build": "npm run build -w @bgi/client && npm run build -w @bgi/server && npm run build -w @bgi/shared",
     "build-ts": "tsc --build",
     "build-ts--flags": "tsc -b -w -i",
     "build-ts--verbose": "tsc --build --verbose",
     "build:client": "npm run build -w @bgi/client",
     "build:client:check": "npm run build:check -w @bgi/client",
-    "build:server": "npm run build -w server",
+    "build:server": "npm run build -w @bgi/server",
     "build:server:check": "npm run build:check -w @bgi/server",
-    "build:shared": "npm run build -w shared",
+    "build:shared": "npm run build -w @bgi/shared",
     "build:shared:check": "npm run build:check -w @bgi/shared",
     "build:shared:watch": "npm run build:watch -w @bgi/shared",
     "clean": "npm run clean -ws",

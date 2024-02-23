@@ -3,13 +3,16 @@
   "version": "0.1.0",
   "description": "",
   "author": "Rhina Kim <chihiroanihr@gmail.com>",
-  "license": "ISC",
   "keywords": [],
+  "license": "ISC",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "npm run clean && react-scripts build",
+    "prebuild:client": "tsc -p tsconfig.client.json",
+    "build": "npm run clean && npm run prebuild:client && react-scripts build",
     "build:check": "tsc -p ./tsconfig.client.json --noEmit",
     "clean": "rimraf dist",
     "start": "shx cp ../../.env .env && react-scripts start",
+    "start:dev": "shx cp ../../.env .env && react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
