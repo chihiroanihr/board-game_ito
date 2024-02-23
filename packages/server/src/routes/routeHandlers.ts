@@ -2,21 +2,9 @@ import express from 'express';
 const router = express.Router();
 
 // Main Route
-router.get(
-  '/',
-  async (
-    req: any,
-    res: {
-      status: (arg0: number) => {
-        (): any;
-        new (): any;
-        send: { (arg0: string): void; new (): any };
-      };
-    }
-  ) => {
-    res.status(200).send('Server Side.');
-  }
-);
+router.get('/', async (_req, res) => {
+  res.status(200).send('Server Side.');
+});
 
 // Initial session
 // router.get("/api/session", async (req, res) => {
