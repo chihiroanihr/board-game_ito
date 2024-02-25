@@ -2,8 +2,8 @@ import { ClientSession, ObjectId } from 'mongodb';
 
 import { User, UserStatusEnum } from '@bgi/shared';
 
-import * as controller from '@controller';
-import * as debug from '@debug';
+import * as controller from '@/controllers';
+import * as debug from '@/debug';
 
 export const handleLogin = async (
   userName: string,

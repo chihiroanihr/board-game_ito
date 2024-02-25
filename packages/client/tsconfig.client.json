@@ -1,27 +1,40 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "module": "esnext",
+    "useDefineForClassFields": true,
+    "skipLibCheck": true,
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+
+    /* Bundler mode */
     "moduleResolution": "bundler",
-    "target": "es2015",
-    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "noEmit": true,
+    "jsx": "react-jsx",
     // "allowJs": true,
-    // "allowSyntheticDefaultImports": true,
-    // "isolatedModules": true,
+
+    /* Linting */
+    "strict": true,
+    //"noUnusedLocals": true,
+    //"noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path Alias */
+    "baseUrl": ".",
     "outDir": "./dist",
     "paths": {
-      // "@/*": ["./src/*"],
-      "@/page": ["./src/pages", "./src/pages/*"],
-      "@/layout": ["./src/layouts", "./src/layouts/*"],
-      "@/component": ["./src/components", "./src/components/*"],
-      "@/component/debug": ["./src/components/debug", "./src/components/debug/*"],
-      "@/hook": ["./src/hooks", "./src/hooks/*"],
-      "@/util": ["./src/utils", "./src/utils/*"],
-      "@bgi/shared": ["../shared/src"]
+      "@/*": ["./src/*", "./dist/*"],
+      "@/pages": ["./src/pages", "./src/pages/*"],
+      "@/layouts": ["./src/layouts", "./src/layouts/*"],
+      "@/components": ["./src/components", "./src/components/*"],
+      "@/components/debug": ["./src/components/debug", "./src/components/debug/*"],
+      "@/hooks": ["./src/hooks", "./src/hooks/*"],
+      "@/utils": ["./src/utils", "./src/utils/*"]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }],
   "extends": "../../tsconfig.base.json"
 }

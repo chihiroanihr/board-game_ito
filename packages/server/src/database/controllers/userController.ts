@@ -3,7 +3,7 @@ import { ClientSession, ObjectId, ReturnDocument } from 'mongodb';
 import { User, UserStatusEnum } from '@bgi/shared';
 
 import { getDB } from '../dbConnect';
-import { logQueryEvent } from '@debug';
+import { logQueryEvent } from '@/debug';
 
 export const getUserInfo = async (userId: ObjectId): Promise<User | null> => {
   logQueryEvent('Fetching the user info.');

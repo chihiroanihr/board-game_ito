@@ -5,53 +5,42 @@
   "author": "Rhina Kim <chihiroanihr@gmail.com>",
   "keywords": [],
   "license": "ISC",
-  "main": "dist/index.js",
+  "private": true,
+  "type": "module",
   "scripts": {
     "prebuild:client": "tsc -p tsconfig.client.json",
-    "build": "npm run clean && npm run prebuild:client && react-scripts build",
+    "build": "npm run clean && npm run prebuild:client && vite build",
     "build:check": "tsc -p ./tsconfig.client.json --noEmit",
     "clean": "rimraf dist",
-    "start": "shx cp ../../.env .env && react-scripts start",
-    "start:dev": "shx cp ../../.env .env && react-scripts start",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "start": "shx cp ../../.env .env && vite",
+    "start:dev": "shx cp ../../.env .env && vite",
+    "vite-build": "tsc && vite build",
+    "vite-dev": "vite",
+    "vite-preview": "vite preview",
+    "vite-lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "@bgi/shared": "file:../shared",
+    "@bgi/shared": "^1.0.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.19",
-    "@types/react": "^18.2.56",
-    "@types/react-dom": "^18.2.19",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.50.0",
     "react-router-dom": "^6.22.0",
-    "react-scripts": "5.0.1",
     "socket.io-client": "^4.7.4",
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "shx": "^0.3.4"
+    "@types/react": "^18.2.56",
+    "@types/react-dom": "^18.2.19",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "shx": "^0.3.4",
+    "vite": "^5.1.4"
   }
 }

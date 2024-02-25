@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 
 // Import all providers (hooks)
-import { SessionProvider, AuthProvider, RoomProvider, SocketProvider } from '@/hook';
+import { SessionProvider, AuthProvider, RoomProvider, SocketProvider } from '@/hooks';
 import { socket } from '../service/socket';
 
 interface ProviderLayoutProps {

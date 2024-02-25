@@ -8,7 +8,7 @@ import { connectDB, closeDB } from './database/dbConnect';
 import router from './routes/routeHandlers';
 import socketHandlers from './socket/socketHandlers';
 
-import { loadEnv } from '@util';
+import { loadEnv } from './utils';
 
 // Load .env first
 try {

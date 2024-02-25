@@ -3,9 +3,9 @@ import { Outlet, useNavigate } from 'react-router-dom';
 
 import { User, Room } from '@bgi/shared';
 
-import { Loader } from '@/component';
-import { useSession, useAuth, useRoom, useSocket } from '@/hook';
-import { navigateHome, navigateDashboard, navigateWaiting, outputServerError } from '@/util';
+import { Loader } from '@/components';
+import { useSession, useAuth, useRoom, useSocket } from '@/hooks';
+import { navigateHome, navigateDashboard, navigateWaiting, outputServerError } from '@/utils';
 
 // type SessionIdType = string | null;
 // type UserDataType = User | null;

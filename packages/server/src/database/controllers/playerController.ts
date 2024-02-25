@@ -3,7 +3,7 @@ import { ClientSession, ObjectId, ReturnDocument } from 'mongodb';
 import { Room, User } from '@bgi/shared';
 
 import { getDB } from '../dbConnect';
-import { logQueryEvent } from '@debug';
+import { logQueryEvent } from '@/debug';
 
 export const getAllPlayersInRoom = async (roomId: string): Promise<Array<ObjectId> | null> => {
   logQueryEvent('Fetching all players in the room.');

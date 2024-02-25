@@ -2,7 +2,7 @@ import { MongoClient, Collection, Db } from 'mongodb';
 
 import { Session, User, Room } from '@bgi/shared';
 
-import { loadEnv } from '@util';
+import { loadEnv } from '@/utils';
 
 // Load .env first
 try {
@@ -78,7 +78,7 @@ export const closeDB = async (): Promise<void> => {
 };
 
 // import { MongoClient } from "mongodb";
-// import { loadEnv } from "@util";
+// import { loadEnv } from "@/utils";
 
 // // Ensuring environment variables are loaded at the start
 // loadEnv();

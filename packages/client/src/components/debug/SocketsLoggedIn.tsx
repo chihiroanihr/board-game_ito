@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useSocket } from '@/hook';
+import { useSocket } from '@/hooks';
 
 const SocketsLoggedIn = () => {
   const { socket } = useSocket();

@@ -1,6 +1,6 @@
-import { ObjectId } from "mongodb";
+import { ObjectId } from 'mongodb';
 
-import { RoomStatusEnum, UserStatusEnum } from "../enum";
+import { RoomStatusEnum, UserStatusEnum } from '../enum/enum';
 
 export interface Session {
   _id: string;

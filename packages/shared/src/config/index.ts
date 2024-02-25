@@ -1,4 +1,4 @@
-import { roomIdConfig } from "./RoomConfig";
-import { userIdConfig } from "./UserConfig";
+import roomIdConfig from './RoomConfig';
+import userIdConfig from './UserConfig';
 
 export { roomIdConfig, userIdConfig };

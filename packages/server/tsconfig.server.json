@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist" /* Specify an output folder for all emitted files. */,
     "paths": {
-      "@controller": ["./src/database/controllers", "./src/database/controllers/*"],
-      "@handler": ["./src/database/handlers", "./src/database/handlers/*"],
-      "@util": ["./src/utils", "./src/utils/*"],
-      "@debug": ["./src/debug", "./src/debug/*"],
-      "@/*": ["./src/*"]
-    } /* Specify a set of entries that re-map imports to additional lookup locations. */,
-    "outDir": "./dist" /* Specify an output folder for all emitted files. */
+      "@/*": ["./src/*", "./dist/*"],
+      "@/controllers": ["./src/database/controllers", "./src/database/controllers/*"],
+      "@/handlers": ["./src/database/handlers", "./src/database/handlers/*"],
+      "@/utils": ["./src/utils", "./src/utils/*"],
+      "@/debug": ["./src/debug", "./src/debug/*"]
+    } /* Specify a set of entries that re-map imports to additional lookup locations. */
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],

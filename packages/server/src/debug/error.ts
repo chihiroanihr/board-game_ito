@@ -18,7 +18,7 @@ export const handleServerError = (
         `${error instanceof Error ? error.message : String(error)}`
   );
 
-  /** @debug */
+  /** @/debug */
   if (process.env.NODE_ENV !== "production") console.error(newError);
 
   // In case.

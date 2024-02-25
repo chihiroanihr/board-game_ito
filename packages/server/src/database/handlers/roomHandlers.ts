@@ -2,9 +2,9 @@ import { ClientSession, ObjectId } from 'mongodb';
 
 import { Room, User, RoomStatusEnum, UserStatusEnum } from '@bgi/shared';
 
-import * as controller from '@controller';
-import * as util from '@util';
-import * as debug from '@debug';
+import * as controller from '@/controllers';
+import * as util from '@/utils';
+import * as debug from '@/debug';
 
 /**
  * Generates unique room ID.

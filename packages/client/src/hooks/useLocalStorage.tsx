@@ -25,7 +25,7 @@ export function useLocalStorage<T>(
         return defaultValue;
       }
     } catch (error) {
-      /** @debug */
+      /** @/debug */
       console.error(
         `Failed to read from / write to local storage: ${
           error instanceof Error ? error.message : String(error)
@@ -44,7 +44,7 @@ export function useLocalStorage<T>(
       // [2] Store it as state variable
       setStoredValue(newValue);
     } catch (error) {
-      /** @debug */
+      /** @/debug */
       console.error(
         `Failed to read write to local storage: ${
           error instanceof Error ? error.message : String(error)

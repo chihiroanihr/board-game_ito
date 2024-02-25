@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useOutlet, useNavigate } from 'react-router-dom';
 
-import { useAuth, useRoom, useSocket } from '@/hook';
+import { useAuth, useRoom, useSocket } from '@/hooks';
 import {
   navigateHome,
   navigateDashboard,
   outputServerError,
   outputResponseTimeoutError
-} from '@/util';
+} from '@/utils';
 
 /**
  * Layout for Dashboard

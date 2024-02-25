@@ -4,9 +4,9 @@ import { ClientSession } from 'mongodb';
 
 import { User, Room } from '@bgi/shared';
 
-import * as handler from '@handler';
-import * as controller from '@controller';
-import * as debug from '@debug';
+import * as handler from '@/handlers';
+import * as controller from '@/controllers';
+import * as debug from '@/debug';
 
 import { getDB } from '../database/dbConnect';
 
@@ -109,7 +109,7 @@ const socketHandlers = (io: Server) => {
     handleSocketLeaveRoom(socket);
     handleSocketInitialize(socket, io);
 
-    /** @debug */
+    /** @/debug */
     console.log(`\n[*] ${io.engine.clientsCount} sockets connected.`);
     console.log(socket.rooms);
     // console.log(io.sockets.adapter.rooms);
@@ -430,7 +430,7 @@ const handleSocketLeaveRoom = (socket: Socket) => {
   });
 };
 
-/** @debug */ /** @socket_handler - Initialize */
+/** @/debug */ /** @socket_handler - Initialize */
 const handleSocketInitialize = (socket: Socket, io: Server) => {
   socket.on('initialize', async (callback: Function) => {
     if (process.env.NODE_ENV !== 'production') {

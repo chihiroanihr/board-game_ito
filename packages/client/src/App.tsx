@@ -6,8 +6,8 @@ import {
   createRoutesFromElements
 } from 'react-router-dom';
 
-import { ProviderLayout, CommonLayout, ConnectLayout, DashboardLayout } from '@/layout';
-import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, NotFound } from '@/page';
+import { ProviderLayout, CommonLayout, ConnectLayout, DashboardLayout } from '@/layouts';
+import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, NotFound } from '@/pages';
 
 function App() {
   const routes = createBrowserRouter(

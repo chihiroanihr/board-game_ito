@@ -4,8 +4,8 @@ import { useForm } from 'react-hook-form';
 
 import { User, Room, roomIdConfig } from '@bgi/shared';
 
-import { useAuth, useRoom, useSocket } from '@/hook';
-import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/util';
+import { useAuth, useRoom, useSocket } from '@/hooks';
+import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
 
 type FormDataType = {
   roomId: string;
