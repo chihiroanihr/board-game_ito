@@ -22,6 +22,7 @@ export interface Room {
   createdBy: ObjectId; // User._id
   creationTime: Date;
   players: Array<ObjectId>; // User._id
+  setting: RoomSetting;
 }
 
 export interface RoomSetting {

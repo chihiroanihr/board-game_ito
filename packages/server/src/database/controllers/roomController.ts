@@ -1,6 +1,6 @@
-import { ClientSession } from 'mongodb';
+import { ClientSession, ReturnDocument } from 'mongodb';
 
-import { Room } from '@bgi/shared';
+import { Room, RoomStatusEnum } from '@bgi/shared';
 
 import { getDB } from '../dbConnect';
 import { logQueryEvent } from '@/debug';
@@ -49,6 +49,38 @@ export const updateRoom = async (
       matched: result.matchedCount > 0,
       modified: result.modifiedCount > 0
     }; // true or false
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateRoomStatus = async (
+  roomId: string,
+  newStatus: RoomStatusEnum,
+  dbSession: ClientSession | null = null
+): Promise<Room | null> => {
+  logQueryEvent('Updating only the room status in Room.');
+
+  try {
+    // Options object
+    const options = dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          session: dbSession,
+          includeResultMetadata: false
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          includeResultMetadata: false
+        }; // return the updated document
+
+    // Result will contain the updated or original (if no modification) document,
+    // or null if no document was found.
+    return await getDB().rooms.findOneAndUpdate(
+      { _id: roomId }, // Query part: find a room with roomId
+      { $set: { status: newStatus } }, // Update part: set the new status
+      options
+    );
   } catch (error) {
     throw error;
   }

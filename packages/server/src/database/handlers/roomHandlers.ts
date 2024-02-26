@@ -1,6 +1,6 @@
 import { ClientSession, ObjectId } from 'mongodb';
 
-import { Room, User, RoomStatusEnum, UserStatusEnum } from '@bgi/shared';
+import { Room, User, RoomSetting, RoomStatusEnum, UserStatusEnum } from '@bgi/shared';
 
 import * as controller from '@/controllers';
 import * as util from '@/utils';
@@ -32,6 +32,7 @@ const generateUniqueRoomId = async (): Promise<string> => {
 export const handleCreateRoom = async (
   sessionId: string,
   userId: ObjectId,
+  roomSetting: RoomSetting,
   dbSession: ClientSession | null = null
 ): Promise<{ user: User; room: Room }> => {
   try {
@@ -54,7 +55,8 @@ export const handleCreateRoom = async (
       status: RoomStatusEnum.AVAILABLE,
       creationTime: new Date(),
       createdBy: userId,
-      players: [userId]
+      players: [userId],
+      setting: roomSetting
     };
 
     /** @api_call - Insert new room (POST) */
@@ -102,6 +104,11 @@ export const handleJoinRoom = async (
 
     // If room exists and not full
     else {
+      if (room.players.length >= 9) {
+        /** @api_call - Update room status (PUT) */
+        await controller.updateRoomStatus(roomId, RoomStatusEnum.FULL, dbSession);
+      }
+
       /** @api_call - Update user status (PUT) */
       const updatedUser = await controller.updateUserStatus(
         userId,
@@ -145,6 +152,11 @@ export const handleLeaveRoom = async (
     const room = await controller.getRoomInfo(roomId);
     // Error
     if (!room) throw new Error('Failed to obtain room info (given room might not exist).');
+
+    if (room.players.length <= 10) {
+      /** @api_call - Update room status (PUT) */
+      await controller.updateRoomStatus(roomId, RoomStatusEnum.AVAILABLE, dbSession);
+    }
 
     /** @api_call - Update user status (PUT) */
     const updatedUser = await controller.updateUserStatus(userId, UserStatusEnum.IDLE, dbSession);

@@ -280,7 +280,6 @@ const handleSocketLogout = (socket: Socket, io: Server) => {
 /** @socket_handler - Create Room */
 const handleSocketCreateRoom = (socket: Socket) => {
   socket.on('create-room', async (roomSetting: RoomSetting, callback: Function) => {
-    console.log(roomSetting);
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
     try {
@@ -293,6 +292,7 @@ const handleSocketCreateRoom = (socket: Socket) => {
       const { user, room } = await handler.handleCreateRoom(
         socket.sessionId,
         socket.user._id,
+        roomSetting,
         dbSession
       );
       // [3] Save session
