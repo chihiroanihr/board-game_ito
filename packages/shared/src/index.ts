@@ -1,6 +1,6 @@
 import { RoomStatusEnum, UserStatusEnum } from './enum/enum';
 import { roomIdConfig, userIdConfig } from './config';
-import { Session, User, Room } from './interface/IData';
+import { Session, User, Room, RoomSetting } from './interface/IData';
 
 export {
   RoomStatusEnum,
@@ -9,7 +9,8 @@ export {
   userIdConfig,
   type Session,
   type User,
-  type Room
+  type Room,
+  type RoomSetting
 };
 
 // export * from './enum';

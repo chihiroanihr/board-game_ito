@@ -43,7 +43,7 @@ function JoinRoom() {
   });
 
   // Room ID Submitted
-  const onSubmit = (data: FormDataType) => {
+  const onsubmit = (data: FormDataType) => {
     setLoading(true);
     setErrorMessage(''); // Reset error message
 
@@ -140,7 +140,7 @@ function JoinRoom() {
     <div>
       <h2>Enter Room ID to Join:</h2>
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={handleSubmit(onsubmit, onerror)} noValidate>
         <label htmlFor="roomId">Room ID: </label>
 
         {/* Input Field */}

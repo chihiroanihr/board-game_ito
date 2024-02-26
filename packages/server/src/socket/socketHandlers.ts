@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { Server, Socket } from 'socket.io';
 import { ClientSession } from 'mongodb';
 
-import { User, Room } from '@bgi/shared';
+import { User, Room, RoomSetting } from '@bgi/shared';
 
 import * as handler from '@/handlers';
 import * as controller from '@/controllers';
@@ -58,7 +58,7 @@ async function checkAndRestoreSession(socket: Socket, sessionId: string): Promis
 
 const socketHandlers = (io: Server) => {
   // Prevent from current Socket.IO session to change every time the low-level connection between the client and the server is severed.
-  io.use(async (socket: Socket, next) => {
+  io.use(async (socket: Socket, next: (arg0: Error | undefined) => void) => {
     try {
       // [1] Extract session ID (private) sent from client which will be used to authenticate the user upon reconnection
       const sessionId = socket.handshake.auth.sessionId;
@@ -279,7 +279,8 @@ const handleSocketLogout = (socket: Socket, io: Server) => {
 
 /** @socket_handler - Create Room */
 const handleSocketCreateRoom = (socket: Socket) => {
-  socket.on('create-room', async (callback: Function) => {
+  socket.on('create-room', async (roomSetting: RoomSetting, callback: Function) => {
+    console.log(roomSetting);
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
     try {

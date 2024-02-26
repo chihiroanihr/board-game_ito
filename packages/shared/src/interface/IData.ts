@@ -23,3 +23,10 @@ export interface Room {
   creationTime: Date;
   players: Array<ObjectId>; // User._id
 }
+
+export interface RoomSetting {
+  numRound: number;
+  dupNumCard: boolean;
+  thinkTimeTitle: number;
+  thinkTimePlayers: number;
+}
