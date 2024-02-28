@@ -5,9 +5,12 @@ import {
   createBrowserRouter,
   createRoutesFromElements
 } from 'react-router-dom';
+import Container from '@mui/material/Container';
 
-import { ProviderLayout, CommonLayout, ConnectLayout, DashboardLayout } from '@/layouts';
+import { SessionProvider, AuthProvider, RoomProvider, SocketProvider } from '@/hooks';
+import { CommonLayout, ConnectLayout } from '@/layouts';
 import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, NotFound } from '@/pages';
+import { socket } from './service/socket';
 
 function App() {
   const routes = createBrowserRouter(
@@ -16,12 +19,10 @@ function App() {
         <Route element={<CommonLayout />}>
           <Route path="/" element={<Home />} />
 
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/create-room" element={<CreateRoom />} />
-            <Route path="/join-room" element={<JoinRoom />} />
-            <Route path="/waiting" element={<Waiting />} />
-          </Route>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/create-room" element={<CreateRoom />} />
+          <Route path="/join-room" element={<JoinRoom />} />
+          <Route path="/waiting" element={<Waiting />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
@@ -30,11 +31,17 @@ function App() {
   );
 
   return (
-    <div className="App">
-      <ProviderLayout>
-        <RouterProvider router={routes} />
-      </ProviderLayout>
-    </div>
+    <Container>
+      <SessionProvider>
+        <AuthProvider>
+          <RoomProvider>
+            <SocketProvider socket={socket}>
+              <RouterProvider router={routes} />
+            </SocketProvider>
+          </RoomProvider>
+        </AuthProvider>
+      </SessionProvider>
+    </Container>
   );
 }
 

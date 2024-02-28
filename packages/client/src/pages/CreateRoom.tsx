@@ -1,9 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import {
+  Box,
+  Stack,
+  Card,
+  Typography,
+  Button,
+  CircularProgress,
+  TextField,
+  FormControl,
+  FormLabel,
+  FormControlLabel,
+  FormHelperText,
+  RadioGroup,
+  Radio,
+  Alert
+} from '@mui/material';
 
-import { User, Room, RoomSetting } from '@bgi/shared';
+import { User, Room, RoomSetting, roomSettingConfig } from '@bgi/shared';
 
+import { CardContentOverride } from '../theme';
 import { useAuth, useRoom, useSocket } from '@/hooks';
 import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
 
@@ -34,10 +51,10 @@ function CreateRoom() {
   };
 
   const formDefaultValues: formDataType = {
-    numRound: 10,
+    numRound: roomSettingConfig.numRound.defaultRounds,
     dupNumCard: 'false',
-    thinkTimeTitle: 60,
-    thinkTimePlayers: 20
+    thinkTimeTitle: roomSettingConfig.thinkTimeTitle.defaultSeconds,
+    thinkTimePlayers: roomSettingConfig.thinkTimePlayers.defaultSeconds
   };
 
   // Prepare react-hook-form
@@ -51,7 +68,6 @@ function CreateRoom() {
   });
 
   const onsubmit = (data: formDataType) => {
-    console.log(data);
     setLoading(true);
     setErrorMessage(''); // Reset error message
 
@@ -68,8 +84,6 @@ function CreateRoom() {
 
     // Send to socket
     socket.emit('create-room', roomSettingData, async (error: any, response: SocketEventType) => {
-      // socket.emit("create-room", user);
-
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 
@@ -90,123 +104,154 @@ function CreateRoom() {
     });
   };
 
-  // useEffect(() => {
-  //   async function onCreateRoomSuccessEvent(data) {
-  //     try {
-  //       const { user, room } = data;
-
-  //       if (user && room) {
-  //         updateUser(user); // Store updated user info to local storage
-  //         updateRoom(room); // Store room info to local storage and redirect
-  //         navigateWaiting(navigate); // Navigate
-  //       } else {
-  //         throw new Error("Returned data is missing from the server.");
-  //       }
-  //     } catch (error) {
-  //       outputServerError({ error });
-  //     }
-  //   }
-
-  //   socket.on("create-room_success", onCreateRoomSuccessEvent);
-
-  //   return () => {
-  //     socket.off("create-room_success", onCreateRoomSuccessEvent);
-  //   };
-  // }, [updateRoom, socket]);
-
-  // useEffect(() => {
-  //   async function onCreateRoomErrorEvent(error) {
-  //     outputServerError({ error });
-  //   }
-
-  //   socket.on("create-room_error", onCreateRoomErrorEvent);
-
-  //   return () => {
-  //     socket.off("create-room_error", onCreateRoomErrorEvent);
-  //   };
-  // }, [updateRoom, socket]);
+  // Disappear error message after 5 seconds
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    if (errorMessage) {
+      timer = setTimeout(() => {
+        setErrorMessage('');
+      }, 5000);
+    }
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [errorMessage]);
 
   return (
-    <div>
-      <h2>Create Room:</h2>
+    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={4}>
+      <Typography variant="h4" component="h2">
+        Create Room
+      </Typography>
 
-      <form onSubmit={handleSubmit(onsubmit, onerror)} noValidate>
-        <label htmlFor="numRound">
-          Number of Rounds:
-          <input
-            type="number"
-            {...register('numRound', {
-              required: 'This field is required.',
-              min: { value: 4, message: 'Must be at least 4 rounds.' },
-              max: { value: 10, message: 'Cannot exceed 10 rounds.' }
-            })}
-          />
-        </label>
+      <Box
+        component="form"
+        display="flex"
+        flexDirection="column"
+        gap={4}
+        onSubmit={handleSubmit(onsubmit)}
+        noValidate
+      >
+        {/* Form */}
+        <Card variant="outlined" sx={{ px: '2rem', py: '3.5rem', borderRadius: '0.8rem' }}>
+          <CardContentOverride>
+            <Stack direction="column" spacing={4}>
+              {/* Field 1 */}
+              <Stack direction="column" spacing={1}>
+                <TextField
+                  fullWidth
+                  id="numRound"
+                  type="number"
+                  label="Number of Rounds"
+                  size="small"
+                  {...register('numRound', {
+                    required: 'This field is required.',
+                    min: {
+                      value: roomSettingConfig.numRound.minRounds,
+                      message: roomSettingConfig.numRound.minRoundsErrorMessage
+                    },
+                    max: {
+                      value: roomSettingConfig.numRound.maxRounds,
+                      message: roomSettingConfig.numRound.maxRoundsErrorMessage
+                    }
+                  })}
+                  // Validation Error
+                  error={Boolean(errors.numRound)}
+                  helperText={errors.numRound ? errors.numRound.message : ''}
+                />
+                <FormHelperText>{roomSettingConfig.numRound.helperText}</FormHelperText>
+              </Stack>
 
-        {/* Validation Error */}
-        {errors.numRound && <p>{errors.numRound.message}</p>}
+              {/* Field 2 */}
+              <Stack direction="column" spacing={1}>
+                <TextField
+                  fullWidth
+                  id="thinkTimeTitle"
+                  type="number"
+                  label="Title Thinking Time"
+                  size="small"
+                  {...register('thinkTimeTitle', {
+                    required: 'This field is required.',
+                    min: {
+                      value: roomSettingConfig.thinkTimeTitle.minSeconds,
+                      message: roomSettingConfig.thinkTimeTitle.minSecondsErrorMessage
+                    },
+                    max: {
+                      value: roomSettingConfig.thinkTimeTitle.maxSeconds,
+                      message: roomSettingConfig.thinkTimeTitle.maxSecondsErrorMessage
+                    }
+                  })}
+                  // Validation Error
+                  error={Boolean(errors.thinkTimeTitle)}
+                  helperText={errors.thinkTimeTitle ? errors.thinkTimeTitle.message : ''}
+                />
+                <FormHelperText>{roomSettingConfig.thinkTimeTitle.helperText}</FormHelperText>
+              </Stack>
 
-        <label htmlFor="dupNumCard">
-          Allow score card duplicate between rounds:
-          <label>
-            <input
-              type="radio"
-              value={true}
-              {...register('dupNumCard', { required: 'This field is required.' })}
-            />
-            Enable
-          </label>
-          <label>
-            <input
-              type="radio"
-              value={false}
-              {...register('dupNumCard', { required: 'This field is required.' })}
-            />
-            Disable
-          </label>
-        </label>
+              {/* Field 3 */}
+              <Stack direction="column" spacing={1}>
+                <TextField
+                  fullWidth
+                  id="thinkTimePlayers"
+                  type="number"
+                  label="Players Thinking Time"
+                  size="small"
+                  {...register('thinkTimePlayers', {
+                    required: 'This field is required.',
+                    min: {
+                      value: roomSettingConfig.thinkTimePlayers.minSeconds,
+                      message: roomSettingConfig.thinkTimePlayers.minSecondsErrorMessage
+                    },
+                    max: {
+                      value: roomSettingConfig.thinkTimePlayers.maxSeconds,
+                      message: roomSettingConfig.thinkTimePlayers.maxSecondsErrorMessage
+                    }
+                  })}
+                  // Validation Error
+                  error={Boolean(errors.thinkTimePlayers)}
+                  helperText={errors.thinkTimePlayers ? errors.thinkTimePlayers.message : ''}
+                />
+                <FormHelperText>{roomSettingConfig.thinkTimePlayers.helperText}</FormHelperText>
+              </Stack>
 
-        {/* Validation Error */}
-        {errors.dupNumCard && <p>{errors.dupNumCard.message}</p>}
+              {/* Radio Buttons */}
+              <FormControl>
+                <FormLabel component="legend">{roomSettingConfig.dupNumCard.label}</FormLabel>
+                <RadioGroup name="dupNumCard" defaultValue={false} row>
+                  <FormControlLabel
+                    value={true}
+                    label={roomSettingConfig.dupNumCard.radioTrue}
+                    control={<Radio size="small" />}
+                    {...register('dupNumCard', { required: 'This field is required.' })}
+                  />
+                  <FormControlLabel
+                    value={false}
+                    label={roomSettingConfig.dupNumCard.radioFalse}
+                    control={<Radio size="small" />}
+                    {...register('dupNumCard', { required: 'This field is required.' })}
+                  />
+                </RadioGroup>
 
-        <label htmlFor="thinkTimeTitle">
-          Thinking time for answering to the title card (seconds):
-          <input
-            type="number"
-            {...register('thinkTimeTitle', {
-              required: 'This field is required.',
-              min: 30,
-              max: 90
-            })}
-          />
-        </label>
+                <FormHelperText error={Boolean(errors.dupNumCard)}>
+                  {errors.dupNumCard?.message}
+                </FormHelperText>
+              </FormControl>
+            </Stack>
+          </CardContentOverride>
+        </Card>
 
-        {/* Validation Error */}
-        {errors.thinkTimeTitle && <p>{errors.thinkTimeTitle.message}</p>}
-
-        <label htmlFor="thinkTimePlayers">
-          Thinking time for players to point placement of the card (seconds):
-          <input
-            type="number"
-            {...register('thinkTimePlayers', {
-              required: 'This field is required.',
-              min: 10,
-              max: 30
-            })}
-          />
-        </label>
-
-        {/* Validation Error */}
-        {errors.thinkTimePlayers && <p>{errors.thinkTimePlayers.message}</p>}
-
-        {/* Form Request Error */}
-        {errorMessage && <p className="error">{errorMessage}</p>}
-
-        <button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={loading}
+          startIcon={loading && <CircularProgress size={20} color="inherit" />}
+        >
           {loading ? 'Loading...' : 'Create Room'}
-        </button>
-      </form>
-    </div>
+        </Button>
+      </Box>
+
+      {/* Form Request Error */}
+      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+    </Box>
   );
 }
 

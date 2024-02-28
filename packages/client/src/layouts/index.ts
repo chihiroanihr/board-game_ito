@@ -1,6 +1,5 @@
-import ProviderLayout from './ProviderLayout';
 import CommonLayout from './CommonLayout';
 import ConnectLayout from './ConnectLayout';
-import DashboardLayout from './DashboardLayout';
+import HeaderLayout from './HeaderLayout';
 
-export { ProviderLayout, CommonLayout, ConnectLayout, DashboardLayout };
+export { CommonLayout, ConnectLayout, HeaderLayout };

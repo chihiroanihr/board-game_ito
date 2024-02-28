@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Box, Typography, Button, Stack, CircularProgress } from '@mui/material';
 
 import { navigateJoinRoom, navigateCreateRoom } from '@/utils';
 
@@ -25,15 +26,32 @@ export default function Dashboard() {
   };
 
   return (
-    <div>
-      {/* Create / Join Room */}
-      <h2>Choose an option:</h2>
-      <button onClick={joinRoomHandler} disabled={loading}>
-        {loading ? 'Loading...' : 'Join Room'}
-      </button>
-      <button onClick={createRoomHandler} disabled={loading}>
-        {loading ? 'Loading...' : 'Create Room'}
-      </button>
-    </div>
+    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={2}>
+      <Typography variant="h4" component="h2">
+        Choose an option
+      </Typography>
+
+      <Stack direction="row" alignItems="center" spacing={2}>
+        {/* Create Room Button */}
+        <Button
+          onClick={joinRoomHandler}
+          variant="contained"
+          disabled={loading}
+          startIcon={loading && <CircularProgress size={20} color="inherit" />}
+        >
+          {loading ? 'Loading...' : 'Join Room'}
+        </Button>
+
+        {/* Join Room Button */}
+        <Button
+          onClick={createRoomHandler}
+          variant="contained"
+          disabled={loading}
+          startIcon={loading && <CircularProgress size={20} color="inherit" />}
+        >
+          {loading ? 'Loading...' : 'Create Room'}
+        </Button>
+      </Stack>
+    </Box>
   );
 }

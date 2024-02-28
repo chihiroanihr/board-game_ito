@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import {
+  Typography,
+  Box,
+  Card,
+  Button,
+  Stack,
+  CircularProgress,
+  TextField,
+  FormHelperText,
+  Alert,
+  Snackbar
+} from '@mui/material';
 
 import { User, Room, roomIdConfig } from '@bgi/shared';
 
+import { CardContentOverride } from '../theme';
 import { useAuth, useRoom, useSocket } from '@/hooks';
 import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
 
@@ -31,6 +44,7 @@ function JoinRoom() {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
 
   // Prepare react-hook-form
   const {
@@ -51,6 +65,7 @@ function JoinRoom() {
 
     if (!roomId) {
       setErrorMessage('Please enter a valid Room ID.');
+      setSnackbarOpen(true);
       setLoading(false);
       return;
     }
@@ -63,8 +78,6 @@ function JoinRoom() {
 
     /** @socket_send - Send to socket & receive response */
     socket.emit('join-room', roomId, async (error: any, response: SocketEventType) => {
-      // socket.emit("join-room", roomId);
-
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 
@@ -83,6 +96,7 @@ function JoinRoom() {
         // User cannot join room
         else {
           setErrorMessage(response);
+          setSnackbarOpen(true);
         }
 
         reset(); // Optionally reset form fields
@@ -92,84 +106,74 @@ function JoinRoom() {
     });
   };
 
-  // useEffect(() => {
-  //   async function onJoinRoomSuccessEvent(data) {
-  //     try {
-  //       // User can join room
-  //       if (typeof data === "object") {
-  //         const { user, room } = data;
-
-  //         if (user && room) {
-  //           updateUser(user); // Store updated user info to local storage
-  //           updateRoom(room); // Save room info to local storage and navigate
-  //           navigateWaiting(navigate); // Navigate
-  //         } else {
-  //           throw new Error("Returned data is missing from the server.");
-  //         }
-  //       }
-  //       // User cannot join room
-  //       else {
-  //         setErrorMessage(data);
-  //       }
-  //     } catch (error) {
-  //       outputServerError({ error });
-  //     }
-  //   }
-
-  //   socket.on("join-room_success", onJoinRoomSuccessEvent);
-
-  //   // Cleanup the socket event listener when the component unmounts
-  //   return () => {
-  //     socket.off("join-room_success", onJoinRoomSuccessEvent);
-  //   };
-  // }, [updateRoom, socket]);
-
-  // useEffect(() => {
-  //   async function onJoinRoomErrorEvent(error) {
-  //     outputServerError({ error });
-  //   }
-
-  //   socket.on("join-room_error", onJoinRoomErrorEvent);
-
-  //   return () => {
-  //     socket.off("join-room_error", onJoinRoomErrorEvent);
-  //   };
-  // }, [updateRoom, socket]);
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   return (
-    <div>
-      <h2>Enter Room ID to Join:</h2>
+    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={4}>
+      <Typography variant="h4" component="h2">
+        Join Room
+      </Typography>
 
-      <form onSubmit={handleSubmit(onsubmit, onerror)} noValidate>
-        <label htmlFor="roomId">Room ID: </label>
-
-        {/* Input Field */}
-        <input
-          type="text"
-          id="roomId"
-          placeholder={roomIdConfig.placeholder}
-          // Validate the roomId with react-hook-form
-          {...register('roomId', {
-            required: 'Room ID is required',
-            pattern: {
-              value: new RegExp(`^[${roomIdConfig.letterRegex}]{${roomIdConfig.numLetters}}$`),
-              message: roomIdConfig.error_message
-            }
-          })}
-        />
-
-        {/* Validation Error */}
-        {errors.roomId && <p>{errors.roomId.message}</p>}
-
-        {/* Form Request Error */}
-        {errorMessage && <p className="error">{errorMessage}</p>}
+      <Box
+        component="form"
+        display="flex"
+        flexDirection="column"
+        gap={4}
+        onSubmit={handleSubmit(onsubmit)}
+        noValidate
+      >
+        {/* Form */}
+        <Card variant="outlined" sx={{ px: '2rem', py: '3.5rem', borderRadius: '0.8rem' }}>
+          <CardContentOverride>
+            <Stack direction="column" spacing={2}>
+              <FormHelperText>Enter Room ID to Join:</FormHelperText>
+              {/* Input Field */}
+              <TextField
+                fullWidth
+                id="roomId"
+                type="text"
+                label="Room ID"
+                size="small"
+                placeholder={roomIdConfig.placeholder}
+                // Validate the roomId with react-hook-form
+                {...register('roomId', {
+                  required: 'Room ID is required',
+                  pattern: {
+                    value: roomIdConfig.regex,
+                    message: roomIdConfig.errorMessage
+                  }
+                })}
+                // Validation Error
+                error={Boolean(errors.roomId)}
+                helperText={errors.roomId ? errors.roomId.message : ''}
+              />
+            </Stack>
+          </CardContentOverride>
+        </Card>
 
         {/* Submit Button */}
-        <button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={loading}
+          startIcon={loading && <CircularProgress size={20} color="inherit" />}
+        >
           {loading ? 'Loading...' : 'Join Room'}
-        </button>
-      </form>
-    </div>
+        </Button>
+
+        {/* Form Request Error */}
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={5000}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          onClose={handleSnackbarClose}
+        >
+          <Alert severity="error">{errorMessage}</Alert>
+        </Snackbar>
+      </Box>
+    </Box>
   );
 }
 

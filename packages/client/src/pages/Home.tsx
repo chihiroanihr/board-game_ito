@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import {
+  Box,
+  FormHelperText,
+  Typography,
+  TextField,
+  Stack,
+  Button,
+  CircularProgress,
+  FormControl,
+  Alert
+} from '@mui/material';
 
-import { User } from '@bgi/shared';
+import { User, userNameConfig } from '@bgi/shared';
 
 import { useAuth, useSocket } from '@/hooks';
 import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '@/utils';
@@ -74,78 +85,83 @@ function Home() {
     });
   };
 
-  // useEffect(() => {
-  //   async function onLoginSuccessEvent(data) {
-  //     try {
-  //       // "data" type: User
-  //       if (data) {
-  //         reset(); // Optionally reset form fields
-  //         updateUser(data);
-  //         navigateDashboard(navigate); // Navigate
-  //       } else {
-  //         throw new Error("Returned data is missing from the server.");
-  //       }
-  //     } catch (error) {
-  //       outputServerError({ error });
-  //     }
-  //   }
-
-  //   socket.on("login_success", onLoginSuccessEvent);
-
-  //   // Cleanup the socket event listener when the component unmounts
-  //   return () => {
-  //     socket.off("login_success", onLoginSuccessEvent);
-  //   };
-  // }, [updateUser, navigate, socket]);
-
-  // useEffect(() => {
-  //   async function onLoginErrorEvent(error) {
-  //     outputServerError({ error });
-  //   }
-
-  //   socket.on("login_error", onLoginErrorEvent);
-
-  //   return () => {
-  //     socket.off("login_error", onLoginErrorEvent);
-  //   };
-  // });
+  // Disappear error message after 5 seconds
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    if (errorMessage) {
+      timer = setTimeout(() => {
+        setErrorMessage('');
+      }, 5000);
+    }
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [errorMessage]);
 
   if (user) return null;
   return (
-    <div>
-      <h1>Welcome to ITO Game</h1>
+    <Stack spacing={{ xs: 3, md: 4, lg: 5 }} alignItems="center">
+      <Typography variant="h3" component="h1">
+        Welcome to ITO Game
+      </Typography>
 
-      {/* Name Input */}
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <label htmlFor="name">Enter Your Name: </label>
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <FormControl>
+          <Stack direction="row">
+            {/* Input Field */}
+            <TextField
+              id="name"
+              type="text"
+              label="Name"
+              variant="outlined"
+              InputProps={{
+                sx: {
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0
+                }
+              }}
+              // Validate the name with react-hook-form
+              {...register('name', {
+                required: 'Name is required.',
+                minLength: {
+                  value: userNameConfig.minLength,
+                  message: userNameConfig.minLengthErrorMessage
+                },
+                maxLength: {
+                  value: userNameConfig.maxLength,
+                  message: userNameConfig.maxLengthErrorMessage
+                },
+                pattern: {
+                  value: userNameConfig.regex,
+                  message: userNameConfig.regexErrorMessage
+                }
+              })}
+            />
 
-        {/* Input Field */}
-        <input
-          type="text"
-          id="name"
-          placeholder="John Doe"
-          // Validate the name with react-hook-form
-          {...register('name', {
-            required: 'Name is required.',
-            pattern: {
-              value: /^\s*\S[\s\S]*$/,
-              message: 'Entered value cannot only contain spaces.'
-            }
-          })}
-        />
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                borderTopLeftRadius: 0,
+                borderBottomLeftRadius: 0
+              }}
+              disableElevation
+              disabled={loading}
+              startIcon={loading && <CircularProgress size={20} color="inherit" />}
+            >
+              {loading ? 'Loading...' : 'Submit'}
+            </Button>
+          </Stack>
 
-        {/* Validation Error */}
-        {errors.name && <p className="error">{errors.name.message}</p>}
+          {/* Validation Error */}
+          <FormHelperText error={'name' in errors}>{errors.name?.message}</FormHelperText>
+        </FormControl>
 
         {/* Form Request Error */}
-        {errorMessage && <p className="error">{errorMessage}</p>}
-
-        {/* Submit Button */}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Loading...' : 'Submit'}
-        </button>
-      </form>
-    </div>
+        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+      </Box>
+    </Stack>
   );
 }
 

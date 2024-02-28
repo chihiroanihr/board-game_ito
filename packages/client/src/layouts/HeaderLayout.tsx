@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useOutlet, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Typography, Button, CircularProgress, Box, Stack } from '@mui/material';
 
 import { useAuth, useRoom, useSocket } from '@/hooks';
 import {
@@ -13,8 +14,7 @@ import {
  * Layout for Dashboard
  * @returns
  */
-export default function DashboardLayout() {
-  const outlet = useOutlet();
+export default function HeaderLayout() {
   const navigate = useNavigate();
 
   const { socket } = useSocket();
@@ -51,36 +51,6 @@ export default function DashboardLayout() {
     });
   };
 
-  // useEffect(() => {
-  //   function onLogoutSuccessEvent(data) {
-  //     try {
-  //       room && discardRoom();
-  //       user && discardUser();
-  //       navigateHome(navigate); // navigate
-  //     } catch (error) {
-  //       outputServerError({ error });
-  //     }
-  //   }
-
-  //   socket.on("logout_success", onLogoutSuccessEvent);
-
-  //   return () => {
-  //     socket.off("logout_success", onLogoutSuccessEvent);
-  //   };
-  // }, [discardRoom, discardUser, navigate, socket]);
-
-  // useEffect(() => {
-  //   function onLogoutErrorEvent(error) {
-  //     outputServerError({ error });
-  //   }
-
-  //   socket.on("logout_error", onLogoutErrorEvent);
-
-  //   return () => {
-  //     socket.off("logout_error", onLogoutErrorEvent);
-  //   };
-  // });
-
   const handleLeaveRoom = () => {
     setLoading(true); // Set loading to true when the request is initiated
 
@@ -108,58 +78,34 @@ export default function DashboardLayout() {
     });
   };
 
-  // const handleLeaveRoom = () => {
-  //   // Send to socket
-  //   socket.emit("leave-room", user);
-  // };
-
-  // useEffect(() => {
-  //   async function onLeaveRoomSuccessEvent(data) {
-  //     try {
-  //       discardRoom();
-  //       navigateDashboard(navigate);
-  //     } catch (error) {
-  //       outputServerError({ error });
-  //     }
-  //   }
-
-  //   socket.on("leave-room_success", onLeaveRoomSuccessEvent);
-
-  //   return () => {
-  //     socket.off("leave-room_success", onLeaveRoomSuccessEvent);
-  //   };
-  // }, [discardRoom, navigate, socket]);
-
-  // useEffect(() => {
-  //   async function onLeaveRoomErrorEvent(error) {
-  //     outputServerError({ error });
-  //   }
-
-  //   socket.on("leave-room_error", onLeaveRoomErrorEvent);
-
-  //   return () => {
-  //     socket.off("leave-room_error", onLeaveRoomErrorEvent);
-  //   };
-  // }, [discardRoom, navigate, socket]);
-
   if (!user) return null;
   return (
-    <>
-      <div>
-        <h2>Hello, {user.name}</h2>
+    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={2}>
+      <Typography variant="h5" component="h3">
+        Hello, <b>{user.name}</b>
+      </Typography>
 
-        <button onClick={handleLogout} disabled={loading}>
+      <Stack direction="row" alignItems="center" spacing={2}>
+        <Button
+          onClick={handleLogout}
+          variant="contained"
+          disabled={loading}
+          startIcon={loading && <CircularProgress size={20} color="inherit" />}
+        >
           {loading ? 'Loading...' : 'Leave Game'}
-        </button>
+        </Button>
 
         {room && (
-          <button onClick={handleLeaveRoom} disabled={loading}>
+          <Button
+            onClick={handleLeaveRoom}
+            variant="contained"
+            disabled={loading}
+            startIcon={loading && <CircularProgress size={20} color="inherit" />}
+          >
             {loading ? 'Loading...' : 'Leave Room'}
-          </button>
+          </Button>
         )}
-      </div>
-
-      <div>{outlet}</div>
-    </>
+      </Stack>
+    </Box>
   );
 }
