@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "preserveConstEnums": true, // Preserve const enums and constant-initialized variables
+    // "preserveConstEnums": true, // Preserve const enums and constant-initialized variables
     "declaration": true, // Generate .d.ts files from TypeScript and JavaScript files in your project.
     "baseUrl": ".",
     "outDir": "./dist", // Directory of generated output
@@ -8,7 +8,7 @@
       "@/*": ["./src/*", "./dist/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"],
   "extends": "../../tsconfig.base.json"
 }

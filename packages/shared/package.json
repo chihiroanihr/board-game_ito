@@ -6,7 +6,9 @@
   "license": "ISC",
   "keywords": [],
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "private": true,
   "scripts": {
     "build": "npm run clean && tsc -p ./tsconfig.shared.json",
     "build:check": "tsc -p ./tsconfig.shared.json --noEmit",
