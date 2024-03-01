@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
-import path from 'path';
+import path, { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,14 +24,14 @@ export default defineConfig({
   // Path Alias
   resolve: {
     alias: {
-      ' @bgi/shared': `${path.resolve(__dirname, '../shared/src')}`,
-      '@': path.resolve(__dirname, './src/'),
-      assets: `${path.resolve(__dirname, './src/assets/')}`,
-      pages: `${path.resolve(__dirname, './src/pages/')}`,
-      layouts: `${path.resolve(__dirname, './src/layouts/')}`,
-      components: `${path.resolve(__dirname, './src/components/')}`,
-      hooks: `${path.resolve(__dirname, './src/hooks/')}`,
-      utils: `${path.resolve(__dirname, './src/utils/')}`
+      ' @bgi/shared': resolve(__dirname, '../shared/src'),
+      '@': resolve(__dirname, './src/'),
+      assets: resolve(__dirname, './src/assets/'),
+      pages: resolve(__dirname, './src/pages/'),
+      layouts: resolve(__dirname, './src/layouts/'),
+      components: resolve(__dirname, './src/components/'),
+      hooks: resolve(__dirname, './src/hooks/'),
+      utils: resolve(__dirname, './src/utils/')
     }
   }
 });
