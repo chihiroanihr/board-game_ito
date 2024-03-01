@@ -53,7 +53,7 @@ const startServer = async (): Promise<void> => {
     const timeoutPromise = new Promise<void>((resolve, reject) => {
       setTimeout(() => {
         reject(new Error('Database connection timeout.'));
-      }, 10000); // 10 seconds
+      }, 20000); // 10 seconds
     }); // Comment out the timeout throw error to see the real error issues.
 
     // Wait for either the database connection or the timeout

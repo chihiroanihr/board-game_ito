@@ -10,8 +10,7 @@ import {
   ListItem,
   ListItemAvatar,
   Avatar,
-  ListItemText,
-  useTheme
+  ListItemText
 } from '@mui/material';
 
 import { User, Room } from '@bgi/shared';
@@ -31,16 +30,14 @@ type SocketEventType = {
 };
 
 export default function Waiting() {
-  const theme = useTheme();
-
   const { socket } = useSocket();
   const { user: myself } = useAuth();
   const { room, updateRoom } = useRoom();
 
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
-  const [playerIn, setPlayerIn] = useState<User>();
-  const [playerOut, setPlayerOut] = useState<User>();
+  const [playerIn, setPlayerIn] = useState<User | undefined>();
+  const [playerOut, setPlayerOut] = useState<User | undefined>();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [allowStart, setAllowStart] = useState<boolean>(false);
@@ -89,7 +86,7 @@ export default function Waiting() {
       // Update room in the local storage first
       updateRoom(room);
       // Add new player in the list of players
-      setPlayers((prevPlayers) => [...prevPlayers, player]);
+      setPlayers((prevPlayers: User[]) => [...prevPlayers, player]);
       // Store new player
       setPlayerIn(player);
 
@@ -142,8 +139,10 @@ export default function Waiting() {
         setAdminId(room.createdBy);
       }
       // Remove player from the list of players
-      setPlayers((prevPlayers) =>
-        prevPlayers.filter((prevPlayer) => prevPlayer._id.toString() !== player._id.toString())
+      setPlayers((prevPlayers: User[]) =>
+        prevPlayers.filter(
+          (prevPlayer: User) => prevPlayer._id.toString() !== player._id.toString()
+        )
       );
       // Store player left
       setPlayerOut(player);
@@ -195,13 +194,13 @@ export default function Waiting() {
             {room._id}
           </Typography>
         </Typography>
-        <Typography variant="body" component="div">
+        <Typography variant="body1" component="div">
           Invite other players with this room ID.
         </Typography>
       </Stack>
 
       <Stack direction="column" spacing={1}>
-        <Typography variant="body" component="div">
+        <Typography variant="body1" component="div">
           Waiting for other players <AnimateTextThreeDots />
         </Typography>
 

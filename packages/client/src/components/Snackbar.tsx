@@ -7,15 +7,15 @@ import LoginIcon from '@mui/icons-material/Login';
 
 import { User } from '@bgi/shared';
 
-interface SnackbarPlayerIn {
+interface SnackbarPlayerInProps {
   open: boolean;
-  player: User;
+  player: User | undefined;
   onClose: () => void;
 }
 
-interface SnackbarPlayerOut {
+interface SnackbarPlayerOutProps {
   open: boolean;
-  player: User;
+  player: User | undefined;
   onClose: () => void;
 }
 
@@ -23,7 +23,7 @@ function SlideFromRight(props: React.JSX.IntrinsicAttributes & SlideProps) {
   return <Slide {...props} direction="right" />;
 }
 
-export function SnackbarPlayerIn({ open, player, onClose }: SnackbarPlayerIn) {
+export const SnackbarPlayerIn: React.FC<SnackbarPlayerInProps> = ({ open, player, onClose }) => {
   const theme = useTheme();
 
   useEffect(() => {
@@ -33,6 +33,7 @@ export function SnackbarPlayerIn({ open, player, onClose }: SnackbarPlayerIn) {
     }
   }, [open, player, onClose]);
 
+  if (!player) return;
   return (
     <Snackbar
       open={open && !!player}
@@ -49,9 +50,9 @@ export function SnackbarPlayerIn({ open, player, onClose }: SnackbarPlayerIn) {
       }
     />
   );
-}
+};
 
-export function SnackbarPlayerOut({ open, player, onClose }: SnackbarPlayerOut) {
+export const SnackbarPlayerOut: React.FC<SnackbarPlayerOutProps> = ({ open, player, onClose }) => {
   const theme = useTheme();
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export function SnackbarPlayerOut({ open, player, onClose }: SnackbarPlayerOut) 
     }
   }, [open, player, onClose]);
 
+  if (!player) return;
   return (
     <Snackbar
       open={open && !!player}
@@ -77,4 +79,4 @@ export function SnackbarPlayerOut({ open, player, onClose }: SnackbarPlayerOut) 
       }
     />
   );
-}
+};
