@@ -1,5 +1,65 @@
 # board-game_ito
 
+## Mongo DB & Docker Setup
+
+1. Make sure the shell script in `/.docker` is executable.
+
+   ```bash
+   cd .docker
+
+   chmod +x keyfile.sh entrypoint.sh start.sh
+   ```
+
+   OR
+
+   ```bash
+   chmod +x .docker/keyfile.sh .docker/entrypoint.sh .docker/start.sh
+   ```
+
+2. Run the script (from the root).
+
+   ```bash
+   .docker/start.sh
+   ```
+
+3. (Optional): Open the MongoDB shell (`mongosh`)
+
+   You can open the MongoDB shell (mongosh) to interact with your MongoDB instance even after your script has started the MongoDB containers.
+   **NOTE:** `${DATABASE_NAME}` should usually be "admin".
+
+   ```bash
+   cd ./docker
+
+   docker exec -it mongo1 mongosh -u ${USERNAME} -p ${PASSWORD} --authenticationDatabase ${DATABASE_NAME}
+   ```
+
+   OR
+
+   ```bash
+   cd ./docker
+
+   # Opens a bash shell inside the mongo1 container first
+   docker exec -it mongo1 bash
+
+   # Then run mongosh (Mongo Shell)
+   mongosh -u ${USERNAME} -p ${PASSWORD} --authenticationDatabase ${DATABASE_NAME}
+   ```
+
+4. Testing connection string **as if** client
+
+   You can login from the CLI:
+
+   ```bash
+   mongosh --username ${USERNAME} --password ${PASSWORD} --host mongo1
+   ```
+
+   OR
+
+   ```bash
+   # Just directly pass a connection string.
+   mongosh "mongodb://${USERNAME}:${PASSWORD}@localhost/${DB_NAME}"
+   ```
+
 ## References
 
 ### Setup with React + Node
