@@ -3,6 +3,7 @@
     "baseUrl": ".",
     "outDir": "./dist" /* Specify an output folder for all emitted files. */,
     "paths": {
+      "@bgi/shared": ["../shared/src"],
       "@/*": ["./src/*", "./dist/*"],
       "@/controllers": ["./src/database/controllers", "./src/database/controllers/*"],
       "@/handlers": ["./src/database/handlers", "./src/database/handlers/*"],

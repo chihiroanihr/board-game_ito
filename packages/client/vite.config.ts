@@ -24,7 +24,7 @@ export default defineConfig({
   // Path Alias
   resolve: {
     alias: {
-      ' @bgi/shared': resolve(__dirname, '../shared/src'),
+      '@bgi/shared': resolve(__dirname, '../shared/src'),
       '@': resolve(__dirname, './src/'),
       assets: resolve(__dirname, './src/assets/'),
       pages: resolve(__dirname, './src/pages/'),

@@ -46,5 +46,8 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "shx": "^0.3.4",
     "vite": "^5.1.4"
+  },
+  "resolutions": {
+    "rollup": "npm:@rollup/wasm-node"
   }
 }

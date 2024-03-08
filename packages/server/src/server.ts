@@ -7,22 +7,13 @@ import { Server as SocketIOServer } from 'socket.io';
 import { connectDB, closeDB } from './database/dbConnect';
 import router from './routes/routeHandlers';
 import socketHandlers from './socket/socketHandlers';
+import loadConfig from './config';
 
-import { loadEnv } from './utils';
-
-// Load .env first
-try {
-  loadEnv();
-  if (process.env.NODE_ENV !== 'production') console.log('[*] .env file loaded successfully');
-} catch (error) {
-  if (process.env.NODE_ENV !== 'production')
-    console.error('[!] Failed to load the .env file: ', error);
-
-  process.exit(1); // Exit with error
-}
+// Load env config first
+const { serverPort } = loadConfig();
 
 // Config
-const SERVER_URL: string = `${process.env.SERVER_PORT}`;
+const SERVER_URL: string = `${serverPort}`; /** @todo: server port can be undefined */
 const CLIENT_URL: string | undefined = process.env.NODE_ENV === 'production' ? undefined : '*'; // "undefined" means the URL will be computed from the `window.location` object
 
 // Creating a http server using express
@@ -47,17 +38,7 @@ const io: SocketIOServer = new SocketIOServer(server, {
 const startServer = async (): Promise<void> => {
   try {
     // Connect to the DB: Create a promise that resolves when the database connection is established
-    const dbConnectionPromise = connectDB();
-
-    // Create a promise that rejects after 10 seconds
-    const timeoutPromise = new Promise<void>((resolve, reject) => {
-      setTimeout(() => {
-        reject(new Error('Database connection timeout.'));
-      }, 20000); // 10 seconds
-    }); // Comment out the timeout throw error to see the real error issues.
-
-    // Wait for either the database connection or the timeout
-    await Promise.race([dbConnectionPromise, timeoutPromise]);
+    await connectDB();
 
     // Call the function to initialize sockets
     socketHandlers(io);
