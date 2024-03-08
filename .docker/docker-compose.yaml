@@ -1,0 +1,70 @@
+version: '3.8' # Minimum version of Docker required
+
+services:
+  mongo1:
+    container_name: mongo1
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      REPLICA_SET_NAME: ${REPLICA_SET_NAME}
+    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
+    # restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - ./replica.key:/pki/replica.key
+      - ./mongod.conf:/etc/mongod.conf
+      - ./entrypoint.sh:/etc/entrypoint.sh
+      - ./init-replica.js:/etc/init-replica.js
+      - ./init-db.js:/etc/init-db.js
+      - mongo1_data:/data/db
+      - mongo1_config:/data/configdb
+
+  mongo2:
+    image: mongo:latest
+    container_name: mongo2
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      REPLICA_SET_NAME: ${REPLICA_SET_NAME}
+    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
+    # restart: always
+    ports:
+      - 27018:27017
+    volumes:
+      - ./replica.key:/pki/replica.key
+      - ./mongod.conf:/etc/mongod.conf
+      - ./entrypoint.sh:/etc/entrypoint.sh
+      - ./init-replica.js:/etc/init-replica.js
+      - ./init-db.js:/etc/init-db.js
+      - mongo2_data:/data/db
+      - mongo2_config:/data/configdb
+
+  mongo3:
+    image: mongo:latest
+    container_name: mongo3
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      REPLICA_SET_NAME: ${REPLICA_SET_NAME}
+    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
+    # restart: always
+    ports:
+      - 27019:27017
+    volumes:
+      - ./replica.key:/pki/replica.key
+      - ./mongod.conf:/etc/mongod.conf
+      - ./entrypoint.sh:/etc/entrypoint.sh
+      - ./init-replica.js:/etc/init-replica.js
+      - ./init-db.js:/etc/init-db.js
+      - mongo3_data:/data/db
+      - mongo3_config:/data/configdb
+
+volumes:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+  mongo1_config:
+  mongo2_config:
+  mongo3_config:
