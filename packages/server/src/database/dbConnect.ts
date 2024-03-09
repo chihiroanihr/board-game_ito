@@ -14,24 +14,25 @@ interface DatabaseCollections {
 const { connectionString, dbName } = loadConfig();
 console.log(connectionString);
 
+const collectionNames = ['sessions', 'users', 'rooms'];
+
 const DB_CONN_URI: string = connectionString; // process.env.MONGODB_CONNECTION_URL || '';
 const DB_NAME: string = dbName || '';
 let mongoDB: MongoClient | null = null;
-const collectionNames = ['sessions', 'users', 'rooms'];
 
 const createCollections = async (db: Db) => {
-  for (const collectionName in collectionNames) {
+  collectionNames.forEach(async (collectionName) => {
     // Get all existing collections
-    const collections = await db.listCollections({}, { nameOnly: true }).toArray();
+    const existingCollections = await db.listCollections({}, { nameOnly: true }).toArray();
     // Make them into array of collection names
-    const collectionNames = collections.map((c) => c.name);
+    const existingCollectionNames = existingCollections.map((col) => col.name);
     // If target collection does not exist
-    if (!collectionNames.includes(collectionName)) {
+    if (!existingCollectionNames.includes(collectionName)) {
       // Add new collection
       await db.createCollection(collectionName);
       console.log(`[*] New collection "${collectionName}" created.`);
     }
-  }
+  });
 };
 
 const getAllCollections = (db: Db): DatabaseCollections => ({

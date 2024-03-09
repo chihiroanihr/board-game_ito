@@ -24,7 +24,7 @@ export const createConnString = ({
   // Append database name if exists
   if (dbName) connectionString += `/${dbName}`;
   // Append replica set name if exists
-  if (replicaSetName) connectionString += `/?replicaSet=${replicaSetName}`;
+  if (replicaSetName) connectionString += `?replicaSet=${replicaSetName}`;
   // Append queries if exists
   if (queries) {
     connectionString += `&${queries}`;
@@ -57,7 +57,7 @@ export const createConnStringAtlas = ({
   // Append database name if exists
   if (dbName) connectionString += `/${dbName}`;
   // Append queries
-  connectionString += `/?${queries}`;
+  connectionString += `?${queries}`;
 
   return connectionString;
 };
