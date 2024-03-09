@@ -3,7 +3,7 @@ version: '3.8' # Minimum version of Docker required
 services:
   mongo1:
     container_name: mongo1
-    image: mongo:latest
+    image: mongo:5.0
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
@@ -22,7 +22,7 @@ services:
       - mongo1_config:/data/configdb
 
   mongo2:
-    image: mongo:latest
+    image: mongo:5.0
     container_name: mongo2
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
@@ -42,7 +42,7 @@ services:
       - mongo2_config:/data/configdb
 
   mongo3:
-    image: mongo:latest
+    image: mongo:5.0
     container_name: mongo3
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
