@@ -77,7 +77,7 @@ function JoinRoom() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('join-room', roomId, async (error: any, response: SocketEventType) => {
+    socket.emit('join-room', roomId, async (error: unknown, response: SocketEventType) => {
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 

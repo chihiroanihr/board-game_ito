@@ -26,7 +26,7 @@ export const isObjectEmpty = (obj: Record<string, any>): boolean => {
  * @param {any} error - The error object caught during the operation. It should contain an error message.
  * @param {string | undefined} message - An optional custom message to provide additional context about the error. Default is an empty string.
  */
-export const outputServerError = (error: any, message?: string): void => {
+export const outputServerError = (error: unknown, message?: string): void => {
   console.error(`[Server Error]: ${message ? ` ${message}` : ''} \n${error.message}`);
   alert('Internal Server Error: Please try again later.');
 };

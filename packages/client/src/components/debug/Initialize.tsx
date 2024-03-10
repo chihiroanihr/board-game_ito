@@ -24,7 +24,7 @@ export default function Initialize() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('initialize', async (error: any, response: SocketEventType) => {
+    socket.emit('initialize', async (error: unknown, response: SocketEventType) => {
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 

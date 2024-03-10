@@ -33,7 +33,7 @@ export default function HeaderLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('logout', async (error: any) => {
+    socket.emit('logout', async (error: unknown) => {
       // socket.emit("logout");
 
       // Clear the timeout as response is received before timeout
@@ -61,7 +61,7 @@ export default function HeaderLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('leave-room', async (error: any) => {
+    socket.emit('leave-room', async (error: unknown) => {
       // socket.emit("leave-room");
 
       // Clear the timeout as response is received before timeout

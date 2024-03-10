@@ -100,7 +100,7 @@ export default function ConnectLayout() {
    * 2. due to middleware errors
    */
   useEffect(() => {
-    function onErrorEvent(error: any) {
+    function onErrorEvent(error: unknown) {
       outputServerError({ error });
     }
 

@@ -83,7 +83,7 @@ function CreateRoom() {
     }, 5000);
 
     // Send to socket
-    socket.emit('create-room', roomSettingData, async (error: any, response: SocketEventType) => {
+    socket.emit('create-room', roomSettingData, async (error: unknown, response: SocketEventType) => {
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 

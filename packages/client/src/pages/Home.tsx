@@ -66,7 +66,7 @@ function Home() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('login', userName, async (error: any, userResponse: User) => {
+    socket.emit('login', userName, async (error: unknown, userResponse: User) => {
       // socket.emit("logout", userName);
 
       // Clear the timeout as response is received before timeout

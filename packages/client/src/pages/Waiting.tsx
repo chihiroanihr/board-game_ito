@@ -58,7 +58,7 @@ export default function Waiting() {
    */
   useEffect(() => {
     room &&
-      socket.emit('wait-room', room, async (error: any, responsePlayers: Array<User>) => {
+      socket.emit('wait-room', room, async (error: unknown, responsePlayers: Array<User>) => {
         if (error) {
           outputServerError({ error });
         } else {
@@ -168,7 +168,7 @@ export default function Waiting() {
     }, 5000);
 
     // Send to socket
-    socket.emit('start-game', room, async (error: any, response: any) => {
+    socket.emit('start-game', room, async (error: unknown, response: unknown) => {
       // socket.emit("start-game", room);
 
       // Clear the timeout as response is received before timeout
