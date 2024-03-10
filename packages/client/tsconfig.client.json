@@ -6,7 +6,7 @@
     /* Bundler mode */
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    // "jsx": "react-jsx", // Already specified in root
 
     /* Path Alias */
     "baseUrl": ".",

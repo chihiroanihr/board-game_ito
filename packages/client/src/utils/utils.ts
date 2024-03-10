@@ -9,10 +9,10 @@
  *
  * [Note]: Record<string, any> is a TypeScript type that represents an object with string keys and values of any type.
  *
- * @param {Record<string, any>} obj - The object to check for emptiness. It should be a plain JavaScript object.
+ * @param {Record<string, unknown>} obj - The object to check for emptiness. It should be a plain JavaScript object.
  * @returns {boolean} - `true` if the object is empty, `false` otherwise.
  */
-export const isObjectEmpty = (obj: Record<string, any>): boolean => {
+export const isObjectEmpty = (obj: Record<string, unknown>): boolean => {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
 };
 
@@ -23,11 +23,12 @@ export const isObjectEmpty = (obj: Record<string, any>): boolean => {
  * during server communication or any operation that could result in a server error.
  * It logs a detailed error message to the console and displays a generic error alert to the user.
  *
- * @param {any} error - The error object caught during the operation. It should contain an error message.
+ * @param {unknown} error - The error object caught during the operation. It should contain an error message.
  * @param {string | undefined} message - An optional custom message to provide additional context about the error. Default is an empty string.
  */
 export const outputServerError = (error: unknown, message?: string): void => {
-  console.error(`[Server Error]: ${message ? ` ${message}` : ''} \n${error.message}`);
+  const errorMessage = error instanceof Error ? error.message : '';
+  console.error(`[Server Error]: ${message ? ` ${message}` : ''} \n${errorMessage}`);
   alert('Internal Server Error: Please try again later.');
 };
 
