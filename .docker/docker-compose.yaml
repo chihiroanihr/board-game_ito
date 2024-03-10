@@ -4,10 +4,8 @@ services:
   mongo1:
     container_name: mongo1
     image: mongo:5.0
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      REPLICA_SET_NAME: ${REPLICA_SET_NAME}
+    env_file:
+      - ../.env
     entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
     # restart: always
     ports:
@@ -24,10 +22,8 @@ services:
   mongo2:
     image: mongo:5.0
     container_name: mongo2
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      REPLICA_SET_NAME: ${REPLICA_SET_NAME}
+    env_file:
+      - ../.env
     entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
     # restart: always
     ports:
@@ -44,10 +40,8 @@ services:
   mongo3:
     image: mongo:5.0
     container_name: mongo3
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      REPLICA_SET_NAME: ${REPLICA_SET_NAME}
+    env_file:
+      - ../.env
     entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
     # restart: always
     ports:

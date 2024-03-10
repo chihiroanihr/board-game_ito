@@ -4,6 +4,12 @@
 
 function initiateReplicaSet() {
   try {
+    // Check if replica set is already initialized.
+    if (db.hello()?.setName === replicaSetName) {
+      console.log('[!] This replica set already exists.');
+      return;
+    }
+
     const rsInitiateResult = rs.initiate({
       _id: replicaSetName,
       members: [
@@ -39,14 +45,14 @@ try {
   // [1] Initialize replica set
   initiateReplicaSet();
 
-  // [2] Create root admin (superuser)
   db.createUser({
     user: rootUsername,
     pwd: rootPassword,
     roles: ['root']
   });
+  console.log('[*] Admin created successfully.');
 
-  // [3] Authenticate the admin (not necessary, just for test to make sure it works)
+  // [3] Authenticate the admin
   db.auth(rootUsername, rootPassword);
   console.log('[*] Admin authenticated.');
 

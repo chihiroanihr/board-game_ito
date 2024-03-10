@@ -13,7 +13,7 @@ function createDbUser(username, password, roles) {
   } catch (error) {
     // Already created error
     if (error.code === 51003 || error.codeName === 'Location51003') {
-      console.error(`[!] This user "${username}" has been already created. `, error.code);
+      console.error(`[!] This user "${username}" already exists. `, error.code);
     }
     // Other errors
     else {
