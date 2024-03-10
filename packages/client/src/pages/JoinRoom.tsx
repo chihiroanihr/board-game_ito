@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -14,7 +14,7 @@ import {
   Snackbar
 } from '@mui/material';
 
-import { User, Room, roomIdConfig } from '@bgi/shared';
+import { type User, type Room, roomIdConfig } from '@bgi/shared';
 
 import { CardContentOverride } from '../theme';
 import { useAuth, useRoom, useSocket } from '@/hooks';

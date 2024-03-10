@@ -1,6 +1,6 @@
 import { ClientSession, ObjectId } from 'mongodb';
 
-import { User, UserStatusEnum } from '@bgi/shared';
+import { type User, UserStatusEnum } from '@bgi/shared';
 
 import * as controller from '@/controllers';
 import * as debug from '@/debug';

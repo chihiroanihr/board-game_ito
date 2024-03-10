@@ -13,7 +13,7 @@ export const socket: Socket = io(SOCKET_URL, socketOptions);
 
 // Catch-all listener
 if (import.meta.env.NODE_ENV !== 'production') {
-  socket.onAny((event: string, ...args: any[]) => {
+  socket.onAny((event: string, ...args: unknown[]) => {
     console.log(event, args); // Any event received by the client will be printed in the console.
   });
 }

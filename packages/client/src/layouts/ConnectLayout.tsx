@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import { User, Room } from '@bgi/shared';
+import type { User, Room } from '@bgi/shared';
 
 import { Loader } from '@/components';
 import { useSession, useAuth, useRoom, useSocket } from '@/hooks';

@@ -1,6 +1,6 @@
 import { MongoClient, Collection, Db } from 'mongodb';
 
-import { Session, User, Room } from '@bgi/shared';
+import type { Session, User, Room } from '@bgi/shared';
 
 import loadConfig from '../config';
 

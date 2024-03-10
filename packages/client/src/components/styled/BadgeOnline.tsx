@@ -1,4 +1,4 @@
-import { styled, Badge, Theme } from '@mui/material';
+import { styled, Badge, type Theme } from '@mui/material';
 
 // The theme object is meant to be used internally within the styled component to access properties of the MUI theme.
 // You shouldn't pass the theme prop manually when using the styled component.

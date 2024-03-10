@@ -1,6 +1,6 @@
 import { ClientSession, ReturnDocument } from 'mongodb';
 
-import { Room, RoomStatusEnum } from '@bgi/shared';
+import type { Room, RoomStatusEnum } from '@bgi/shared';
 
 import { getDB } from '../dbConnect';
 import { logQueryEvent } from '@/debug';

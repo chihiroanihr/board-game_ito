@@ -1,32 +1,19 @@
 {
   "compilerOptions": {
     "useDefineForClassFields": true,
-    "skipLibCheck": true,
-    "target": "ES2020",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
     "jsx": "react-jsx",
-    // "allowJs": true,
-
-    /* Linting */
-    "strict": true,
-    //"noUnusedLocals": true,
-    //"noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
 
     /* Path Alias */
     "baseUrl": ".",
     "outDir": "./dist",
     "paths": {
       "@bgi/shared": ["../shared/src"],
-      "@/*": ["./src/*", "./dist/*"],
+      "@/*": ["./src/*"],
       "@/pages": ["./src/pages", "./src/pages/*"],
       "@/layouts": ["./src/layouts", "./src/layouts/*"],
       "@/components": ["./src/components", "./src/components/*"],

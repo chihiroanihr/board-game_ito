@@ -1,8 +1,5 @@
 {
   "compilerOptions": {
-    // "preserveConstEnums": true, // Preserve const enums and constant-initialized variables
-    "declaration": true, // Generate .d.ts files from TypeScript and JavaScript files in your project.
-    "declarationMap": true,
     "baseUrl": ".",
     "outDir": "./dist", // Directory of generated output
     "paths": {

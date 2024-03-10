@@ -1,6 +1,6 @@
-import React, { ReactNode, Context, createContext, useContext, useMemo, useCallback } from 'react';
+import React, { type ReactNode, type Context, createContext, useContext, useMemo, useCallback } from 'react';
 
-import { Room } from '@bgi/shared';
+import type { Room } from '@bgi/shared';
 
 import { useLocalStorage } from './useLocalStorage';
 

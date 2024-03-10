@@ -13,7 +13,7 @@ import {
   Alert
 } from '@mui/material';
 
-import { User, userNameConfig } from '@bgi/shared';
+import { type User, userNameConfig } from '@bgi/shared';
 
 import { useAuth, useSocket } from '@/hooks';
 import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '@/utils';

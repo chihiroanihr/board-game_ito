@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { Server, Socket } from 'socket.io';
 import { ClientSession } from 'mongodb';
 
-import { User, Room, RoomSetting } from '@bgi/shared';
+import type { User, Room, RoomSetting } from '@bgi/shared';
 
 import * as handler from '@/handlers';
 import * as controller from '@/controllers';

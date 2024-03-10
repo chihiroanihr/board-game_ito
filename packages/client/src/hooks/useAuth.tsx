@@ -1,6 +1,6 @@
-import React, { ReactNode, Context, createContext, useContext, useMemo, useCallback } from 'react';
+import React, { type ReactNode, type Context, createContext, useContext, useMemo, useCallback } from 'react';
 
-import { User } from '@bgi/shared';
+import type { User } from '@bgi/shared';
 
 import { useLocalStorage } from './useLocalStorage';
 

@@ -18,7 +18,7 @@ import {
   Alert
 } from '@mui/material';
 
-import { User, Room, RoomSetting, roomSettingConfig } from '@bgi/shared';
+import { type User, type Room, type RoomSetting, roomSettingConfig } from '@bgi/shared';
 
 import { CardContentOverride } from '../theme';
 import { useAuth, useRoom, useSocket } from '@/hooks';

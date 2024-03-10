@@ -1,6 +1,12 @@
 import { ClientSession, ObjectId } from 'mongodb';
 
-import { Room, User, RoomSetting, RoomStatusEnum, UserStatusEnum } from '@bgi/shared';
+import {
+  type Room,
+  type User,
+  type RoomSetting,
+  RoomStatusEnum,
+  UserStatusEnum
+} from '@bgi/shared';
 
 import * as controller from '@/controllers';
 import * as util from '@/utils';
@@ -178,7 +184,7 @@ export const handleLeaveRoom = async (
       const playersId = updatedRoom.players;
 
       // [1] If leftover players in the room -> update admin
-      if (playersId.length > 0) {
+      if (playersId?.[0]) {
         const nextAdminId = playersId[0];
         /** @api_call - Update the room admin (PUT) */
         updatedRoom = await controller.updateRoomAdmin(nextAdminId, roomId, dbSession);

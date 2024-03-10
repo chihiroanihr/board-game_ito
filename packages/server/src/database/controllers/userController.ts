@@ -1,6 +1,6 @@
 import { ClientSession, ObjectId, ReturnDocument } from 'mongodb';
 
-import { User, UserStatusEnum } from '@bgi/shared';
+import type { User, UserStatusEnum } from '@bgi/shared';
 
 import { getDB } from '../dbConnect';
 import { logQueryEvent } from '@/debug';

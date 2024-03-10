@@ -1,7 +1,7 @@
 import { ClientSession } from 'mongodb';
 import { Socket } from 'socket.io';
 
-import { User, Room, Session } from '@bgi/shared';
+import type { User, Room, Session } from '@bgi/shared';
 
 import * as controller from '@/controllers';
 import * as debug from '@/debug';

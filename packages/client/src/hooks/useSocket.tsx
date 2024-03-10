@@ -1,6 +1,6 @@
 import React, {
-  ReactNode,
-  Context,
+  type ReactNode,
+  type Context,
   createContext,
   useContext,
   useMemo,

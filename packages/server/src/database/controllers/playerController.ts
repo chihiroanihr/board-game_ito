@@ -1,6 +1,6 @@
 import { ClientSession, ObjectId, ReturnDocument } from 'mongodb';
 
-import { Room, User } from '@bgi/shared';
+import type { Room, User } from '@bgi/shared';
 
 import { getDB } from '../dbConnect';
 import { logQueryEvent } from '@/debug';

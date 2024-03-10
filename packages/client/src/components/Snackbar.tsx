@@ -1,11 +1,11 @@
 // SnackbarPlayerOut.js
 import React, { useEffect } from 'react';
 
-import { Snackbar, Slide, Avatar, useTheme, SlideProps } from '@mui/material';
+import { Snackbar, Slide, Avatar, useTheme, type SlideProps } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import LoginIcon from '@mui/icons-material/Login';
 
-import { User } from '@bgi/shared';
+import type { User } from '@bgi/shared';
 
 interface SnackbarPlayerInProps {
   open: boolean;

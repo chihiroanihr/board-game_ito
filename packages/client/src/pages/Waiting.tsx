@@ -13,7 +13,7 @@ import {
   ListItemText
 } from '@mui/material';
 
-import { User, Room } from '@bgi/shared';
+import type { User, Room } from '@bgi/shared';
 
 import {
   BadgeOnline,
