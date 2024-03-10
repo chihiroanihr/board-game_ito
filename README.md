@@ -5,26 +5,36 @@
 1. Make sure the shell script in `/.docker` is executable.
 
    ```bash
+   # From .docker folder:
    cd .docker
-
    chmod +x keyfile.sh entrypoint.sh start.sh
    ```
 
    OR
 
    ```bash
+   # From root folder:
    chmod +x .docker/keyfile.sh .docker/entrypoint.sh .docker/start.sh
    ```
 
-2. Run the script (from the root).
+2. Run the script.
 
    ```bash
+   # From .docker folder:
+   cd .docker
+   start.sh
+   ```
+
+   OR
+
+   ```bash
+   # From root folder:
    .docker/start.sh
    ```
 
-3. (Optional): Open the MongoDB shell (`mongosh`)
+3. (Optional): Open the Mongo DB shell (`mongosh`) in your bash terminal
 
-   You can open the MongoDB shell (mongosh) to interact with your MongoDB instance even after your script has started the MongoDB containers.
+   You can open the MongoDB shell (mongosh) in your bash terminal to interact with your Mongo DB instance after your script has started the MongoDB containers.
    **NOTE:** `${DATABASE_NAME}` should usually be "admin".
 
    ```bash
@@ -45,9 +55,9 @@
    mongosh -u ${USERNAME} -p ${PASSWORD} --authenticationDatabase ${DATABASE_NAME}
    ```
 
-4. Testing connection string **as if** client
+4. Testing connection string **as if** connecting from client
 
-   You can login from the CLI:
+   You can login from the CLI as following:
 
    ```bash
    mongosh --username ${USERNAME} --password ${PASSWORD} --host mongo1
@@ -59,6 +69,23 @@
    # Just directly pass a connection string.
    mongosh "mongodb://${USERNAME}:${PASSWORD}@localhost/${DB_NAME}"
    ```
+
+### Stop & Remove Docker Containers
+
+Run the following script (Specify **`-v`** to also remove volumes):
+
+```bash
+# From .docker folder:
+cd .docker
+docker-compose down -v
+```
+
+OR
+
+```bash
+# From root folder:
+docker-compose -f .docker/docker-compose.yaml down -v
+```
 
 ## References
 
