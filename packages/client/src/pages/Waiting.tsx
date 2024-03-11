@@ -169,8 +169,6 @@ export default function Waiting() {
 
     // Send to socket
     socket.emit('start-game', room, async (error: unknown, response: unknown) => {
-      // socket.emit("start-game", room);
-
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 
