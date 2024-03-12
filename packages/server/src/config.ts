@@ -1,4 +1,3 @@
-// config.js
 import { loadEnv, createConnString } from '@/utils';
 
 const loadConfig = () => {

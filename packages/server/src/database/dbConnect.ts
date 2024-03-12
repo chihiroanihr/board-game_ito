@@ -12,7 +12,6 @@ interface DatabaseCollections {
 
 // Load env config first
 const { connectionString, dbName } = loadConfig();
-console.log(connectionString);
 
 const collectionNames = ['sessions', 'users', 'rooms'];
 
