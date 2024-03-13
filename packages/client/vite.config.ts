@@ -6,10 +6,12 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   // base: '/dist',
+
   // Monorepos and Linked Dependencies (https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies)
   optimizeDeps: {
     include: ['@bgi/shared'] // Include the linked dependency in optimization
   },
+
   build: {
     commonjsOptions: {
       include: [/shared/, /node_modules/] // Include the linked dependency in the build
