@@ -3,7 +3,7 @@ import { ClientSession, ObjectId, ReturnDocument } from 'mongodb';
 import type { Session } from '@bgi/shared';
 
 import { getDB } from '../dbConnect';
-import { logQueryEvent } from '@/debug';
+import { logQueryEvent } from '../../debug';
 
 export const getSessionInfo = async (sessionId: string): Promise<Session | null> => {
   logQueryEvent('Fetching the session info.');

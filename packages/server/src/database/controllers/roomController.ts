@@ -3,7 +3,7 @@ import { ClientSession, ReturnDocument } from 'mongodb';
 import type { Room, RoomStatusEnum } from '@bgi/shared';
 
 import { getDB } from '../dbConnect';
-import { logQueryEvent } from '@/debug';
+import { logQueryEvent } from '../../debug';
 
 export const getRoomInfo = async (roomId: string): Promise<Room | null> => {
   logQueryEvent('Fetching the room info.');

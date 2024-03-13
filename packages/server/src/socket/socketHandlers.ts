@@ -4,9 +4,9 @@ import { ClientSession } from 'mongodb';
 
 import type { User, Room, RoomSetting } from '@bgi/shared';
 
-import * as handler from '@/handlers';
-import * as controller from '@/controllers';
-import * as debug from '@/debug';
+import * as handler from '../database/handlers';
+import * as controller from '../database/controllers';
+import * as debug from '../debug';
 
 import { getDB } from '../database/dbConnect';
 

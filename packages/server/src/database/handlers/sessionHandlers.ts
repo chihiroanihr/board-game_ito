@@ -3,8 +3,8 @@ import { Socket } from 'socket.io';
 
 import type { User, Room, Session } from '@bgi/shared';
 
-import * as controller from '@/controllers';
-import * as debug from '@/debug';
+import * as controller from '../controllers';
+import * as debug from '../../debug';
 
 interface SessionData {
   _id: string;

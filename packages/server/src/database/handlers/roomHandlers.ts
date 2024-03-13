@@ -8,9 +8,9 @@ import {
   UserStatusEnum
 } from '@bgi/shared';
 
-import * as controller from '@/controllers';
-import * as util from '@/utils';
-import * as debug from '@/debug';
+import * as controller from '../controllers';
+import * as util from '../../utils';
+import * as debug from '../../debug';
 
 /**
  * Generates unique room ID.
