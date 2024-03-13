@@ -5,6 +5,7 @@ import { resolve } from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // base: '/dist',
   // build: {
   //   rollupOptions: {
   //     external: ['@bgi/shared'] // This module should remain external to the bundle.

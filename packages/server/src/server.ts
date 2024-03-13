@@ -1,4 +1,3 @@
-// server/index.js
 import express, { type Express } from 'express';
 import cors from 'cors';
 import { createServer, Server as HTTPServer } from 'http';
