@@ -8,16 +8,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prebuild:client": "tsc -p tsconfig.client.json",
-    "build": "npm run clean && npm run prebuild:client && vite build",
-    "build:check": "tsc -p ./tsconfig.client.json --noEmit",
+    "vite-lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "clean": "rimraf dist",
+    "prebuild:client": "tsc -p tsconfig.client.json",
+    "build:check": "tsc -p ./tsconfig.client.json --noEmit",
+    "build:watch": "tsc -p ./tsconfig.client.json --watch",
+    "build": "npm run clean && npm run prebuild:client && vite build",
     "start": "shx cp ../../.env .env && vite",
-    "start:dev": "shx cp ../../.env .env && vite",
-    "vite-build": "tsc && vite build",
-    "vite-dev": "vite",
-    "vite-preview": "vite preview",
-    "vite-lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@bgi/shared": "^1.0.0",

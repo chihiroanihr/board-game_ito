@@ -5,15 +5,16 @@
   "author": "Rhina Kim <chihiroanihr@gmail.com>",
   "keywords": [],
   "license": "ISC",
-  "main": "dist/server.js",
   "private": "true",
+  "main": "server.js",
   "scripts": {
-    "build": "npm run clean && tsc -p ./tsconfig.server.json",
-    "build:check": "tsc -p ./tsconfig.server.json --noEmit",
     "clean": "rimraf dist",
-    "start": "tsc -p ./tsconfig.server.json && node dist/server.js",
-    "start:dev": "ts-node -r tsconfig-paths/register -P tsconfig.server.json ./src/server.ts",
-    "start:dev:nodemon": "nodemon"
+    "build:check": "tsc -p ./tsconfig.server.json --noEmit",
+    "build:watch": "tsc -p ./tsconfig.server.json --watch",
+    "build": "npm run clean && tsc -p ./tsconfig.server.json",
+    "start": "shx cp ../../.env dist/server/.env && tsc -p ./tsconfig.server.json && node dist/server/src/server.js",
+    "start:dev": "shx cp ../../.env .env && ts-node -P tsconfig.server.json ./src/server.ts",
+    "start:dev:nodemon": "shx cp ../../.env .env && nodemon"
   },
   "dependencies": {
     "@bgi/shared": "^1.0.0",
@@ -28,7 +29,6 @@
   "devDependencies": {
     "@types/express": "^4.17.21",
     "nodemon": "^3.0.3",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0"
+    "ts-node": "^10.9.2"
   }
 }
