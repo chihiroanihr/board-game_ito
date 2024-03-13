@@ -1,11 +1,10 @@
-import React from 'react';
 import {
   Route,
   RouterProvider,
   createBrowserRouter,
-  createRoutesFromElements
+  createRoutesFromElements,
 } from 'react-router-dom';
-import Container from '@mui/material/Container';
+import { Container } from '@mui/material';
 
 import { SessionProvider, AuthProvider, RoomProvider, SocketProvider } from '@/hooks';
 import { CommonLayout, ConnectLayout } from '@/layouts';
@@ -26,7 +25,8 @@ function App() {
         </Route>
 
         <Route path="*" element={<NotFound />} />
-    )
+      </Route>,
+    ),
   );
 
   return (
