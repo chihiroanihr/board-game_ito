@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import Box from '@mui/material/Box';
+import { Box } from '@mui/material';
 
 import { HeaderLayout } from '@/layouts';
 import { Loader, Copyright } from '@/components';

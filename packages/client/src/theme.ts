@@ -1,20 +1,19 @@
-import { createTheme, styled } from '@mui/material/styles';
+import { createTheme, styled, CardContent } from '@mui/material';
 import { red } from '@mui/material/colors';
-import CardContent from '@mui/material/CardContent';
 
 // A custom theme for this app
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#556cd6'
+      main: '#556cd6',
     },
     secondary: {
-      main: '#19857b'
+      main: '#19857b',
     },
     error: {
-      main: red.A400
-    }
-  }
+      main: red.A400,
+    },
+  },
 });
 
 export const CardContentOverride = styled(CardContent)(`
