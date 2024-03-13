@@ -4,6 +4,10 @@
     "lib": ["es2022", "DOM", "DOM.Iterable"],
 
     /* Bundler mode */
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "verbatimModuleSyntax": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     // "jsx": "react-jsx", // Already specified in root

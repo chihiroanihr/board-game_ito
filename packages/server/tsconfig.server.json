@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2022", // already specified in root
     "lib": ["es2023"],
-    "module": "Node16",
-    "moduleResolution": "Node16",
-    "verbatimModuleSyntax": false,
+    "sourceMap": true,
+
     "baseUrl": ".",
     "outDir": "./dist" /* Specify an output folder for all emitted files. */,
     "paths": {
