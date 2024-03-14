@@ -1,0 +1,18 @@
+{
+  "extends": [
+    // Override configuration from the root
+    "../../.eslintrc.json",
+    // Recommended React configuration
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "plugins": ["@typescript-eslint", "react", "react-hooks"],
+  "settings": {
+    "import/resolver": {
+      "typescript": {} // TypeScript resolver
+    },
+    "react": {
+      "version": "detect"
+    }
+  }
+}

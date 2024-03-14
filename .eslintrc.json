@@ -1,0 +1,80 @@
+// @ts-check
+
+// import eslint from '@eslint/js';
+// import tseslint from 'typescript-eslint';
+// export default tseslint.config(eslint.configs.recommended, ...tseslint.configs.recommended);
+
+{
+  // An environment in which the code will run in
+  "env": {
+    "browser": true,
+    "es2021": true
+    // jest: true, // If you intend to use jest
+  },
+
+  // Extends the configuration of other ESLint plugins
+  "extends": [
+    "eslint:recommended",
+    // Recommended TypeScript configuration
+    "plugin:@typescript-eslint/recommended",
+    // Recommended Prettier configuration
+    "prettier",
+    "plugin:prettier/recommended"
+  ],
+
+  // "overrides": [
+  //   {
+  //     "env": {
+  //       "node": true
+  //     },
+  //     "files": [".eslintrc.{js,cjs}"],
+  //     "parserOptions": {
+  //       "sourceType": "script"
+  //     }
+  //   }
+  // ],
+
+  "ignorePatterns": [
+    "**/dist/",
+    "*.generated.*",
+    "*.test.js",
+    "__tests__/",
+    "**/.eslintrc.cjs",
+    "**/.prettierrc.cjs",
+    ".vscode/",
+    "**/env*"
+  ],
+
+  // Specifies the parser to use for parsing the code
+  "parser": "@typescript-eslint/parser", // TypeScript parser
+
+  // Specifies the parser options
+  "parserOptions": {
+    // ecmaFeatures: {
+    //   jsx: true, // enable jsx
+    // },
+    "ecmaVersion": "latest", // Code uses ECMAScript 2021 syntax
+    "sourceType": "module"
+  },
+
+  // Specifies the ESLint plugins to use
+  "plugins": ["@typescript-eslint", "prettier"],
+
+  // Specifies the ESLint rules to use
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ],
+    "react-refresh/only-export-components": ["warn", { "allowConstantExport": true }]
+  },
+
+  // Specifies the settings for the ESLint plugins
+  "settings": {
+    "import/resolver": {
+      "typescript": {} // TypeScript resolver
+    }
+  }
+}

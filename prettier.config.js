@@ -1,10 +1,12 @@
-module.exports = {
+const config = {
   // Prettier configuration settings
   bracketSpacing: true,
   printWidth: 100,
-  tabWidth: 2,
-  semi: true,
+  trailingComma: 'es5',
+  tabWidth: 4,
+  semi: false,
   singleQuote: true,
+  endOfLine: 'auto',
 
   // Prettier ignore patterns
   ignore: [
@@ -17,3 +19,5 @@ module.exports = {
     '**/tsconfig.*.json',
   ],
 };
+
+module.exports = config;
