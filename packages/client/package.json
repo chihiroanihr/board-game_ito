@@ -14,7 +14,7 @@
     "build:check": "tsc -p ./tsconfig.client.json --noEmit",
     "build:watch": "tsc -p ./tsconfig.client.json --watch",
     "build": "npm run clean && npm run prebuild:client && vite build",
-    "start": "shx cp ../../.env .env && vite",
+    "start": "vite",
     "preview": "vite preview"
   },
   "dependencies": {
