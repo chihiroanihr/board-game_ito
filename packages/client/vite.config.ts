@@ -9,12 +9,12 @@ export default defineConfig({
 
   // Monorepos and Linked Dependencies (https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies)
   optimizeDeps: {
-    include: ['@bgi/shared'] // Include the linked dependency in optimization
+    include: ['@bgi/shared'], // Include the linked dependency in optimization
   },
 
   build: {
     commonjsOptions: {
-      include: [/shared/, /node_modules/] // Include the linked dependency in the build
+      include: [/shared/, /node_modules/], // Include the linked dependency in the build
     },
     rollupOptions: {
       // external: ['@bgi/shared'], // This module should remain external to the bundle.
@@ -39,9 +39,9 @@ export default defineConfig({
 
           // If no specific grouping is needed, return null
           return null;
-        }
-      }
-    }
+        },
+      },
+    },
   },
 
   // Path Alias
@@ -54,7 +54,10 @@ export default defineConfig({
       layouts: resolve(__dirname, './src/layouts/'),
       components: resolve(__dirname, './src/components/'),
       hooks: resolve(__dirname, './src/hooks/'),
-      utils: resolve(__dirname, './src/utils/')
-    }
-  }
+      utils: resolve(__dirname, './src/utils/'),
+    },
+  },
+
+  // Environment variables
+  envDir: resolve(__dirname, '../../'),
 });
