@@ -5,9 +5,9 @@ import React, {
   useContext,
   useMemo,
   useCallback,
-} from "react";
+} from 'react';
 
-import { useLocalStorage } from "./useLocalStorage";
+import { useLocalStorage } from './useLocalStorage';
 
 type SessionIdType = string | null;
 
@@ -26,13 +26,8 @@ const SessionContext: Context<SessionContextType | undefined> = createContext<
   SessionContextType | undefined
 >(undefined);
 
-export const SessionProvider: React.FC<SessionProviderProps> = ({
-  children,
-}) => {
-  const [sessionId, setSessionId] = useLocalStorage<SessionIdType>(
-    "session",
-    null
-  );
+export const SessionProvider: React.FC<SessionProviderProps> = ({ children }) => {
+  const [sessionId, setSessionId] = useLocalStorage<SessionIdType>('session', null);
 
   // Call this function when you want to authenticate the user
   const updateSessionId = useCallback(
@@ -56,9 +51,7 @@ export const SessionProvider: React.FC<SessionProviderProps> = ({
     [updateSessionId, discardSessionId, sessionId]
   );
 
-  return (
-    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
-  );
+  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 };
 
 export const useSession = (): SessionContextType => {
@@ -66,7 +59,7 @@ export const useSession = (): SessionContextType => {
 
   if (context === undefined) {
     /** @todo - Handle error */
-    throw new Error("useSession must be used within a SessionProvider.");
+    throw new Error('useSession must be used within a SessionProvider.');
   }
 
   return context;

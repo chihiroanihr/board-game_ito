@@ -6,14 +6,14 @@ const sessionSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, default: null },
   roomId: { type: String, default: null },
-  connected: { type: Boolean, required: true }
+  connected: { type: Boolean, required: true },
 });
 
 const userSchema = new mongoose.Schema({
   _id: { type: mongoose.Schema.Types.ObjectId, required: true },
   name: { type: String, required: true },
   status: { type: String, enum: Object.values(UserStatusEnum), required: true },
-  creationTime: { type: Date, default: Date.now, required: true }
+  creationTime: { type: Date, default: Date.now, required: true },
 });
 
 const roomSchema = new mongoose.Schema({
@@ -22,10 +22,10 @@ const roomSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: 'User'
+    ref: 'User',
   },
   creationTime: { type: Date, required: true, default: Date.now },
-  players: [{ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' }]
+  players: [{ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' }],
 });
 
 export const Session = mongoose.model('Session', sessionSchema);

@@ -1,22 +1,21 @@
-import dotenv from 'dotenv';
-import path from 'path';
 import { createConnString } from './utils';
 
 const loadConfig = () => {
-  try {
-    // Adjust the path as necessary based on your project structure
-    const envPath = path.resolve(__dirname, '../.env');
-    const result = dotenv.config({ path: envPath });
-    // Error
-    if (result.error) {
-      throw result.error;
-      // process.exit(1); // Optionally exit if the config is critical
-    }
-    console.log('[*] .env file loaded successfully');
-  } catch (error) {
-    console.error('[!] Failed to load the .env file:', error);
-    process.exit(1); // Exit with error
-  }
+  // try {
+  //     // Adjust the path as necessary based on your project structure
+  //     const envPath = path.resolve(__dirname, '../../../.env/.env')
+  //     const result = dotenv.config({ path: envPath })
+  //     // Error
+  //     if (result.error) {
+  //         throw result.error
+  //         // process.exit(1); // Optionally exit if the config is critical
+  //     }
+
+  //     console.log('[*] .env file loaded successfully')
+  // } catch (error) {
+  //     console.error('[!] Failed to load the .env file:', error)
+  //     process.exit(1) // Exit with error
+  // }
 
   const serverPort = process.env.SERVER_PORT;
 
@@ -31,13 +30,13 @@ const loadConfig = () => {
     password: password,
     hostUrl: hostUrl,
     dbName: dbName,
-    replicaSetName: replicaSetName
+    replicaSetName: replicaSetName,
   });
 
   return {
     serverPort,
     connectionString,
-    dbName
+    dbName,
   };
 };
 

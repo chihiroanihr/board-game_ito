@@ -159,7 +159,7 @@ export default function ConnectLayout() {
     updateUser,
     user,
     discardUser,
-    navigate
+    navigate,
   ]);
 
   return !sessionDataFetched ? (

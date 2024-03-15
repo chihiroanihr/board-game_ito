@@ -8,7 +8,7 @@ import {
   insertSession,
   saveSession,
   deleteSession,
-  deleteAllSessions
+  deleteAllSessions,
 } from './sessionController';
 
 import {
@@ -18,7 +18,7 @@ import {
   updateUserStatus,
   deleteUser,
   getAllUsers,
-  deleteAllUsers
+  deleteAllUsers,
 } from './userController';
 
 import {
@@ -29,7 +29,7 @@ import {
   deleteRoom,
   getAllRooms,
   deleteAllRooms,
-  cleanUpIdleRooms
+  cleanUpIdleRooms,
 } from './roomController';
 
 import {
@@ -37,7 +37,7 @@ import {
   convertPlayerIdsToPlayerObjs,
   insertPlayerInRoom,
   deletePlayerFromRoom,
-  updateRoomAdmin
+  updateRoomAdmin,
 } from './playerController';
 
 export {
@@ -70,5 +70,5 @@ export {
   convertPlayerIdsToPlayerObjs,
   insertPlayerInRoom,
   deletePlayerFromRoom,
-  updateRoomAdmin
+  updateRoomAdmin,
 };

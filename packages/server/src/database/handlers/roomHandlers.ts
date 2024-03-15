@@ -5,12 +5,12 @@ import {
   type User,
   type RoomSetting,
   RoomStatusEnum,
-  UserStatusEnum
+  UserStatusEnum,
 } from '@bgi/shared';
 
 import * as controller from '../controllers';
 import * as util from '../../utils';
-import * as debug from '../../debug';
+import * as log from '../../log';
 
 /**
  * Generates unique room ID.
@@ -62,7 +62,7 @@ export const handleCreateRoom = async (
       creationTime: new Date(),
       createdBy: userId,
       players: [userId],
-      setting: roomSetting
+      setting: roomSetting,
     };
 
     /** @api_call - Insert new room (POST) */
@@ -81,7 +81,7 @@ export const handleCreateRoom = async (
     // All success
     return { user: updatedUser, room: newRoomObj };
   } catch (error) {
-    throw debug.handleDBError(error, 'handleCreateRoom');
+    throw log.handleDBError(error, 'handleCreateRoom');
   }
 };
 
@@ -141,7 +141,7 @@ export const handleJoinRoom = async (
       return { user: updatedUser, room: updatedRoom };
     }
   } catch (error) {
-    throw debug.handleDBError(error, 'handleJoinRoom');
+    throw log.handleDBError(error, 'handleJoinRoom');
   }
 };
 
@@ -221,6 +221,6 @@ export const handleLeaveRoom = async (
     // All success
     return { user: updatedUser, room: updatedRoom };
   } catch (error) {
-    throw debug.handleDBError(error, 'handleLeaveRoom');
+    throw log.handleDBError(error, 'handleLeaveRoom');
   }
 };

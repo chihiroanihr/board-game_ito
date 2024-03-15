@@ -37,7 +37,7 @@ const createCollections = async (db: Db) => {
 const getAllCollections = (db: Db): DatabaseCollections => ({
   sessions: db.collection<Session>('sessions'),
   users: db.collection<User>('users'),
-  rooms: db.collection<Room>('rooms')
+  rooms: db.collection<Room>('rooms'),
 });
 
 export const getDB = () => {
@@ -46,7 +46,7 @@ export const getDB = () => {
   // Return both the collections and a method to start a session
   return {
     ...getAllCollections(mongoDB.db(DB_NAME)), // Access collections
-    startSession: () => mongoDB!.startSession()
+    startSession: () => mongoDB!.startSession(),
   };
 };
 

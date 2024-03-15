@@ -1,4 +1,4 @@
-import { Server, Socket } from "socket.io";
+import { Server, Socket } from 'socket.io';
 
 // Keeping track of connected and logged-in sockets outside of the connection handler
 const socketsConnected = new Set<string>();
@@ -35,30 +35,30 @@ const getLoggedInSockets = (): Set<string> => {
 
 const notifySocketsToAll = (io: Server): void => {
   // Emit the updated list of connected sockets
-  io.emit("sockets-connected", Array.from(socketsConnected));
+  io.emit('sockets-connected', Array.from(socketsConnected));
 
   // Emit the updated list of logged-in sockets
-  io.emit("sockets-loggedin", Array.from(socketsLoggedIn));
+  io.emit('sockets-loggedin', Array.from(socketsLoggedIn));
 };
 
 const notifyConnectedSocket = (socket: Socket): void => {
   // Notify existing users for new connect (emit to all connected clients, except the socket itself).
-  socket.broadcast.emit("socket-connected", socket.id);
+  socket.broadcast.emit('socket-connected', socket.id);
 };
 
 const notifyDisconnectedSocket = (socket: Socket): void => {
   // Notify existing users for new connect (emit to all connected clients, except the socket itself).
-  socket.broadcast.emit("socket-disconnected", socket.id);
+  socket.broadcast.emit('socket-disconnected', socket.id);
 };
 
 const notifyLoggedInSocket = (socket: Socket): void => {
   // Notify existing users for new login (emit to all logged-in clients, except the socket itself).
-  socket.broadcast.emit("socket-loggedin", socket.id);
+  socket.broadcast.emit('socket-loggedin', socket.id);
 };
 
 const notifyLoggedOutSocket = (socket: Socket): void => {
   // Notify existing users for new login (emit to all logged-in clients, except the socket itself).
-  socket.broadcast.emit("socket-loggedout", socket.id);
+  socket.broadcast.emit('socket-loggedout', socket.id);
 };
 
 export {

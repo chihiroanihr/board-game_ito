@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
 
+import type { InitializeResponse } from '@bgi/shared';
+
 import { useSocket } from '@/hooks';
 import { outputServerError, outputResponseTimeoutError } from '@/utils';
-
-type SocketEventType = {
-  roomsDeleted: boolean;
-  usersDeleted: boolean;
-  sessionsDeleted: boolean;
-};
 
 export default function Initialize() {
   const { socket } = useSocket();
@@ -24,24 +20,25 @@ export default function Initialize() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('initialize', async (error: unknown, response: SocketEventType) => {
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
+    socket.emit(
+      'initialize',
+      async ({ error, roomsDeleted, usersDeleted, sessionsDeleted }: InitializeResponse) => {
+        // Clear the timeout as response is received before timeout
+        clearTimeout(timeoutId);
 
-      const { roomsDeleted, usersDeleted, sessionsDeleted } = response;
-
-      if (error) {
-        outputServerError(error);
-      } else {
-        if (roomsDeleted || usersDeleted || sessionsDeleted) {
-          alert('[Success]: Successfully initialized Mongo DB.');
+        if (error) {
+          outputServerError(error);
         } else {
-          alert('[Error]: Could not initialize database (Database could be already empty).');
+          if (roomsDeleted || usersDeleted || sessionsDeleted) {
+            alert('[Success]: Successfully initialized Mongo DB.');
+          } else {
+            alert('[Error]: Could not initialize database (Database could be already empty).');
+          }
         }
-      }
 
-      setLoading(false); // Set loading to false when the response is received
-    });
+        setLoading(false); // Set loading to false when the response is received
+      }
+    );
   };
 
   return (

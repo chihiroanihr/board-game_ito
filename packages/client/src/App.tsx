@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Route,
   RouterProvider,
@@ -25,8 +26,8 @@ function App() {
         </Route>
 
         <Route path="*" element={<NotFound />} />
-      </Route>,
-    ),
+      </Route>
+    )
   );
 
   return (

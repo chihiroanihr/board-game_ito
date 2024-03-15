@@ -4,7 +4,7 @@
 cd "$(dirname "$0")"
 
 # Source the .env file from the root directory
-source ../.env
+source ../.env/.env
 
 if [ "$NODE_ENV" = "development" ]; then
     echo "[*] Running in development mode"

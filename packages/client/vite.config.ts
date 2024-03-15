@@ -59,5 +59,5 @@ export default defineConfig({
   },
 
   // Environment variables
-  envDir: resolve(__dirname, '../../'),
+  envDir: resolve(__dirname, '../../.env/'),
 });

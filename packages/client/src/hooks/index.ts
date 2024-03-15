@@ -13,5 +13,5 @@ export {
   SocketProvider,
   SessionProvider,
   AuthProvider,
-  RoomProvider
+  RoomProvider,
 };

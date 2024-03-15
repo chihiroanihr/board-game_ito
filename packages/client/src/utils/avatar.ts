@@ -21,8 +21,8 @@ export const stringToColor = (string: string) => {
 export const stringAvatar = (name: string) => {
   return {
     sx: {
-      bgcolor: stringToColor(name)
+      bgcolor: stringToColor(name),
     },
-    children: `${name[0]}${name[1]}`
+    children: `${name[0]}${name[1]}`,
   };
 };

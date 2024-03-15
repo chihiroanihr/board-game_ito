@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "eslint:check": "eslint \"./packages/**/*.{js,jsx,ts,tsx}\"",
-    "eslint:fix": "eslint --fix 'packages/**/*.{js,jsx,ts,tsx}'",
+    "eslint:fix": "eslint --fix \"packages/**/*.{js,jsx,ts,tsx}\"",
     "prettier:check": "prettier --list-different './packages/**/*.{js,ts,jsx,tsx}' './**/*.json'",
     "prettier:fix": "prettier --write './packages/**/*.{js,ts,jsx,tsx}' './**/*.json'  --config ./.prettierrc.json",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -23,7 +23,7 @@
     "build-ts": "tsc --build",
     "build-ts--flags": "tsc -b -w -i",
     "build-ts--verbose": "tsc --build --verbose",
-    "build:all": "npm run build -w @bgi/client && npm run build -w @bgi/server && npm run build -w @bgi/shared",
+    "build:all": "npm run build -w @bgi/shared && npm run build -w @bgi/client && npm run build -w @bgi/server",
     "build:client": "npm run build -w @bgi/client",
     "build:client:check": "npm run build:check -w @bgi/client",
     "build:client:watch": "npm run build:watch -w @bgi/client",

@@ -33,7 +33,7 @@ router.get('/', async (_req, res) => {
 //       res.status(404).json({ error: "Internal server error" });
 //     }
 //   } catch (error) {
-//     handleServerError(error, "routeHandlers.ts");
+//     log.handleServerError(error, "routeHandlers.ts");
 //     res.status(500).json({ error: "Internal server error" });
 //   }
 // });

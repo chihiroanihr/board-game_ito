@@ -1,4 +1,11 @@
-import React, { type ReactNode, type Context, createContext, useContext, useMemo, useCallback } from 'react';
+import React, {
+  type ReactNode,
+  type Context,
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+} from 'react';
 
 import type { User } from '@bgi/shared';
 
@@ -43,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     () => ({
       user,
       discardUser,
-      updateUser
+      updateUser,
     }),
     [discardUser, user, updateUser]
   );

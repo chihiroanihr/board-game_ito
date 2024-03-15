@@ -1,5 +1,5 @@
 export const userIdConfig = {
-  numLetters: 12
+  numLetters: 12,
   // numSegLetters: 3,
   // characters: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
 };
@@ -10,5 +10,5 @@ export const userNameConfig = {
   minLength: 2,
   minLengthErrorMessage: 'Name must be at least 2 characters long.',
   maxLength: 20,
-  maxLengthErrorMessage: 'Name must be at most 20 characters long.'
+  maxLengthErrorMessage: 'Name must be at most 20 characters long.',
 };

@@ -12,9 +12,9 @@
     "build:check": "tsc -p ./tsconfig.server.json --noEmit",
     "build:watch": "tsc -p ./tsconfig.server.json --watch",
     "build": "npm run clean && tsc -p ./tsconfig.server.json",
-    "start": "shx cp ../../.env dist/server/.env && tsc -p ./tsconfig.server.json && node dist/server/src/server.js",
-    "start:dev": "shx cp ../../.env .env && ts-node -P tsconfig.server.json ./src/server.ts",
-    "start:dev:nodemon": "shx cp ../../.env .env && nodemon"
+    "start": "tsc -p ./tsconfig.server.json && node --env-file ../../.env/.env dist/server/src/server.js",
+    "start:dev": "node -r ts-node/register --env-file ../../.env/.env ./src/server.ts",
+    "start:dev:nodemon": "nodemon"
   },
   "dependencies": {
     "@bgi/shared": "^1.0.0",

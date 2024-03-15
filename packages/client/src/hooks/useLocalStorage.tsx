@@ -1,11 +1,8 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 // To maintain the user’s state even after a page refresh
 // This hook synchronizes the state value with the browser’s local storage.
-export function useLocalStorage<T>(
-  keyName: string,
-  defaultValue: T
-): [T, (newValue: T) => void] {
+export function useLocalStorage<T>(keyName: string, defaultValue: T): [T, (newValue: T) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       // * If key already exists in local storage

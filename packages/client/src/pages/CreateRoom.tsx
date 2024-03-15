@@ -15,19 +15,14 @@ import {
   FormHelperText,
   RadioGroup,
   Radio,
-  Alert
+  Alert,
 } from '@mui/material';
 
-import { type User, type Room, type RoomSetting, roomSettingConfig } from '@bgi/shared';
+import { type RoomSetting, roomSettingConfig, type CreateRoomResponse } from '@bgi/shared';
 
 import { CardContentOverride } from '../theme';
 import { useAuth, useRoom, useSocket } from '@/hooks';
 import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
-
-type SocketEventType = {
-  user: User;
-  room: Room;
-};
 
 /**
  * Subpage for Dashboard
@@ -54,7 +49,7 @@ function CreateRoom() {
     numRound: roomSettingConfig.numRound.defaultRounds,
     dupNumCard: 'false',
     thinkTimeTitle: roomSettingConfig.thinkTimeTitle.defaultSeconds,
-    thinkTimePlayers: roomSettingConfig.thinkTimePlayers.defaultSeconds
+    thinkTimePlayers: roomSettingConfig.thinkTimePlayers.defaultSeconds,
   };
 
   // Prepare react-hook-form
@@ -62,9 +57,9 @@ function CreateRoom() {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm<formDataType>({
-    defaultValues: formDefaultValues
+    defaultValues: formDefaultValues,
   });
 
   const onsubmit = (data: formDataType) => {
@@ -73,7 +68,7 @@ function CreateRoom() {
 
     const roomSettingData: RoomSetting = {
       ...data,
-      dupNumCard: data.dupNumCard === 'true' // Convert string to boolean
+      dupNumCard: data.dupNumCard === 'true', // Convert string to boolean
     };
 
     // Create a timeout to check if the response is received
@@ -83,25 +78,27 @@ function CreateRoom() {
     }, 5000);
 
     // Send to socket
-    socket.emit('create-room', roomSettingData, async (error: unknown, response: SocketEventType) => {
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
+    socket.emit(
+      'create-room',
+      roomSettingData,
+      async ({ error, user, room }: CreateRoomResponse) => {
+        // Clear the timeout as response is received before timeout
+        clearTimeout(timeoutId);
 
-      const { user, room } = response;
+        if (error) {
+          setErrorMessage('Internal Server Error: Please try again.');
+          outputServerError({ error });
+        } else {
+          updateUser(user ? user : null); // Store updated user info to local storage
+          updateRoom(room ? room : null); // Store room info to local storage and redirect
+          navigateWaiting(navigate); // Navigate
 
-      if (error) {
-        setErrorMessage('Internal Server Error: Please try again.');
-        outputServerError({ error });
-      } else {
-        updateUser(user); // Store updated user info to local storage
-        updateRoom(room); // Store room info to local storage and redirect
-        navigateWaiting(navigate); // Navigate
+          reset(); // Optionally reset form fields
+        }
 
-        reset(); // Optionally reset form fields
+        setLoading(false);
       }
-
-      setLoading(false);
-    });
+    );
   };
 
   // Disappear error message after 5 seconds
@@ -147,12 +144,12 @@ function CreateRoom() {
                     required: 'This field is required.',
                     min: {
                       value: roomSettingConfig.numRound.minRounds,
-                      message: roomSettingConfig.numRound.minRoundsErrorMessage
+                      message: roomSettingConfig.numRound.minRoundsErrorMessage,
                     },
                     max: {
                       value: roomSettingConfig.numRound.maxRounds,
-                      message: roomSettingConfig.numRound.maxRoundsErrorMessage
-                    }
+                      message: roomSettingConfig.numRound.maxRoundsErrorMessage,
+                    },
                   })}
                   // Validation Error
                   error={Boolean(errors.numRound)}
@@ -173,12 +170,12 @@ function CreateRoom() {
                     required: 'This field is required.',
                     min: {
                       value: roomSettingConfig.thinkTimeTitle.minSeconds,
-                      message: roomSettingConfig.thinkTimeTitle.minSecondsErrorMessage
+                      message: roomSettingConfig.thinkTimeTitle.minSecondsErrorMessage,
                     },
                     max: {
                       value: roomSettingConfig.thinkTimeTitle.maxSeconds,
-                      message: roomSettingConfig.thinkTimeTitle.maxSecondsErrorMessage
-                    }
+                      message: roomSettingConfig.thinkTimeTitle.maxSecondsErrorMessage,
+                    },
                   })}
                   // Validation Error
                   error={Boolean(errors.thinkTimeTitle)}
@@ -199,12 +196,12 @@ function CreateRoom() {
                     required: 'This field is required.',
                     min: {
                       value: roomSettingConfig.thinkTimePlayers.minSeconds,
-                      message: roomSettingConfig.thinkTimePlayers.minSecondsErrorMessage
+                      message: roomSettingConfig.thinkTimePlayers.minSecondsErrorMessage,
                     },
                     max: {
                       value: roomSettingConfig.thinkTimePlayers.maxSeconds,
-                      message: roomSettingConfig.thinkTimePlayers.maxSecondsErrorMessage
-                    }
+                      message: roomSettingConfig.thinkTimePlayers.maxSecondsErrorMessage,
+                    },
                   })}
                   // Validation Error
                   error={Boolean(errors.thinkTimePlayers)}
@@ -221,13 +218,17 @@ function CreateRoom() {
                     value={true}
                     label={roomSettingConfig.dupNumCard.radioTrue}
                     control={<Radio size="small" />}
-                    {...register('dupNumCard', { required: 'This field is required.' })}
+                    {...register('dupNumCard', {
+                      required: 'This field is required.',
+                    })}
                   />
                   <FormControlLabel
                     value={false}
                     label={roomSettingConfig.dupNumCard.radioFalse}
                     control={<Radio size="small" />}
-                    {...register('dupNumCard', { required: 'This field is required.' })}
+                    {...register('dupNumCard', {
+                      required: 'This field is required.',
+                    })}
                   />
                 </RadioGroup>
 

@@ -14,19 +14,19 @@ const BadgeOnline = styled(Badge)(({ theme }: { theme: Theme }) => ({
       borderRadius: '50%',
       animation: 'ripple 1.2s infinite ease-in-out',
       border: '1px solid currentColor',
-      content: '""'
-    }
+      content: '""',
+    },
   },
   '@keyframes ripple': {
     '0%': {
       transform: 'scale(.8)',
-      opacity: 1
+      opacity: 1,
     },
     '100%': {
       transform: 'scale(2)',
-      opacity: 0
-    }
-  }
+      opacity: 0,
+    },
+  },
 }));
 
 export default BadgeOnline;

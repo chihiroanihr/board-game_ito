@@ -10,7 +10,7 @@ import {
   ListItem,
   ListItemAvatar,
   Avatar,
-  ListItemText
+  ListItemText,
 } from '@mui/material';
 
 import type { User, Room } from '@bgi/shared';
@@ -19,7 +19,7 @@ import {
   BadgeOnline,
   AnimateTextThreeDots,
   SnackbarPlayerIn,
-  SnackbarPlayerOut
+  SnackbarPlayerOut,
 } from '@/components';
 import { useAuth, useRoom, useSocket } from '@/hooks';
 import { outputServerError, outputResponseTimeoutError, stringAvatar } from '@/utils';
@@ -56,16 +56,19 @@ export default function Waiting() {
    *    - Set list of participating players (Array<User>)
    *    - (Set other room config info, etc.)
    */
+  type WaitRoomResponse = { error?: Error; players?: User[] };
   useEffect(() => {
     room &&
-      socket.emit('wait-room', room, async (error: unknown, responsePlayers: Array<User>) => {
+      socket.emit('wait-room', room, async ({ error, players }: WaitRoomResponse) => {
         if (error) {
           outputServerError({ error });
+        } else if (!players) {
+          /** @todo - Failed to fetch players error (create new error) */
         } else {
           // Add admin
           setAdminId(room.createdBy);
           // Add list of players
-          setPlayers(responsePlayers);
+          setPlayers(players);
         }
       });
   }, [room, socket]);
@@ -168,7 +171,7 @@ export default function Waiting() {
     }, 5000);
 
     // Send to socket
-    socket.emit('start-game', room, async (error: unknown, response: unknown) => {
+    socket.emit('start-game', room, async ({ error }: { error: Error }) => {
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 
@@ -203,7 +206,7 @@ export default function Waiting() {
         </Typography>
 
         <List>
-          {players.map((player, index) => (
+          {players.map((player) => (
             <ListItem key={player._id.toString()}>
               <ListItemAvatar>
                 <BadgeOnline

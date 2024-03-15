@@ -1,11 +1,5 @@
-import React, {
-  type ReactNode,
-  type Context,
-  createContext,
-  useContext,
-  useMemo,
-} from "react";
-import { Socket } from "socket.io-client";
+import React, { type ReactNode, type Context, createContext, useContext, useMemo } from 'react';
+import { Socket } from 'socket.io-client';
 
 interface SocketContextType {
   socket: Socket;
@@ -21,10 +15,7 @@ interface SocketProviderProps {
   children: ReactNode;
 }
 
-export const SocketProvider: React.FC<SocketProviderProps> = ({
-  socket,
-  children,
-}) => {
+export const SocketProvider: React.FC<SocketProviderProps> = ({ socket, children }) => {
   const value = useMemo(
     () => ({
       socket,
@@ -32,9 +23,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     [socket]
   );
 
-  return (
-    <SocketContext.Provider value={value}>{children}</SocketContext.Provider>
-  );
+  return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
 };
 
 export const useSocket = (): SocketContextType => {
@@ -42,7 +31,7 @@ export const useSocket = (): SocketContextType => {
 
   if (!context) {
     /** @todo - Handle error */
-    throw new Error("useSocket must be used within a SocketProvider");
+    throw new Error('useSocket must be used within a SocketProvider');
   }
 
   return context;

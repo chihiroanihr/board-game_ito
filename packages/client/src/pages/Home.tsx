@@ -10,10 +10,10 @@ import {
   Button,
   CircularProgress,
   FormControl,
-  Alert
+  Alert,
 } from '@mui/material';
 
-import { type User, userNameConfig } from '@bgi/shared';
+import { userNameConfig, type LoginResponse } from '@bgi/shared';
 
 import { useAuth, useSocket } from '@/hooks';
 import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '@/utils';
@@ -40,9 +40,9 @@ function Home() {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm<FormDataType>({
-    defaultValues: { name: '' }
+    defaultValues: { name: '' },
   });
 
   // Player name submitted
@@ -66,9 +66,7 @@ function Home() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('login', userName, async (error: unknown, userResponse: User) => {
-      // socket.emit("logout", userName);
-
+    socket.emit('login', userName, async ({ error, user }: LoginResponse) => {
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 
@@ -77,7 +75,7 @@ function Home() {
         outputServerError({ error });
       } else {
         reset(); // Optionally reset form fields
-        updateUser(userResponse); // Login and save user info to local storage
+        updateUser(user ? user : null); // Login and save user info to local storage
         navigateDashboard(navigate); // Navigate
       }
 
@@ -117,24 +115,24 @@ function Home() {
               InputProps={{
                 sx: {
                   borderTopRightRadius: 0,
-                  borderBottomRightRadius: 0
-                }
+                  borderBottomRightRadius: 0,
+                },
               }}
               // Validate the name with react-hook-form
               {...register('name', {
                 required: 'Name is required.',
                 minLength: {
                   value: userNameConfig.minLength,
-                  message: userNameConfig.minLengthErrorMessage
+                  message: userNameConfig.minLengthErrorMessage,
                 },
                 maxLength: {
                   value: userNameConfig.maxLength,
-                  message: userNameConfig.maxLengthErrorMessage
+                  message: userNameConfig.maxLengthErrorMessage,
                 },
                 pattern: {
                   value: userNameConfig.regex,
-                  message: userNameConfig.regexErrorMessage
-                }
+                  message: userNameConfig.regexErrorMessage,
+                },
               })}
             />
 
@@ -144,7 +142,7 @@ function Home() {
               variant="contained"
               sx={{
                 borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0
+                borderBottomLeftRadius: 0,
               }}
               disableElevation
               disabled={loading}

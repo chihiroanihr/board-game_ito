@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Typography, Button, CircularProgress, Box, Stack } from '@mui/material';
 
+import type { LogoutResponse, LeaveRoomResponse } from '@bgi/shared';
+
 import { useAuth, useRoom, useSocket } from '@/hooks';
 import {
   navigateHome,
   navigateDashboard,
   outputServerError,
-  outputResponseTimeoutError
+  outputResponseTimeoutError,
 } from '@/utils';
 
 /**
@@ -33,7 +35,7 @@ export default function HeaderLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('logout', async (error: unknown) => {
+    socket.emit('logout', async ({ error }: LogoutResponse) => {
       // socket.emit("logout");
 
       // Clear the timeout as response is received before timeout
@@ -61,9 +63,7 @@ export default function HeaderLayout() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('leave-room', async (error: unknown) => {
-      // socket.emit("leave-room");
-
+    socket.emit('leave-room', async ({ error }: LeaveRoomResponse) => {
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 

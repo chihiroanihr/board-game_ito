@@ -28,7 +28,7 @@ const server: HTTPServer = createServer(app);
 // Socket.io server initialization
 const io: SocketIOServer = new SocketIOServer(server, {
   // CORS allows HTTP requests sent by the frontent (specified in origin) to reach the server.
-  cors: { origin: CLIENT_URL ?? '*' }
+  cors: { origin: CLIENT_URL ?? '*' },
 });
 
 /**
@@ -75,7 +75,7 @@ function setupGracefulShutdown(serverInstance: HTTPServer) {
         }),
 
         // [2] Close database connection
-        closeDB()
+        closeDB(),
       ]);
       console.log('[*] Database connection closed.');
     } catch (error) {

@@ -3,7 +3,7 @@ import { io, Socket } from 'socket.io-client';
 const SOCKET_URL = `${import.meta.env.VITE_IP_ADDRESS}:${import.meta.env.VITE_SERVER_PORT}`; // or ${window.location.hostname}:${}
 
 const socketOptions = {
-  autoConnect: false // The autoConnect is set to false so the connection is not established right away.
+  autoConnect: false, // The autoConnect is set to false so the connection is not established right away.
   // reconnection: true,
   // reconnectionDelay: 1000,
   // reconnectionAttempts: 10,

@@ -13,7 +13,7 @@ export const createConnString = ({
   hostUrl,
   dbName,
   replicaSetName,
-  queries
+  queries,
 }: CreateConnStringArgs): string => {
   // Prepare a connection string
   let connectionString = `mongodb://`;
@@ -46,7 +46,7 @@ export const createConnStringAtlas = ({
   password,
   hostUrl,
   dbName,
-  queries = 'retryWrites=true&w=majority'
+  queries = 'retryWrites=true&w=majority',
 }: CreateConnStringAtlasArgs): string => {
   // Prepare a connection string
   let connectionString = `mongodb+srv://`;

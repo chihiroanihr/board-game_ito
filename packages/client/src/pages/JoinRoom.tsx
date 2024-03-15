@@ -11,10 +11,10 @@ import {
   TextField,
   FormHelperText,
   Alert,
-  Snackbar
+  Snackbar,
 } from '@mui/material';
 
-import { type User, type Room, roomIdConfig } from '@bgi/shared';
+import { roomIdConfig, type JoinRoomResponse } from '@bgi/shared';
 
 import { CardContentOverride } from '../theme';
 import { useAuth, useRoom, useSocket } from '@/hooks';
@@ -23,13 +23,6 @@ import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '
 type FormDataType = {
   roomId: string;
 };
-
-type SocketEventType =
-  | {
-      user: User;
-      room: Room;
-    }
-  | string;
 
 /**
  * Subpage for Dashboard
@@ -51,9 +44,9 @@ function JoinRoom() {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm<FormDataType>({
-    defaultValues: { roomId: '' }
+    defaultValues: { roomId: '' },
   });
 
   // Room ID Submitted
@@ -77,7 +70,7 @@ function JoinRoom() {
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit('join-room', roomId, async (error: unknown, response: SocketEventType) => {
+    socket.emit('join-room', roomId, async ({ error, user, room }: JoinRoomResponse) => {
       // Clear the timeout as response is received before timeout
       clearTimeout(timeoutId);
 
@@ -86,16 +79,14 @@ function JoinRoom() {
         outputServerError({ error });
       } else {
         // User can join room
-        if (typeof response === 'object') {
-          const { user, room } = response;
-
-          updateUser(user); // Store updated user info to local storage
-          updateRoom(room); // Save room info to local storage and navigate
+        if (typeof room === 'object') {
+          updateUser(user ? user : null); // Store updated user info to local storage
+          updateRoom(room ? room : null); // Save room info to local storage and navigate
           navigateWaiting(navigate); // Navigate
         }
         // User cannot join room
         else {
-          setErrorMessage(response);
+          setErrorMessage(room ? room : 'You cannot join this room for unknown reason.');
           setSnackbarOpen(true);
         }
 
@@ -142,8 +133,8 @@ function JoinRoom() {
                   required: 'Room ID is required',
                   pattern: {
                     value: roomIdConfig.regex,
-                    message: roomIdConfig.errorMessage
-                  }
+                    message: roomIdConfig.errorMessage,
+                  },
                 })}
                 // Validation Error
                 error={Boolean(errors.roomId)}

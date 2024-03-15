@@ -3,7 +3,7 @@ import { ClientSession, ObjectId } from 'mongodb';
 import { type User, UserStatusEnum } from '@bgi/shared';
 
 import * as controller from '../controllers';
-import * as debug from '../../debug';
+import * as log from '../../log';
 
 export const handleLogin = async (
   userName: string,
@@ -15,7 +15,7 @@ export const handleLogin = async (
       _id: new ObjectId(), // Unique user ID
       name: userName,
       status: UserStatusEnum.IDLE,
-      creationTime: new Date()
+      creationTime: new Date(),
     };
 
     /** @api_call - Append new user info to database (POST) */
@@ -28,7 +28,7 @@ export const handleLogin = async (
     // All success
     return newUserObj;
   } catch (error) {
-    throw debug.handleDBError(error, 'handleLogin');
+    throw log.handleDBError(error, 'handleLogin');
   }
 };
 
@@ -49,6 +49,6 @@ export const handleLogout = async (
     // All success
     return;
   } catch (error) {
-    throw debug.handleDBError(error, 'handleLogout');
+    throw log.handleDBError(error, 'handleLogout');
   }
 };

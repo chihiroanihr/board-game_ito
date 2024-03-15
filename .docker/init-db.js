@@ -7,7 +7,7 @@ function createDbUser(username, password, roles) {
     db.createUser({
       user: username,
       pwd: password,
-      roles: roles
+      roles: roles,
     });
     console.log(`User ${username} creation successful.`);
   } catch (error) {

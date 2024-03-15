@@ -1,0 +1,11 @@
+# Ignore artifacts:
+**/dist
+**/build
+**/coverage
+
+**/.env
+**/.env.*
+**/.git
+**/.svn
+**/.hg
+**/node_modules

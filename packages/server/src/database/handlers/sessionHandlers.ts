@@ -4,7 +4,7 @@ import { Socket } from 'socket.io';
 import type { User, Room, Session } from '@bgi/shared';
 
 import * as controller from '../controllers';
-import * as debug from '../../debug';
+import * as log from '../../log';
 
 interface SessionData {
   _id: string;
@@ -29,7 +29,7 @@ const handleFindSession = async (sessionId: string): Promise<SessionData | null>
     // All success
     return { _id, connected, user, room };
   } catch (error) {
-    throw debug.handleDBError(error, 'handleFindSession');
+    throw log.handleDBError(error, 'handleFindSession');
   }
 };
 
@@ -44,7 +44,7 @@ const handleSaveSession = async (
       _id: socket.sessionId,
       userId: socket.user?._id ?? null,
       roomId: socket.room?._id ?? null,
-      connected: socket.connected
+      connected: socket.connected,
     };
 
     /** @api_call - Upsert new session (POST & PUT) */
@@ -57,7 +57,7 @@ const handleSaveSession = async (
     // All success
     return;
   } catch (error) {
-    throw debug.handleDBError(error, 'handleSaveSession');
+    throw log.handleDBError(error, 'handleSaveSession');
   }
 };
 

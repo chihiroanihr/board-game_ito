@@ -1,4 +1,11 @@
-import React, { type ReactNode, type Context, createContext, useContext, useMemo, useCallback } from 'react';
+import React, {
+  type ReactNode,
+  type Context,
+  createContext,
+  useContext,
+  useMemo,
+  useCallback,
+} from 'react';
 
 import type { Room } from '@bgi/shared';
 
@@ -41,7 +48,7 @@ export const RoomProvider: React.FC<RoomProviderProps> = ({ children }) => {
     () => ({
       room,
       discardRoom,
-      updateRoom
+      updateRoom,
     }),
     [discardRoom, room, updateRoom]
   );
