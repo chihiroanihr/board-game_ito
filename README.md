@@ -122,3 +122,9 @@ docker-compose -f .docker/docker-compose.yaml down -v
 ### Mongo DB
 
 - [Changes to findOneAnd\* APIs in Node.js Driver 6.0.0](https://alexbevi.com/blog/2023/08/03/behavioral-changes-to-the-findoneand-star-family-of-apis-in-node-dot-js-driver-6-dot-0-0/)
+
+### ESLint & Prettier
+
+- [Improving Code Quality in React with ESLint, Prettier, and TypeScript](https://medium.com/globant/improving-code-quality-in-react-with-eslint-prettier-and-typescript-86635033d803)
+- [How to set up ESLint and Prettier in React TypeScript 5 project? 2023](https://dev.to/quizzes4u/how-to-set-up-eslint-and-prettier-in-react-typescript-5-project-2023-hd6)
+- [Setup a Node.js project with Typescript, ESLint, Prettier, Husky](https://gist.github.com/silver-xu/1dcceaa14c4f0253d9637d4811948437)
