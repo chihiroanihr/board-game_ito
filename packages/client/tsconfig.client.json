@@ -7,10 +7,12 @@
     /* Bundler mode */
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "noEmit": true,
     "verbatimModuleSyntax": true,
-    "allowImportingTsExtensions": true,
     "isolatedModules": true,
+
+    /* Producing build folder (You need to change path index.html if you disabled these & run app from /dist) */
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
 
     /* Path Alias */
     "baseUrl": ".",
