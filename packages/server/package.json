@@ -9,12 +9,13 @@
   "main": "server.js",
   "scripts": {
     "clean": "rimraf dist",
-    "build:check": "tsc -p ./tsconfig.server.json --noEmit",
-    "build:watch": "tsc -p ./tsconfig.server.json --watch",
+    "start-dev": "node -r ts-node/register --env-file ../../.env/.env ./src/server.ts",
+    "start-dev-nodemon": "nodemon",
+    "build-check": "tsc -p ./tsconfig.server.json --noEmit",
+    "build-watch": "npm run clean && tsc -p ./tsconfig.server.json --watch",
     "build": "npm run clean && tsc -p ./tsconfig.server.json",
-    "start": "tsc -p ./tsconfig.server.json && node --env-file ../../.env/.env dist/server/src/server.js",
-    "start:dev": "node -r ts-node/register --env-file ../../.env/.env ./src/server.ts",
-    "start:dev:nodemon": "nodemon"
+    "build-start": "npm run build && node --env-file ../../.env/.env dist/server/src/server.js",
+    "start": "node --env-file ../../.env/.env dist/server/src/server.js"
   },
   "dependencies": {
     "@bgi/shared": "^1.0.0",

@@ -10,12 +10,14 @@
   "scripts": {
     "vite-lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "clean": "rimraf dist",
-    "prebuild:client": "tsc -p tsconfig.client.json",
-    "build:check": "tsc -p ./tsconfig.client.json --noEmit",
-    "build:watch": "tsc -p ./tsconfig.client.json --watch",
-    "build": "npm run clean && npm run prebuild:client && vite build",
-    "start": "vite",
-    "preview": "vite preview"
+    "vite-start-dev": "vite",
+    "tsc-build-check": "tsc -p ./tsconfig.client.json --noEmit",
+    "tsc-build-watch": "npm run clean && tsc -p ./tsconfig.client.json --watch",
+    "tsc-build": "npm run clean && tsc -p tsconfig.client.json",
+    "vite-build-watch": "npm run clean && npm run tsc-build && vite build --watch",
+    "vite-build": "npm run clean && npm run tsc-build && vite build",
+    "vite-build-preview": "npm run vite-build && vite preview",
+    "vite-preview": "vite preview"
   },
   "dependencies": {
     "@bgi/shared": "^1.0.0",
