@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = `${import.meta.env.VITE_IP_ADDRESS}:${import.meta.env.VITE_SERVER_PORT}`; // or ${window.location.hostname}:${}
+const SOCKET_URL = `${import.meta.env.VITE_SERVER_HOST_URL}:${import.meta.env.VITE_SERVER_PORT}`; // or ${window.location.hostname}:${}
 
 const socketOptions = {
   autoConnect: false, // The autoConnect is set to false so the connection is not established right away.
