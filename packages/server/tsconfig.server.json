@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2022", // already specified in root
+    // "target": "ES2022", // already specified in root
     "lib": ["es2023"],
     "sourceMap": true,
 

@@ -12,7 +12,7 @@
   "scripts": {
     "build": "npm run clean && tsc -p ./tsconfig.shared.json",
     "build:check": "tsc -p ./tsconfig.shared.json --noEmit",
-    "build:watch": "tsc -p ./tsconfig.shared.json --watch",
+    "build:watch": "npm run clean && tsc -p ./tsconfig.shared.json --watch",
     "clean": "rimraf dist"
   }
 }

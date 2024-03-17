@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "useDefineForClassFields": true,
-    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    // "lib": ["es2022", "DOM", "DOM.Iterable"], // Already specified in root
+    // "jsx": "react-jsx", // Already specified in root
 
     /* Bundler mode */
     "module": "ESNext",
@@ -10,7 +11,6 @@
     "verbatimModuleSyntax": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
-    // "jsx": "react-jsx", // Already specified in root
 
     /* Path Alias */
     "baseUrl": ".",
