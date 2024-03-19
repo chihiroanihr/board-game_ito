@@ -1,34 +1,42 @@
 #!/bin/bash
 
-# Navigate to the script's directory
-cd "$(dirname "$0")"
+# Navigate to the .docker directory
+cd "$(dirname "$0")"/.docker
+
+echo "$(dirname "$0")"/.docker
+
+# If keyfile does not exist then generate the keyfile and set permissions
+if [ ! -f "./replica.key" ]; then
+    echo "[*] Creating keyfile."
+    bash keyfile.sh
+fi
 
 # Source the .env file from the root directory
 source ../.env/.env
 
-if [ "$NODE_ENV" = "development" ]; then
-    echo "[*] Running in development mode"
-elif [ "$NODE_ENV" = "production" ]; then
-    echo "[*] Running in production mode"
-elif [ "$NODE_ENV" = "testing" ]; then
-    echo "[*] Running in testing mode"
-else
-    echo "[!] Unknown mode, defaulting to development"
-    # exit 1 # Exit with an error status
-fi
-
-# If keyfile does not exist then generate the keyfile and set permissions
-if [ ! -f "./replica.key" ]; then
-    bash keyfile.sh
-fi
-
 # Start the MongoDB containers
-docker-compose up -d
+if [ "$START_APPS_IN_DOCKER" != true ]; then
+    docker-compose up -d
+
+elif [ "$NODE_ENV" = "development" ]; then
+    echo "[*] Apps start inside Docker containers. Running in development mode."
+    COMPOSE_PROFILES=dev DOCKER_BUILDKIT=1 docker-compose up -d
+
+elif [ "$NODE_ENV" = "production" ]; then
+    echo "[*] Apps start inside Docker containers. Running in production mode."
+    COMPOSE_PROFILES=prod DOCKER_BUILDKIT=1 docker-compose up -d
+
+elif [ "$NODE_ENV" = "testing" ]; then
+    echo "[*] Apps start inside Docker containers. Running in testing mode."
+
+else
+    echo "[!] Unknown mode."
+    exit 1 # Exit with an error status
+fi
 
 # Wait for MongoDB to fully start
 echo "[*] Waiting for MongoDB to start..."
 sleep 5
-docker container ls
 
 # Initialize the replica set configuration and create user
 docker exec -it mongo1 \
@@ -43,3 +51,5 @@ docker exec -it mongo1 \
     --eval \
     "var rootUsername = '$MONGO_ROOT_USERNAME'; var rootPassword = '$MONGO_ROOT_PASSWORD'; var username = '$MONGO_USERNAME'; var password = '$MONGO_PASSWORD'; var dbName = '$MONGO_DB_NAME'" \
     /etc/init-db.js
+
+docker ps

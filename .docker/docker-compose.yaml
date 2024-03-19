@@ -1,13 +1,118 @@
 version: '3.8' # Minimum version of Docker required
 
 services:
+  client-dev:
+    container_name: client_dev
+    profiles: ['dev']
+    build:
+      context: ..
+      dockerfile: ./.docker/Dockerfile # ./packages/client/Dockerfile
+      target: build-dev-client
+    # restart: always
+    command: sh -c "npm run start-dev:client" # Override the default command in Dockerfile if preferred.
+    ports:
+      - '5173:5173'
+    volumes:
+      # Override and sync necessary files from host to docker
+      - ../package.json:/board-game_ito/package.json
+      - ../package-lock.json:/board-game_ito/package-lock.json
+      - ../tsconfig.base.json:/board-game_ito/tsconfig.base.json
+      - ../tsconfig.json:/board-game_ito/tsconfig.json
+      - ../.env/.env:/board-game_ito/.env/.env # env file
+      - ../packages/shared:/board-game_ito/packages/shared # /shared: shared source code
+
+      # Use named volumes to override ans sync necessary files from host to docker and vice versa.
+      # - package-json:/board-game_ito/package.json
+      # - package-lock-json:/board-game_ito/package-lock.json
+      # - tsconfig-base-json:/board-game_ito/tsconfig.base.json
+      # - tsconfig-json:/board-game_ito/tsconfig.json
+      # - env:/board-game_ito/.env/.env
+      # - shared:/board-game_ito/packages/shared
+      # Use bind mounts to override and sync necessary files from host to docker and vice versa.
+      - ../packages/client:/board-game_ito/packages/client # client source code
+      # Except here, mount node_modules to prevent conflicts.
+      - /board-game_ito/node_modules
+    networks:
+      - bgi-network
+    depends_on:
+      - server-dev
+
+  server-dev:
+    container_name: server_dev
+    profiles: ['dev']
+    build:
+      context: ..
+      dockerfile: ./.docker/Dockerfile # ./packages/server/Dockerfile
+      target: build-dev-server
+    # restart: always
+    command: sh -c "npm run start-dev:server" # Override the default command in Dockerfile if preferred.
+    ports:
+      - '3000:3000'
+    volumes:
+      # Override and sync necessary files from host to docker
+      - ../package.json:/board-game_ito/package.json
+      - ../package-lock.json:/board-game_ito/package-lock.json
+      - ../tsconfig.base.json:/board-game_ito/tsconfig.base.json
+      - ../tsconfig.json:/board-game_ito/tsconfig.json
+      - ../.env/.env:/board-game_ito/.env/.env # env file
+      - ../packages/shared:/board-game_ito/packages/shared # /shared: shared source code
+
+      # Use named volumes to override ans sync necessary files from host to docker and vice versa.
+      # - package-json:/board-game_ito/package.json
+      # - package-lock-json:/board-game_ito/package-lock.json
+      # - tsconfig-base-json:/board-game_ito/tsconfig.base.json
+      # - tsconfig-json:/board-game_ito/tsconfig.json
+      # - env:/board-game_ito/.env/.env
+      # - shared:/board-game_ito/packages/shared
+      # Use bind mounts to override and sync necessary files from host to docker and vice versa.
+      - ../packages/server:/board-game_ito/packages/server # server source code
+      # Except here, mount node_modules to prevent conflicts
+      - /board-game_ito/node_modules
+    networks:
+      - bgi-network
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+
+  client:
+    container_name: client
+    profiles: ['prod']
+    build:
+      context: ..
+      dockerfile: ./.docker/Dockerfile # ./packages/client/Dockerfile
+      target: build-prod-client
+    # restart: always
+    ports:
+      - '80:5173' # 80:80
+    networks:
+      - bgi-network
+    depends_on:
+      - server
+
+  server:
+    container_name: server
+    profiles: ['prod']
+    build:
+      context: ..
+      dockerfile: ./.docker/Dockerfile # ./packages/server/Dockerfile
+      target: build-prod-server
+    ports:
+      - '3001:3000'
+    networks:
+      - bgi-network
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+
   mongo1:
     container_name: mongo1
     image: mongo:5.0
-    env_file:
-      - ../.env
-    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
     # restart: always
+    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
+    env_file:
+      - ../.env/.env
     ports:
       - 27017:27017
     volumes:
@@ -16,16 +121,18 @@ services:
       - ./entrypoint.sh:/etc/entrypoint.sh
       - ./init-replica.js:/etc/init-replica.js
       - ./init-db.js:/etc/init-db.js
-      - mongo1_data:/data/db
-      - mongo1_config:/data/configdb
+      # - mongo1_data:/data/db
+      # - mongo1_config:/data/configdb
+    networks:
+      - bgi-network
 
   mongo2:
-    image: mongo:5.0
     container_name: mongo2
-    env_file:
-      - ../.env
-    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
+    image: mongo:5.0
     # restart: always
+    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
+    env_file:
+      - ../.env/.env
     ports:
       - 27018:27017
     volumes:
@@ -34,16 +141,18 @@ services:
       - ./entrypoint.sh:/etc/entrypoint.sh
       - ./init-replica.js:/etc/init-replica.js
       - ./init-db.js:/etc/init-db.js
-      - mongo2_data:/data/db
-      - mongo2_config:/data/configdb
+      # - mongo2_data:/data/db
+      # - mongo2_config:/data/configdb
+    networks:
+      - bgi-network
 
   mongo3:
-    image: mongo:5.0
     container_name: mongo3
-    env_file:
-      - ../.env
-    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
+    image: mongo:5.0
     # restart: always
+    entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
+    env_file:
+      - ../.env/.env
     ports:
       - 27019:27017
     volumes:
@@ -52,13 +161,56 @@ services:
       - ./entrypoint.sh:/etc/entrypoint.sh
       - ./init-replica.js:/etc/init-replica.js
       - ./init-db.js:/etc/init-db.js
-      - mongo3_data:/data/db
-      - mongo3_config:/data/configdb
+      # - mongo3_data:/data/db
+      # - mongo3_config:/data/configdb
+    networks:
+      - bgi-network
 
-volumes:
-  mongo1_data:
-  mongo2_data:
-  mongo3_data:
-  mongo1_config:
-  mongo2_config:
-  mongo3_config:
+# Shared network for containers
+networks:
+  bgi-network:
+    driver: bridge
+# Named volumes: Docker won't create these if they are not used in any of the services.
+# volumes:
+#   package-json:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       o: bind
+#       device: /mnt/c/Users/rhina/Documents/GitHub/board-game_ito/package.json
+#   package-lock-json:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       o: bind
+#       device: /mnt/c/Users/rhina/Documents/GitHub/board-game_ito/package-lock.json
+#   tsconfig-base-json:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       o: bind
+#       device: /mnt/c/Users/rhina/Documents/GitHub/board-game_ito/tsconfig.base.json
+#   tsconfig-json:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       o: bind
+#       device: /mnt/c/Users/rhina/Documents/GitHub/board-game_ito/tsconfig.json
+#   env:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       o: bind
+#       device: /mnt/c/Users/rhina/Documents/GitHub/board-game_ito/.env/.env
+#   shared:
+#     driver: local
+#     driver_opts:
+#       type: none
+#       o: bind
+#       device: /mnt/c/Users/rhina/Documents/GitHub/board-game_ito/packages/shared
+#   mongo1_data:
+#   mongo2_data:
+#   mongo3_data:
+#   mongo1_config:
+#   mongo2_config:
+#   mongo3_config:
