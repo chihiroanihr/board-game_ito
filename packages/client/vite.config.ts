@@ -5,7 +5,16 @@ import { resolve } from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), splitVendorChunkPlugin()],
-  // base: '/dist',
+
+  // Expose host for the Docker (or do "vite --host --port 5173" in the script)
+  server: {
+    host: true,
+    port: 5173,
+  },
+  preview: {
+    host: true,
+    port: 5173,
+  },
 
   // Monorepos and Linked Dependencies (https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies)
   optimizeDeps: {
