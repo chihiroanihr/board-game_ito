@@ -13,14 +13,15 @@ interface DatabaseCollections {
 // Load env config first
 const { connectionString, dbName } = loadConfig();
 
-const collectionNames = ['sessions', 'users', 'rooms'];
-
 const DB_CONN_URI: string = connectionString; // process.env.MONGODB_CONNECTION_URL || '';
 const DB_NAME: string = dbName || '';
+
+const COLLECTION_NAMES = ['sessions', 'users', 'rooms'];
+
 let mongoDB: MongoClient | null = null;
 
 const createCollections = async (db: Db) => {
-  collectionNames.forEach(async (collectionName) => {
+  COLLECTION_NAMES.forEach(async (collectionName) => {
     // Get all existing collections
     const existingCollections = await db.listCollections({}, { nameOnly: true }).toArray();
     // Make them into array of collection names

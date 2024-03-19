@@ -17,7 +17,10 @@ const loadConfig = () => {
   //     process.exit(1) // Exit with error
   // }
 
-  const serverPort = process.env.SERVER_PORT;
+  const serverPort =
+    typeof process.env.SERVER_PORT === 'string'
+      ? parseInt(process.env.SERVER_PORT, 10)
+      : process.env.SERVER_PORT;
 
   const username = process.env.MONGO_USERNAME;
   const password = process.env.MONGO_PASSWORD;

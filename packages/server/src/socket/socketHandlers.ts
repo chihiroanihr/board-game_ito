@@ -31,7 +31,7 @@ declare module 'socket.io' {
   }
 }
 
-function initializeSocketSession(socket: Socket, sessionId: string | null = null): void {
+function initializeSocketSession(socket: Socket): void {
   /** @socket_update */
   socket.sessionId = crypto.randomUUID(); // OR you can re-use session ID by sessionId ?? crypto.randomUUID()
   socket.connected = true;
@@ -88,7 +88,7 @@ const socketHandlers = (io: Server) => {
         // * No matching session ID found from the server
         if (!sessionRestored) {
           // [3] Create a new session
-          initializeSocketSession(socket, sessionId);
+          initializeSocketSession(socket);
           log.logSocketEvent('User Session Created (no matching session)', socket);
         }
       }

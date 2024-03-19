@@ -11,14 +11,15 @@ import loadConfig from './config';
 // Load env config first
 const { serverPort } = loadConfig();
 
-// Config
-const SERVER_URL: string = `${serverPort}`; /** @todo: server port can be undefined */
-const CLIENT_URL: string | undefined = process.env.NODE_ENV === 'production' ? undefined : '*'; // "undefined" means the URL will be computed from the `window.location` object
-
 // Creating a http server using express
 const app: Express = express();
 // Middlewares
-app.use(cors());
+app.use(
+  // CORS allows HTTP requests sent by the frontent (specified in origin) to reach the server.
+  cors({
+    origin: '*' /** @todo - Later change to board-game_ito domain */,
+  })
+);
 app.use(express.json()); // Using express.json() instead of bodyParser.json() due to deprecation.
 app.use(router); // Mount the routes
 
@@ -27,8 +28,7 @@ const server: HTTPServer = createServer(app);
 
 // Socket.io server initialization
 const io: SocketIOServer = new SocketIOServer(server, {
-  // CORS allows HTTP requests sent by the frontent (specified in origin) to reach the server.
-  cors: { origin: CLIENT_URL ?? '*' },
+  cors: { origin: '*' } /** @todo - Later change to board-game_ito domain */,
 });
 
 /**
@@ -43,8 +43,8 @@ const startServer = async (): Promise<void> => {
     socketHandlers(io);
 
     // Open Server
-    const serverInstance = server.listen(SERVER_URL, () =>
-      console.log(`[*] Server has started on http://localhost:${SERVER_URL}`)
+    const serverInstance = server.listen(serverPort, () =>
+      console.log(`[*] Server has started on port ${serverPort}`)
     );
 
     setupGracefulShutdown(serverInstance);

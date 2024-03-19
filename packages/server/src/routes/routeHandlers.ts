@@ -3,7 +3,21 @@ const router = express.Router();
 
 // Main Route
 router.get('/', async (_req, res) => {
-  res.status(200).send('Server Side.');
+  const htmlContent = `
+    <!doctype html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title></title>
+    </head>
+    <body>
+      <p>Server Side.</p>
+    </body>
+    </html>
+  `;
+
+  res.status(200).send(htmlContent);
 });
 
 // Initial session
