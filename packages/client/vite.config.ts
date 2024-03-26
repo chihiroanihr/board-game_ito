@@ -18,7 +18,7 @@ export default defineConfig({
 
   // Monorepos and Linked Dependencies (https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies)
   optimizeDeps: {
-    include: ['@bgi/shared'], // Include the linked dependency in optimization
+    exclude: ['@bgi/shared'], // Include the linked dependency in optimization
   },
 
   build: {
