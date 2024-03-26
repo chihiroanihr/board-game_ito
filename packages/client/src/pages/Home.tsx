@@ -7,14 +7,13 @@ import {
   Typography,
   TextField,
   Stack,
-  Button,
-  CircularProgress,
   FormControl,
   Alert,
 } from '@mui/material';
 
 import { userNameConfig, type LoginResponse } from '@bgi/shared';
 
+import { SubmitButton } from '@/components';
 import { useAuth, useSocket } from '@/hooks';
 import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '@/utils';
 
@@ -39,6 +38,7 @@ function Home() {
   const {
     register,
     handleSubmit,
+    formState,
     formState: { errors },
     reset,
   } = useForm<FormDataType>({
@@ -74,7 +74,6 @@ function Home() {
         setErrorMessage('Internal Server Error: Please try again.');
         outputServerError({ error });
       } else {
-        reset(); // Optionally reset form fields
         updateUser(user ? user : null); // Login and save user info to local storage
         navigateDashboard(navigate); // Navigate
       }
@@ -82,6 +81,13 @@ function Home() {
       setLoading(false); // Set loading to false when the response is received
     });
   };
+
+  // Reset form if submit successful
+  useEffect(() => {
+    if (formState.isSubmitSuccessful) {
+      reset();
+    }
+  }, [formState, reset]);
 
   // Disappear error message after 5 seconds
   useEffect(() => {
@@ -137,19 +143,18 @@ function Home() {
             />
 
             {/* Submit Button */}
-            <Button
+            <SubmitButton
               type="submit"
               variant="contained"
+              loading={loading}
+              disableElevation
               sx={{
                 borderTopLeftRadius: 0,
                 borderBottomLeftRadius: 0,
               }}
-              disableElevation
-              disabled={loading}
-              startIcon={loading && <CircularProgress size={20} color="inherit" />}
             >
-              {loading ? 'Loading...' : 'Submit'}
-            </Button>
+              Submit
+            </SubmitButton>
           </Stack>
 
           {/* Validation Error */}

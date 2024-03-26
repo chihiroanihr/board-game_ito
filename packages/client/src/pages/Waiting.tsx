@@ -3,8 +3,6 @@ import { ObjectId } from 'mongodb';
 import {
   Typography,
   Box,
-  Button,
-  CircularProgress,
   Stack,
   List,
   ListItem,
@@ -16,6 +14,7 @@ import {
 import type { User, Room } from '@bgi/shared';
 
 import {
+  SubmitButton,
   BadgeOnline,
   AnimateTextThreeDots,
   SnackbarPlayerIn,
@@ -264,14 +263,14 @@ export default function Waiting() {
             </Typography>
           )}
 
-          <Button
-            variant="contained"
+          <SubmitButton
             onClick={handleStartGame}
+            variant="contained"
             disabled={!allowStart || loading}
-            startIcon={loading && <CircularProgress size={20} color="inherit" />}
+            loading={loading}
           >
-            {loading ? 'Loading...' : 'Start Game'}
-          </Button>
+            Start Game
+          </SubmitButton>
         </>
       )}
     </Box>

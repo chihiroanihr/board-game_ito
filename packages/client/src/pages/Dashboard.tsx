@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, Stack, CircularProgress } from '@mui/material';
+import { Box, Typography, Stack } from '@mui/material';
 
+import { SubmitButton } from '@/components';
 import { navigateJoinRoom, navigateCreateRoom } from '@/utils';
 
 /**
@@ -33,24 +34,14 @@ export default function Dashboard() {
 
       <Stack direction="row" alignItems="center" spacing={2}>
         {/* Create Room Button */}
-        <Button
-          onClick={joinRoomHandler}
-          variant="contained"
-          disabled={loading}
-          startIcon={loading && <CircularProgress size={20} color="inherit" />}
-        >
-          {loading ? 'Loading...' : 'Join Room'}
-        </Button>
+        <SubmitButton onClick={joinRoomHandler} variant="contained" loading={loading}>
+          Join Room
+        </SubmitButton>
 
-        {/* Join Room Button */}
-        <Button
-          onClick={createRoomHandler}
-          variant="contained"
-          disabled={loading}
-          startIcon={loading && <CircularProgress size={20} color="inherit" />}
-        >
-          {loading ? 'Loading...' : 'Create Room'}
-        </Button>
+        {/* Create Room Button */}
+        <SubmitButton onClick={createRoomHandler} variant="contained" loading={loading}>
+          Create Room
+        </SubmitButton>
       </Stack>
     </Box>
   );

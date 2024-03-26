@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Typography, Button, CircularProgress, Box, Stack } from '@mui/material';
+import { Typography, Box, Stack } from '@mui/material';
 
 import type { LogoutResponse, LeaveRoomResponse } from '@bgi/shared';
 
+import { SubmitButton } from '@/components';
 import { useAuth, useRoom, useSocket } from '@/hooks';
 import {
   navigateHome,
@@ -86,24 +87,13 @@ export default function HeaderLayout() {
       </Typography>
 
       <Stack direction="row" alignItems="center" spacing={2}>
-        <Button
-          onClick={handleLogout}
-          variant="contained"
-          disabled={loading}
-          startIcon={loading && <CircularProgress size={20} color="inherit" />}
-        >
-          {loading ? 'Loading...' : 'Leave Game'}
-        </Button>
-
+        <SubmitButton onClick={handleLogout} variant="contained" loading={loading}>
+          Leave Game
+        </SubmitButton>
         {room && (
-          <Button
-            onClick={handleLeaveRoom}
-            variant="contained"
-            disabled={loading}
-            startIcon={loading && <CircularProgress size={20} color="inherit" />}
-          >
-            {loading ? 'Loading...' : 'Leave Room'}
-          </Button>
+          <SubmitButton onClick={handleLeaveRoom} variant="contained" loading={loading}>
+            Leave Room
+          </SubmitButton>
         )}
       </Stack>
     </Box>

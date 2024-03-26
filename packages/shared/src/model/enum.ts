@@ -12,3 +12,8 @@ export enum RoomStatusEnum {
   FULL = 'full',
   PLAYING = 'playing',
 }
+
+export enum CommunicationMethodEnum {
+  MIC = 'mic',
+  CHAT = 'chat',
+}

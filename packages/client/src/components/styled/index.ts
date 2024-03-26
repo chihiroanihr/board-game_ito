@@ -1,4 +1,7 @@
 import AnimateTextThreeDots from './AnimateTextThreeDots';
 import BadgeOnline from './BadgeOnline';
+import TooltipStyled from './Tooltip';
+export { AnimateTextThreeDots, BadgeOnline, TooltipStyled };
 
-export { AnimateTextThreeDots, BadgeOnline };
+export * from './TextField';
+export * from './ToggleButton';

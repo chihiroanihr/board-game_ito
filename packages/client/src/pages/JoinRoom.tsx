@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Typography,
   Box,
   Card,
-  Button,
+  CardContent,
   Stack,
-  CircularProgress,
   TextField,
   FormHelperText,
   Alert,
@@ -16,7 +15,7 @@ import {
 
 import { roomIdConfig, type JoinRoomResponse } from '@bgi/shared';
 
-import { CardContentOverride } from '../theme';
+import { SubmitButton } from '@/components';
 import { useAuth, useRoom, useSocket } from '@/hooks';
 import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
 
@@ -43,11 +42,19 @@ function JoinRoom() {
   const {
     register,
     handleSubmit,
+    formState,
     formState: { errors },
     reset,
   } = useForm<FormDataType>({
     defaultValues: { roomId: '' },
   });
+
+  // Reset form if submit successful
+  useEffect(() => {
+    if (formState.isSubmitSuccessful) {
+      reset();
+    }
+  }, [formState, reset]);
 
   // Room ID Submitted
   const onsubmit = (data: FormDataType) => {
@@ -89,8 +96,6 @@ function JoinRoom() {
           setErrorMessage(room ? room : 'You cannot join this room for unknown reason.');
           setSnackbarOpen(true);
         }
-
-        reset(); // Optionally reset form fields
       }
 
       setLoading(false);
@@ -117,7 +122,7 @@ function JoinRoom() {
       >
         {/* Form */}
         <Card variant="outlined" sx={{ px: '2rem', py: '3.5rem', borderRadius: '0.8rem' }}>
-          <CardContentOverride>
+          <CardContent>
             <Stack direction="column" spacing={2}>
               <FormHelperText>Enter Room ID to Join:</FormHelperText>
               {/* Input Field */}
@@ -138,21 +143,16 @@ function JoinRoom() {
                 })}
                 // Validation Error
                 error={Boolean(errors.roomId)}
-                helperText={errors.roomId ? errors.roomId.message : ''}
+                helperText={errors.roomId?.message || ''}
               />
             </Stack>
-          </CardContentOverride>
+          </CardContent>
         </Card>
 
         {/* Submit Button */}
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={loading}
-          startIcon={loading && <CircularProgress size={20} color="inherit" />}
-        >
-          {loading ? 'Loading...' : 'Join Room'}
-        </Button>
+        <SubmitButton type="submit" variant="contained" loading={loading}>
+          Join Room
+        </SubmitButton>
 
         {/* Form Request Error */}
         <Snackbar

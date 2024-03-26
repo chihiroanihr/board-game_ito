@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 
-import { RoomStatusEnum, UserStatusEnum } from './enum';
+import { RoomStatusEnum, UserStatusEnum, CommunicationMethodEnum } from './enum';
 
 export interface Session {
   _id: string;
@@ -27,7 +27,9 @@ export interface Room {
 
 export interface RoomSetting {
   numRound: number;
+  answerThemeTime: number;
+  answerNumberTime: number;
+  heartEnabled: boolean;
   dupNumCard: boolean;
-  thinkTimeTitle: number;
-  thinkTimePlayers: number;
+  communicationMethod: CommunicationMethodEnum;
 }

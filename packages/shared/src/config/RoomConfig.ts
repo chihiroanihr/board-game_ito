@@ -14,7 +14,7 @@ export const roomSettingConfig = {
     maxRounds: 10,
     maxRoundsErrorMessage: `Cannot exceed more than ${10} game rounds.`,
   },
-  thinkTimeTitle: {
+  answerThemeTime: {
     helperText: 'Enter thinking time for answering to the title card (in seconds).',
     defaultSeconds: 60,
     minSeconds: 30,
@@ -22,7 +22,7 @@ export const roomSettingConfig = {
     maxSeconds: 90,
     maxSecondsErrorMessage: `Cannot exceed more than ${90} seconds.`,
   },
-  thinkTimePlayers: {
+  answerNumberTime: {
     helperText: 'Enter thinking time for players to direct placement of the card (in seconds).',
     defaultSeconds: 20,
     minSeconds: 10,
@@ -30,9 +30,19 @@ export const roomSettingConfig = {
     maxSeconds: 30,
     maxSecondsErrorMessage: `Cannot exceed more than ${30} seconds.`,
   },
+  heartEnabled: {
+    label: 'Enable hearts:',
+    radioTrue: 'Enabled',
+    radioFalse: 'Disabled',
+  },
   dupNumCard: {
     label: 'Allow score card duplicate between rounds:',
     radioTrue: 'Enabled',
     radioFalse: 'Disabled',
+  },
+  communicationMethod: {
+    label: 'Choose communication methods:',
+    radioMic: 'Microphone',
+    radioChat: 'Chat',
   },
 };
