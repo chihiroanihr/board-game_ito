@@ -85,6 +85,25 @@ export const handleCreateRoom = async (
   }
 };
 
+export const handleEditRoom = async (
+  roomId: string,
+  newRoomSetting: RoomSetting,
+  dbSession: ClientSession | null = null
+): Promise<Room> => {
+  try {
+    /** @api_call - Update room setting (PUT) */
+    const updatedRoom = await controller.updateRoomSetting(roomId, newRoomSetting, dbSession);
+    if (!updatedRoom) {
+      throw new Error('Failed to update room setting (given room ID might not exist).');
+    }
+
+    // All success
+    return updatedRoom;
+  } catch (error) {
+    throw log.handleDBError(error, 'handleEditRoom');
+  }
+};
+
 export const handleJoinRoom = async (
   sessionId: string,
   userId: ObjectId,

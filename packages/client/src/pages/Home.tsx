@@ -13,8 +13,8 @@ import {
 
 import { userNameConfig, type LoginResponse } from '@bgi/shared';
 
-import { SubmitButton } from '@/components';
-import { useAuth, useSocket } from '@/hooks';
+import { TextButtonStyled } from '@/components';
+import { useAuth, useSocket, useSubmissionStatus } from '@/hooks';
 import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '@/utils';
 
 type FormDataType = {
@@ -30,24 +30,28 @@ function Home() {
 
   const { socket } = useSocket();
   const { user, updateUser } = useAuth();
+  const { setIsSubmitting } = useSubmissionStatus();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Prepare react-hook-form
   const {
     register,
     handleSubmit,
-    formState,
     formState: { errors },
-    reset,
   } = useForm<FormDataType>({
     defaultValues: { name: '' },
   });
 
+  const processButtonStatus = (status: boolean) => {
+    setIsLoading(status);
+    setIsSubmitting(status);
+  };
+
   // Player name submitted
   const onSubmit = (data: FormDataType) => {
-    setLoading(true); // Set loading to true when the request is initiated
+    processButtonStatus(true);
     setErrorMessage(''); // Reset error message
 
     // Trim any start/end spaces
@@ -55,13 +59,13 @@ function Home() {
 
     if (!userName) {
       setErrorMessage('Please enter a valid name.');
-      setLoading(false);
+      processButtonStatus(false);
       return;
     }
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
-      setLoading(false);
+      processButtonStatus(false);
       outputResponseTimeoutError();
     }, 5000);
 
@@ -78,16 +82,9 @@ function Home() {
         navigateDashboard(navigate); // Navigate
       }
 
-      setLoading(false); // Set loading to false when the response is received
+      processButtonStatus(false); // Set isLoading to false when the response is received
     });
   };
-
-  // Reset form if submit successful
-  useEffect(() => {
-    if (formState.isSubmitSuccessful) {
-      reset();
-    }
-  }, [formState, reset]);
 
   // Disappear error message after 5 seconds
   useEffect(() => {
@@ -143,10 +140,10 @@ function Home() {
             />
 
             {/* Submit Button */}
-            <SubmitButton
+            <TextButtonStyled
               type="submit"
               variant="contained"
-              loading={loading}
+              loading={isLoading}
               disableElevation
               sx={{
                 borderTopLeftRadius: 0,
@@ -154,7 +151,7 @@ function Home() {
               }}
             >
               Submit
-            </SubmitButton>
+            </TextButtonStyled>
           </Stack>
 
           {/* Validation Error */}

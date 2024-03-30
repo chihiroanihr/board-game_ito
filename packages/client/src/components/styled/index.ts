@@ -5,3 +5,4 @@ export { AnimateTextThreeDots, BadgeOnline, TooltipStyled };
 
 export * from './TextField';
 export * from './ToggleButton';
+export * from './Button';

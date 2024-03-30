@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Stack } from '@mui/material';
 
-import { SubmitButton } from '@/components';
+import { TextButtonStyled } from '@/components';
+import { useSubmissionStatus } from '@/hooks';
 import { navigateJoinRoom, navigateCreateRoom } from '@/utils';
 
 /**
@@ -11,19 +12,25 @@ import { navigateJoinRoom, navigateCreateRoom } from '@/utils';
  */
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { setIsSubmitting } = useSubmissionStatus();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const processButtonStatus = (status: boolean) => {
+    setIsLoading(status);
+    setIsSubmitting(status);
+  };
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const joinRoomHandler = () => {
-    setLoading(true);
+    processButtonStatus(true);
     navigateJoinRoom(navigate);
-    setLoading(false);
+    processButtonStatus(false);
   };
 
   const createRoomHandler = () => {
-    setLoading(true);
+    processButtonStatus(true);
     navigateCreateRoom(navigate);
-    setLoading(false);
+    processButtonStatus(false);
   };
 
   return (
@@ -34,14 +41,14 @@ export default function Dashboard() {
 
       <Stack direction="row" alignItems="center" spacing={2}>
         {/* Create Room Button */}
-        <SubmitButton onClick={joinRoomHandler} variant="contained" loading={loading}>
+        <TextButtonStyled onClick={joinRoomHandler} variant="contained" loading={isLoading}>
           Join Room
-        </SubmitButton>
+        </TextButtonStyled>
 
         {/* Create Room Button */}
-        <SubmitButton onClick={createRoomHandler} variant="contained" loading={loading}>
+        <TextButtonStyled onClick={createRoomHandler} variant="contained" loading={isLoading}>
           Create Room
-        </SubmitButton>
+        </TextButtonStyled>
       </Stack>
     </Box>
   );

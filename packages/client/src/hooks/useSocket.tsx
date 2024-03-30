@@ -28,10 +28,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ socket, children
 
 export const useSocket = (): SocketContextType => {
   const context = useContext(SocketContext);
-
   if (!context) {
     /** @todo - Handle error */
-    throw new Error('useSocket must be used within a SocketProvider');
+    throw new Error('useSocket() hook must be used within a <SocketProvider />.');
   }
 
   return context;

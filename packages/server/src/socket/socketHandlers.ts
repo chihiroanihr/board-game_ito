@@ -9,6 +9,7 @@ import type {
   LoginCallback,
   LogoutCallback,
   CreateRoomCallback,
+  EditRoomCallback,
   JoinRoomCallback,
   WaitRoomCallback,
   LeaveRoomCallback,
@@ -111,6 +112,7 @@ const socketHandlers = (io: Server) => {
     handleSocketLogin(socket, io);
     handleSocketLogout(socket, io);
     handleSocketCreateRoom(socket);
+    handleSocketEditRoom(socket);
     handleSocketJoinRoom(socket);
     handleSocketWaitRoom(socket);
     handleSocketLeaveRoom(socket);
@@ -359,6 +361,36 @@ const handleSocketCreateRoom = (socket: Socket) => {
   });
 };
 
+/** @socket_handler - Edit Room */
+const handleSocketEditRoom = (socket: Socket) => {
+  socket.on('edit-room', async (roomSetting: RoomSetting, callback: EditRoomCallback) => {
+    try {
+      // * If user is not connected
+      if (!socket.user?._id) {
+        throw new Error('[Socket Error]: User is not connected.');
+      }
+      // * If user is not in room
+      if (!socket.room?._id) {
+        throw new Error('[Socket Error]: Room is not connected.');
+      }
+      // [1] Edit room
+      const room = await handler.handleEditRoom(socket.room._id, roomSetting);
+      // No need to save session
+      /** [2] @socket_update - Update socket info */
+      socket.room = room;
+      /** [3] @socket_emit - Send back result to client */
+      callback({ room: room });
+
+      log.logSocketEvent('Edit Room', socket);
+    } catch (error) {
+      /** @socket_emit - Send back error to client */
+      callback({ error: error instanceof Error ? error : new Error(String(error)) });
+
+      log.handleServerError(error, 'handleSocketEditRoom');
+    }
+  });
+};
+
 /** @socket_handler - Join Room */
 const handleSocketJoinRoom = (socket: Socket) => {
   socket.on('join-room', async (roomId: string, callback: JoinRoomCallback) => {
@@ -441,6 +473,7 @@ const handleSocketWaitRoom = (socket: Socket) => {
     } catch (error) {
       /** @socket_emit - Send back error to client */
       callback({ error: error instanceof Error ? error : new Error(String(error)) });
+
       log.handleServerError(error, 'handleSocketWaitRoom');
     }
   });
@@ -491,6 +524,7 @@ const handleSocketLeaveRoom = (socket: Socket) => {
       }
       /** @socket_emit - Send back error to client */
       callback({ error: error instanceof Error ? error : new Error(String(error)) });
+
       log.handleServerError(error, 'handleSocketLeaveRoom');
     } finally {
       // End the session whether success or failure

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ObjectId } from 'mongodb';
 import {
   Typography,
@@ -14,13 +15,13 @@ import {
 import type { User, Room } from '@bgi/shared';
 
 import {
-  SubmitButton,
+  TextButtonStyled,
   BadgeOnline,
   AnimateTextThreeDots,
   SnackbarPlayerIn,
   SnackbarPlayerOut,
 } from '@/components';
-import { useAuth, useRoom, useSocket } from '@/hooks';
+import { useAuth, useRoom, useSocket, useSubmissionStatus } from '@/hooks';
 import { outputServerError, outputResponseTimeoutError, stringAvatar } from '@/utils';
 
 type SocketEventType = {
@@ -29,17 +30,41 @@ type SocketEventType = {
 };
 
 export default function Waiting() {
+  const location = useLocation();
+  const previousLocation = useRef<string | null>(null);
+
   const { socket } = useSocket();
   const { user: myself } = useAuth();
   const { room, updateRoom } = useRoom();
+  const { setIsSubmitting } = useSubmissionStatus();
 
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
   const [playerIn, setPlayerIn] = useState<User | undefined>();
   const [playerOut, setPlayerOut] = useState<User | undefined>();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [allowStart, setAllowStart] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log(previousLocation.current);
+    console.log(previousLocation.current !== null);
+    console.log(previousLocation.current !== location.pathname);
+    console.log(location.pathname);
+
+    if (previousLocation.current !== null && previousLocation.current !== location.pathname) {
+      // User is navigating away from the application
+      console.log('User is navigating away from the application');
+    }
+
+    // Update the previous location
+    previousLocation.current = location.pathname;
+  }, [location]);
+
+  const processButtonStatus = (status: boolean) => {
+    setIsLoading(status);
+    setIsSubmitting(status);
+  };
 
   /**
    * [1] Myself arrives
@@ -161,11 +186,11 @@ export default function Waiting() {
    * Start game
    */
   const handleStartGame = () => {
-    setLoading(true);
+    processButtonStatus(true);
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
-      setLoading(false);
+      processButtonStatus(false);
       outputResponseTimeoutError();
     }, 5000);
 
@@ -180,7 +205,7 @@ export default function Waiting() {
         // Navigate to start game
       }
 
-      setLoading(false);
+      processButtonStatus(false);
     });
   };
 
@@ -263,14 +288,14 @@ export default function Waiting() {
             </Typography>
           )}
 
-          <SubmitButton
+          <TextButtonStyled
             onClick={handleStartGame}
             variant="contained"
-            disabled={!allowStart || loading}
-            loading={loading}
+            loading={isLoading}
+            disabled={!allowStart}
           >
             Start Game
-          </SubmitButton>
+          </TextButtonStyled>
         </>
       )}
     </Box>

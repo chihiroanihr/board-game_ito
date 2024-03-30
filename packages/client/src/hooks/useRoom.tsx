@@ -58,10 +58,9 @@ export const RoomProvider: React.FC<RoomProviderProps> = ({ children }) => {
 
 export const useRoom = (): RoomContextType => {
   const context = useContext(RoomContext);
-
-  if (context === undefined) {
+  if (!context) {
     /** @todo - Handle error */
-    throw new Error('useRoom must be used within a RoomProvider.');
+    throw new Error('useRoom() hook must be used within a <RoomProvider />.');
   }
 
   return context;

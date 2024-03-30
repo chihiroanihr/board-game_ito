@@ -7,7 +7,13 @@ import {
 } from 'react-router-dom';
 import { Container } from '@mui/material';
 
-import { SessionProvider, AuthProvider, RoomProvider, SocketProvider } from '@/hooks';
+import {
+  SessionProvider,
+  AuthProvider,
+  RoomProvider,
+  SocketProvider,
+  SubmissionStatusProvider,
+} from '@/hooks';
 import { CommonLayout, ConnectLayout } from '@/layouts';
 import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, NotFound } from '@/pages';
 import { socket } from './service/socket';
@@ -36,7 +42,9 @@ function App() {
         <AuthProvider>
           <RoomProvider>
             <SocketProvider socket={socket}>
-              <RouterProvider router={routes} />
+              <SubmissionStatusProvider>
+                <RouterProvider router={routes} />
+              </SubmissionStatusProvider>
             </SocketProvider>
           </RoomProvider>
         </AuthProvider>

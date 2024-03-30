@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
@@ -15,8 +15,8 @@ import {
 
 import { roomIdConfig, type JoinRoomResponse } from '@bgi/shared';
 
-import { SubmitButton } from '@/components';
-import { useAuth, useRoom, useSocket } from '@/hooks';
+import { TextButtonStyled } from '@/components';
+import { useAuth, useRoom, useSocket, useSubmissionStatus } from '@/hooks';
 import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
 
 type FormDataType = {
@@ -33,8 +33,9 @@ function JoinRoom() {
   const { socket } = useSocket();
   const { updateUser } = useAuth();
   const { updateRoom } = useRoom();
+  const { setIsSubmitting } = useSubmissionStatus();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
 
@@ -42,23 +43,21 @@ function JoinRoom() {
   const {
     register,
     handleSubmit,
-    formState,
     formState: { errors },
-    reset,
   } = useForm<FormDataType>({
     defaultValues: { roomId: '' },
   });
 
-  // Reset form if submit successful
-  useEffect(() => {
-    if (formState.isSubmitSuccessful) {
-      reset();
-    }
-  }, [formState, reset]);
+  const handleSnackbarClose = () => setSnackbarOpen(false);
+
+  const processButtonStatus = (status: boolean) => {
+    setIsLoading(status);
+    setIsSubmitting(status);
+  };
 
   // Room ID Submitted
-  const onsubmit = (data: FormDataType) => {
-    setLoading(true);
+  const handleJoinRoom = (data: FormDataType) => {
+    processButtonStatus(true);
     setErrorMessage(''); // Reset error message
 
     const roomId = data.roomId.trim().toUpperCase();
@@ -66,13 +65,13 @@ function JoinRoom() {
     if (!roomId) {
       setErrorMessage('Please enter a valid Room ID.');
       setSnackbarOpen(true);
-      setLoading(false);
+      processButtonStatus(false);
       return;
     }
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
-      setLoading(false);
+      processButtonStatus(false);
       outputResponseTimeoutError();
     }, 5000);
 
@@ -98,12 +97,8 @@ function JoinRoom() {
         }
       }
 
-      setLoading(false);
+      processButtonStatus(false);
     });
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
   };
 
   return (
@@ -117,7 +112,7 @@ function JoinRoom() {
         display="flex"
         flexDirection="column"
         gap={4}
-        onSubmit={handleSubmit(onsubmit)}
+        onSubmit={handleSubmit(handleJoinRoom)}
         noValidate
       >
         {/* Form */}
@@ -150,9 +145,9 @@ function JoinRoom() {
         </Card>
 
         {/* Submit Button */}
-        <SubmitButton type="submit" variant="contained" loading={loading}>
+        <TextButtonStyled type="submit" variant="contained" loading={isLoading}>
           Join Room
-        </SubmitButton>
+        </TextButtonStyled>
 
         {/* Form Request Error */}
         <Snackbar

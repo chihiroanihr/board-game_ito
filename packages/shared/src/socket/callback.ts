@@ -15,6 +15,11 @@ export type CreateRoomCallback = {
   (response: CreateRoomResponse): void;
 };
 
+export type EditRoomResponse = { error?: Error; room?: Room };
+export type EditRoomCallback = {
+  (response: EditRoomResponse): void;
+};
+
 export type JoinRoomResponse = { error?: Error; user?: User; room?: Room | string };
 export type JoinRoomCallback = {
   (response: JoinRoomResponse): void;
