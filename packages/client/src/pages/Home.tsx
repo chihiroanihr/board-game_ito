@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Box,
@@ -11,80 +10,44 @@ import {
   Alert,
 } from '@mui/material';
 
-import { userNameConfig, type LoginResponse } from '@bgi/shared';
+import { userNameConfig } from '@bgi/shared';
 
 import { TextButtonStyled } from '@/components';
-import { useAuth, useSocket, useSubmissionStatus } from '@/hooks';
-import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '@/utils';
-
-type FormDataType = {
-  name: string;
-};
+import {
+  useAuth,
+  useAction,
+  type ErrorCallbackParams,
+  type ErrorCallbackFunction,
+  type SuccessCallbackParams,
+  type SuccessCallbackFunction,
+} from '@/hooks';
+import { type LoginFormDataType } from '../enum.js';
 
 /**
  * Main page for Home
  * @returns
  */
 function Home() {
-  const navigate = useNavigate();
-
-  const { socket } = useSocket();
-  const { user, updateUser } = useAuth();
-  const { setIsSubmitting } = useSubmissionStatus();
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const { user } = useAuth();
 
   // Prepare react-hook-form
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormDataType>({
+  } = useForm<LoginFormDataType>({
     defaultValues: { name: '' },
   });
 
-  const processButtonStatus = (status: boolean) => {
-    setIsLoading(status);
-    setIsSubmitting(status);
-  };
+  // Callback for button click handlers
+  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
+  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
 
-  // Player name submitted
-  const onSubmit = (data: FormDataType) => {
-    processButtonStatus(true);
-    setErrorMessage(''); // Reset error message
-
-    // Trim any start/end spaces
-    const userName = data.name.trim();
-
-    if (!userName) {
-      setErrorMessage('Please enter a valid name.');
-      processButtonStatus(false);
-      return;
-    }
-
-    // Create a timeout to check if the response is received
-    const timeoutId = setTimeout(() => {
-      processButtonStatus(false);
-      outputResponseTimeoutError();
-    }, 5000);
-
-    /** @socket_send - Send to socket & receive response */
-    socket.emit('login', userName, async ({ error, user }: LoginResponse) => {
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
-
-      if (error) {
-        setErrorMessage('Internal Server Error: Please try again.');
-        outputServerError({ error });
-      } else {
-        updateUser(user ? user : null); // Login and save user info to local storage
-        navigateDashboard(navigate); // Navigate
-      }
-
-      processButtonStatus(false); // Set isLoading to false when the response is received
-    });
-  };
+  // Button click handlers
+  const { handleLogin, loadingButton, errorMessage, setErrorMessage } = useAction({
+    onSuccess,
+    onError,
+  });
 
   // Disappear error message after 5 seconds
   useEffect(() => {
@@ -97,7 +60,7 @@ function Home() {
     return () => {
       clearTimeout(timer);
     };
-  }, [errorMessage]);
+  }, [errorMessage, setErrorMessage]);
 
   if (user) return null;
   return (
@@ -106,7 +69,7 @@ function Home() {
         Welcome to ITO Game
       </Typography>
 
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <Box component="form" onSubmit={handleSubmit(handleLogin)} noValidate>
         <FormControl>
           <Stack direction="row">
             {/* Input Field */}
@@ -143,7 +106,7 @@ function Home() {
             <TextButtonStyled
               type="submit"
               variant="contained"
-              loading={isLoading}
+              loading={loadingButton}
               disableElevation
               sx={{
                 borderTopLeftRadius: 0,

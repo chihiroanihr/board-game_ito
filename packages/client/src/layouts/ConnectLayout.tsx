@@ -1,27 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
-import type { User, Room } from '@bgi/shared';
+import { type SessionResponse, NamespaceEnum } from '@bgi/shared';
 
 import { Loader } from '@/components';
 import { useSession, useAuth, useRoom, useSocket } from '@/hooks';
 import { navigateHome, navigateDashboard, navigateWaiting, outputServerError } from '@/utils';
-
-// type SessionIdType = string | null;
-// type UserDataType = User | null;
-// type RoomDataType = Room | null;
-
-// type LocalStorageSessionType = {
-//   sessionId: SessionIdType,
-//   user: UserDataType,
-//   room: RoomDataType,
-// };
-
-type SocketEventType = {
-  sessionId: string;
-  user: User | null;
-  room: Room | null;
-};
 
 export default function ConnectLayout() {
   const navigate = useNavigate();
@@ -56,12 +40,12 @@ export default function ConnectLayout() {
     socket.connect();
 
     // Handshake connection success
-    socket.on('connect', onConnect);
+    socket.on(NamespaceEnum.CONNECT, onConnect);
 
     // Cleanup the socket event listener when the component unmounts
     return () => {
       clearTimeout(timeoutId);
-      socket.off('connect', onConnect);
+      socket.off(NamespaceEnum.CONNECT, onConnect);
       socket.disconnect();
     };
   }, [socket]);
@@ -72,7 +56,7 @@ export default function ConnectLayout() {
    * 2. If client didn't have session ID or server could not find same session ID from the database, server will return the newly generated session ID.
    */
   useEffect(() => {
-    function onSessionEvent({ sessionId, user, room }: SocketEventType) {
+    function onSessionEvent({ sessionId, user, room }: SessionResponse) {
       // Attach the session ID to the next reconnection attempts
       socket.auth = { sessionId };
 
@@ -85,11 +69,11 @@ export default function ConnectLayout() {
     }
 
     // Receive
-    socket.on('session', onSessionEvent);
+    socket.on(NamespaceEnum.SESSION, onSessionEvent);
 
     // Cleanup the socket event listener when the component unmounts
     return () => {
-      socket.off('session', onSessionEvent);
+      socket.off(NamespaceEnum.SESSION, onSessionEvent);
     };
   }, [room, updateSessionId, socket, updateRoom, updateUser, user]);
 

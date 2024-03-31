@@ -1,0 +1,16 @@
+export const enum NamespaceEnum {
+  SESSION = 'session',
+  CONNECT = 'connect',
+  DISCONNECT = 'disconnect',
+  LOGIN = 'login',
+  LOGOUT = 'logout',
+  CREATE_ROOM = 'create-room',
+  JOIN_ROOM = 'join-room',
+  WAIT_ROOM = 'wait-room',
+  EDIT_ROOM = 'edit-room',
+  LEAVE_ROOM = 'leave-room',
+  PLAYER_IN = 'player-in',
+  PLAYER_OUT = 'player-out',
+  START_GAME = 'start-game',
+  DEBUG_INITIALIZE = 'initialize',
+}

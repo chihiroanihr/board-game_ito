@@ -2,18 +2,20 @@ import crypto from 'crypto';
 import { Server, Socket } from 'socket.io';
 import { ClientSession } from 'mongodb';
 
-import type {
-  User,
-  Room,
-  RoomSetting,
-  LoginCallback,
-  LogoutCallback,
-  CreateRoomCallback,
-  EditRoomCallback,
-  JoinRoomCallback,
-  WaitRoomCallback,
-  LeaveRoomCallback,
-  InitializeCallback,
+import {
+  type User,
+  type Room,
+  type RoomSetting,
+  type SessionResponse,
+  type LoginCallback,
+  type LogoutCallback,
+  type CreateRoomCallback,
+  type EditRoomCallback,
+  type JoinRoomCallback,
+  type WaitRoomCallback,
+  type LeaveRoomCallback,
+  type InitializeCallback,
+  NamespaceEnum,
 } from '@bgi/shared';
 
 import * as handler from '../database/handlers';
@@ -135,12 +137,13 @@ const handleSocketConnection = (socket: Socket, io: Server) => {
 
 /** @socket_handler - Session */
 const handleSocketSession = (socket: Socket) => {
-  /** @socket_emit - Send session info */
-  socket.emit('session', {
+  const sessionInfo: SessionResponse = {
     sessionId: socket.sessionId,
     user: socket.user,
     room: socket.room,
-  });
+  };
+  /** @socket_emit - Send session info */
+  socket.emit(NamespaceEnum.SESSION, sessionInfo);
 };
 
 const disconnectLeaveRoom = async (socket: Socket, dbSession: ClientSession): Promise<void> => {
@@ -165,7 +168,7 @@ const disconnectLeaveRoom = async (socket: Socket, dbSession: ClientSession): Pr
 
 /** @socket_handler - Disconnect */
 const handleSocketDisconnect = (socket: Socket, io: Server) => {
-  socket.on('disconnect', async () => {
+  socket.on(NamespaceEnum.DISCONNECT, async () => {
     // Must update socket connected status first
     socket.connected = false;
 
@@ -206,7 +209,7 @@ const handleSocketDisconnect = (socket: Socket, io: Server) => {
 
 /** @socket_handler - Login */
 const handleSocketLogin = (socket: Socket, io: Server) => {
-  socket.on('login', async (userName: string, callback: LoginCallback) => {
+  socket.on(NamespaceEnum.LOGIN, async (userName: string, callback: LoginCallback) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
     if (!dbSession) {
@@ -250,7 +253,7 @@ const handleSocketLogin = (socket: Socket, io: Server) => {
 
 /** @socket_handler - Logout */
 const handleSocketLogout = (socket: Socket, io: Server) => {
-  socket.on('logout', async (callback: LogoutCallback) => {
+  socket.on(NamespaceEnum.LOGOUT, async (callback: LogoutCallback) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
     if (!dbSession) {
@@ -313,87 +316,93 @@ const handleSocketLogout = (socket: Socket, io: Server) => {
 
 /** @socket_handler - Create Room */
 const handleSocketCreateRoom = (socket: Socket) => {
-  socket.on('create-room', async (roomSetting: RoomSetting, callback: CreateRoomCallback) => {
-    // Start a new session for the transaction
-    const dbSession = getDB().startSession();
-    if (!dbSession) {
-      throw new Error('[Socket Error]: Unable to start a database session.');
-    }
-
-    try {
-      // * If user is not connected
-      if (!socket.user?._id) {
-        throw new Error('[Socket Error]: User is not connected.');
+  socket.on(
+    NamespaceEnum.CREATE_ROOM,
+    async (roomSetting: RoomSetting, callback: CreateRoomCallback) => {
+      // Start a new session for the transaction
+      const dbSession = getDB().startSession();
+      if (!dbSession) {
+        throw new Error('[Socket Error]: Unable to start a database session.');
       }
 
-      // Start a transaction session
-      dbSession.startTransaction();
-      // [1] Create new room
-      const { user, room } = await handler.handleCreateRoom(
-        socket.sessionId,
-        socket.user._id,
-        roomSetting,
-        dbSession
-      );
-      // [3] Save session
-      await handler.handleSaveSession(socket, dbSession);
-      // Commit the transaction
-      await dbSession.commitTransaction();
-      // [4] Update socket info & notify others in the room
-      socketJoinRoom(socket, user, room);
-      /** [5] @socket_emit - Send back result to client */
-      callback({ user: user, room: room });
+      try {
+        // * If user is not connected
+        if (!socket.user?._id) {
+          throw new Error('[Socket Error]: User is not connected.');
+        }
 
-      log.logSocketEvent('Create Room', socket);
-    } catch (error) {
-      // If an error occurs, abort the transaction if it exists
-      if (dbSession && dbSession.inTransaction()) {
-        await dbSession.abortTransaction();
+        // Start a transaction session
+        dbSession.startTransaction();
+        // [1] Create new room
+        const { user, room } = await handler.handleCreateRoom(
+          socket.sessionId,
+          socket.user._id,
+          roomSetting,
+          dbSession
+        );
+        // [3] Save session
+        await handler.handleSaveSession(socket, dbSession);
+        // Commit the transaction
+        await dbSession.commitTransaction();
+        // [4] Update socket info & notify others in the room
+        socketJoinRoom(socket, user, room);
+        /** [5] @socket_emit - Send back result to client */
+        callback({ user: user, room: room });
+
+        log.logSocketEvent('Create Room', socket);
+      } catch (error) {
+        // If an error occurs, abort the transaction if it exists
+        if (dbSession && dbSession.inTransaction()) {
+          await dbSession.abortTransaction();
+        }
+        /** @socket_emit - Send back result to client */
+        callback({ error: error instanceof Error ? error : new Error(String(error)) });
+
+        log.handleServerError(error, 'handleSocketCreateRoom');
+      } finally {
+        // End the session whether success or failure
+        await dbSession.endSession();
       }
-      /** @socket_emit - Send back result to client */
-      callback({ error: error instanceof Error ? error : new Error(String(error)) });
-
-      log.handleServerError(error, 'handleSocketCreateRoom');
-    } finally {
-      // End the session whether success or failure
-      await dbSession.endSession();
     }
-  });
+  );
 };
 
 /** @socket_handler - Edit Room */
 const handleSocketEditRoom = (socket: Socket) => {
-  socket.on('edit-room', async (roomSetting: RoomSetting, callback: EditRoomCallback) => {
-    try {
-      // * If user is not connected
-      if (!socket.user?._id) {
-        throw new Error('[Socket Error]: User is not connected.');
-      }
-      // * If user is not in room
-      if (!socket.room?._id) {
-        throw new Error('[Socket Error]: Room is not connected.');
-      }
-      // [1] Edit room
-      const room = await handler.handleEditRoom(socket.room._id, roomSetting);
-      // No need to save session
-      /** [2] @socket_update - Update socket info */
-      socket.room = room;
-      /** [3] @socket_emit - Send back result to client */
-      callback({ room: room });
+  socket.on(
+    NamespaceEnum.EDIT_ROOM,
+    async (roomSetting: RoomSetting, callback: EditRoomCallback) => {
+      try {
+        // * If user is not connected
+        if (!socket.user?._id) {
+          throw new Error('[Socket Error]: User is not connected.');
+        }
+        // * If user is not in room
+        if (!socket.room?._id) {
+          throw new Error('[Socket Error]: Room is not connected.');
+        }
+        // [1] Edit room
+        const room = await handler.handleEditRoom(socket.room._id, roomSetting);
+        // No need to save session
+        /** [2] @socket_update - Update socket info */
+        socket.room = room;
+        /** [3] @socket_emit - Send back result to client */
+        callback({ room: room });
 
-      log.logSocketEvent('Edit Room', socket);
-    } catch (error) {
-      /** @socket_emit - Send back error to client */
-      callback({ error: error instanceof Error ? error : new Error(String(error)) });
+        log.logSocketEvent('Edit Room', socket);
+      } catch (error) {
+        /** @socket_emit - Send back error to client */
+        callback({ error: error instanceof Error ? error : new Error(String(error)) });
 
-      log.handleServerError(error, 'handleSocketEditRoom');
+        log.handleServerError(error, 'handleSocketEditRoom');
+      }
     }
-  });
+  );
 };
 
 /** @socket_handler - Join Room */
 const handleSocketJoinRoom = (socket: Socket) => {
-  socket.on('join-room', async (roomId: string, callback: JoinRoomCallback) => {
+  socket.on(NamespaceEnum.JOIN_ROOM, async (roomId: string, callback: JoinRoomCallback) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
     if (!dbSession) {
@@ -453,7 +462,7 @@ const handleSocketJoinRoom = (socket: Socket) => {
 
 /** @socket_handler - Wait Room */
 const handleSocketWaitRoom = (socket: Socket) => {
-  socket.on('wait-room', async (room: Room, callback: WaitRoomCallback) => {
+  socket.on(NamespaceEnum.WAIT_ROOM, async (room: Room, callback: WaitRoomCallback) => {
     try {
       // * If user is not connected
       if (!socket.user?._id) {
@@ -481,7 +490,7 @@ const handleSocketWaitRoom = (socket: Socket) => {
 
 /** @socket_handler - Leave Room */
 const handleSocketLeaveRoom = (socket: Socket) => {
-  socket.on('leave-room', async (callback: LeaveRoomCallback) => {
+  socket.on(NamespaceEnum.LEAVE_ROOM, async (callback: LeaveRoomCallback) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
     if (!dbSession) {
@@ -533,9 +542,9 @@ const handleSocketLeaveRoom = (socket: Socket) => {
   });
 };
 
-/** @/debug */ /** @socket_handler - Initialize */
+/** @debug */ /** @socket_handler - Initialize */
 const handleSocketInitialize = (socket: Socket, io: Server) => {
-  socket.on('initialize', async (callback: InitializeCallback) => {
+  socket.on(NamespaceEnum.DEBUG_INITIALIZE, async (callback: InitializeCallback) => {
     // Start a new session for the transaction
     const dbSession = getDB().startSession();
     if (!dbSession) {
@@ -595,7 +604,7 @@ const socketJoinRoom = (socket: Socket, user: User, room: Room): void => {
   /** [2] @socket_update - Join the user to a socket room */
   socket.join(room._id);
   /** [3] @socket_emit - Notify others in the room */
-  socket.to(room._id).emit('new-player', { user, room });
+  socket.to(room._id).emit(NamespaceEnum.PLAYER_IN, { user, room });
 };
 
 const socketLeaveRoom = (socket: Socket, user: User, room: Room | null): void => {
@@ -604,7 +613,7 @@ const socketLeaveRoom = (socket: Socket, user: User, room: Room | null): void =>
     /** [1] @socket_update - Leave the user from the socket room */
     socket.leave(socket.room._id);
     /** [2] @socket_emit - Notify others in the room */
-    room && socket.to(socket.room._id).emit('player-left', { user, room });
+    room && socket.to(socket.room._id).emit(NamespaceEnum.PLAYER_OUT, { user, room });
     /** [3] @socket_update - Update socket info */
     socket.room = null;
   }

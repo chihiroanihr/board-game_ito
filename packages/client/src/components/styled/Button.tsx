@@ -14,12 +14,13 @@ import { useSubmissionStatus } from '@/hooks';
 // https://github.com/mui/material-ui/issues/32420
 
 interface TextButtonStyledProps extends Omit<ButtonProps, 'startIcon'> {
-  loading: boolean;
+  loading?: boolean;
 }
 
 interface IconButtonStyledProps extends IconButtonProps {
-  loading: boolean;
-  tooltipProps: TooltipProps;
+  loading?: boolean;
+  tooltipTitle: React.ReactNode;
+  tooltipProps?: Partial<TooltipProps>;
 }
 
 const TextButtonStyled = React.forwardRef(function TextButtonStyled(
@@ -50,11 +51,11 @@ const IconButtonStyled = React.forwardRef(function TextButtonStyled(
   props: IconButtonStyledProps,
   ref: React.Ref<HTMLButtonElement>
 ) {
-  const { onClick, type, disabled, loading, tooltipProps, children, ...rest } = props;
+  const { onClick, type, disabled, loading, tooltipTitle, tooltipProps, children, ...rest } = props;
   const { isSubmitting } = useSubmissionStatus();
 
   return (
-    <TooltipStyled {...tooltipProps}>
+    <TooltipStyled title={tooltipTitle} {...tooltipProps}>
       <IconButton
         ref={ref}
         onClick={onClick}

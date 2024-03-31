@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useBeforeUnload } from 'react-router-dom';
 import { ObjectId } from 'mongodb';
 import {
   Typography,
@@ -12,7 +12,13 @@ import {
   ListItemText,
 } from '@mui/material';
 
-import type { User, Room } from '@bgi/shared';
+import {
+  type User,
+  type WaitRoomResponse,
+  type PlayerInResponse,
+  type PlayerOutResponse,
+  NamespaceEnum,
+} from '@bgi/shared';
 
 import {
   TextButtonStyled,
@@ -21,50 +27,37 @@ import {
   SnackbarPlayerIn,
   SnackbarPlayerOut,
 } from '@/components';
-import { useAuth, useRoom, useSocket, useSubmissionStatus } from '@/hooks';
-import { outputServerError, outputResponseTimeoutError, stringAvatar } from '@/utils';
-
-type SocketEventType = {
-  user: User;
-  room: Room;
-};
+import {
+  useAuth,
+  useRoom,
+  useAction,
+  type ErrorCallbackParams,
+  type ErrorCallbackFunction,
+  type SuccessCallbackParams,
+  type SuccessCallbackFunction,
+  useSocket,
+} from '@/hooks';
+import { outputServerError, stringAvatar } from '@/utils';
 
 export default function Waiting() {
-  const location = useLocation();
-  const previousLocation = useRef<string | null>(null);
-
   const { socket } = useSocket();
   const { user: myself } = useAuth();
   const { room, updateRoom } = useRoom();
-  const { setIsSubmitting } = useSubmissionStatus();
 
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
   const [playerIn, setPlayerIn] = useState<User | undefined>();
   const [playerOut, setPlayerOut] = useState<User | undefined>();
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [allowStart, setAllowStart] = useState<boolean>(false);
 
-  useEffect(() => {
-    console.log(previousLocation.current);
-    console.log(previousLocation.current !== null);
-    console.log(previousLocation.current !== location.pathname);
-    console.log(location.pathname);
+  useEffect(() => {}, []);
 
-    if (previousLocation.current !== null && previousLocation.current !== location.pathname) {
-      // User is navigating away from the application
-      console.log('User is navigating away from the application');
-    }
+  // Callback for button click handlers
+  const onError: ErrorCallbackFunction = ({ message }: ErrorCallbackParams) => {};
+  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
 
-    // Update the previous location
-    previousLocation.current = location.pathname;
-  }, [location]);
-
-  const processButtonStatus = (status: boolean) => {
-    setIsLoading(status);
-    setIsSubmitting(status);
-  };
+  // Button click handlers
+  const { handleStartGame, loadingButton } = useAction({ onError, onSuccess });
 
   /**
    * [1] Myself arrives
@@ -80,10 +73,9 @@ export default function Waiting() {
    *    - Set list of participating players (Array<User>)
    *    - (Set other room config info, etc.)
    */
-  type WaitRoomResponse = { error?: Error; players?: User[] };
   useEffect(() => {
     room &&
-      socket.emit('wait-room', room, async ({ error, players }: WaitRoomResponse) => {
+      socket.emit(NamespaceEnum.WAIT_ROOM, room, async ({ error, players }: WaitRoomResponse) => {
         if (error) {
           outputServerError({ error });
         } else if (!players) {
@@ -107,7 +99,7 @@ export default function Waiting() {
    * - Display message that new user has arrived
    */
   useEffect(() => {
-    async function onNewPlayerArriveEvent(data: SocketEventType) {
+    async function onPlayerInEvent(data: PlayerInResponse) {
       const { user: player, room } = data;
 
       // Update room in the local storage first
@@ -124,9 +116,9 @@ export default function Waiting() {
     }
 
     // Runs whenever a socket event is recieved from the server
-    socket.on('new-player', onNewPlayerArriveEvent);
+    socket.on(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
     return () => {
-      socket.off('new-player', onNewPlayerArriveEvent);
+      socket.off(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
     };
   }, [players, socket, updateRoom]);
 
@@ -151,7 +143,7 @@ export default function Waiting() {
    *    - Display message that new user has left
    */
   useEffect(() => {
-    async function onPlayerLeaveEvent(data: SocketEventType) {
+    async function onPlayerOutEvent(data: PlayerOutResponse) {
       // Disable start button if less than 4 players
       if (players.length <= 4) {
         setAllowStart(false);
@@ -176,38 +168,11 @@ export default function Waiting() {
     }
 
     // Runs whenever a socket event is recieved from the server
-    socket.on('player-left', onPlayerLeaveEvent);
+    socket.on(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
     return () => {
-      socket.off('player-left', onPlayerLeaveEvent);
+      socket.off(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
     };
   }, [adminId, players, socket, updateRoom]);
-
-  /**
-   * Start game
-   */
-  const handleStartGame = () => {
-    processButtonStatus(true);
-
-    // Create a timeout to check if the response is received
-    const timeoutId = setTimeout(() => {
-      processButtonStatus(false);
-      outputResponseTimeoutError();
-    }, 5000);
-
-    // Send to socket
-    socket.emit('start-game', room, async ({ error }: { error: Error }) => {
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
-
-      if (error) {
-        outputServerError({ error });
-      } else {
-        // Navigate to start game
-      }
-
-      processButtonStatus(false);
-    });
-  };
 
   if (!room) return null;
   return (
@@ -291,7 +256,7 @@ export default function Waiting() {
           <TextButtonStyled
             onClick={handleStartGame}
             variant="contained"
-            loading={isLoading}
+            loading={loadingButton}
             disabled={!allowStart}
           >
             Start Game

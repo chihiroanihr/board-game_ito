@@ -30,7 +30,9 @@ const TooltipStyled = styled(({ className, ...props }: TooltipProps) => {
         },
       }}
       arrow
-    />
+    >
+      {props.children}
+    </Tooltip>
   );
 })(({ theme }) => ({
   [`& .${tooltipClasses.arrow}`]: {

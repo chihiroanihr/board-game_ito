@@ -1,5 +1,7 @@
 import type { User, Room } from '../model/data';
 
+export type SessionResponse = { sessionId: string; user: User | null; room: Room | null };
+
 export type LoginResponse = { error?: Error; user?: User };
 export type LoginCallback = {
   (response: LoginResponse): void;
@@ -33,6 +35,16 @@ export type WaitRoomCallback = {
 export type LeaveRoomResponse = { error?: Error };
 export type LeaveRoomCallback = {
   (response: LeaveRoomResponse): void;
+};
+
+export type PlayerInResponse = {
+  user: User;
+  room: Room;
+};
+
+export type PlayerOutResponse = {
+  user: User;
+  room: Room;
 };
 
 export type InitializeResponse = {

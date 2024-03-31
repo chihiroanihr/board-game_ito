@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Typography,
@@ -13,30 +12,22 @@ import {
   Snackbar,
 } from '@mui/material';
 
-import { roomIdConfig, type JoinRoomResponse } from '@bgi/shared';
+import { roomIdConfig } from '@bgi/shared';
 
 import { TextButtonStyled } from '@/components';
-import { useAuth, useRoom, useSocket, useSubmissionStatus } from '@/hooks';
-import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
-
-type FormDataType = {
-  roomId: string;
-};
+import {
+  useAction,
+  type ErrorCallbackParams,
+  type ErrorCallbackFunction,
+  type SuccessCallbackFunction,
+} from '@/hooks';
+import { type JoinRoomFormDataType } from '../enum.js';
 
 /**
  * Subpage for Dashboard
  * @returns
  */
 function JoinRoom() {
-  const navigate = useNavigate();
-
-  const { socket } = useSocket();
-  const { updateUser } = useAuth();
-  const { updateRoom } = useRoom();
-  const { setIsSubmitting } = useSubmissionStatus();
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
 
   // Prepare react-hook-form
@@ -44,62 +35,22 @@ function JoinRoom() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormDataType>({
+  } = useForm<JoinRoomFormDataType>({
     defaultValues: { roomId: '' },
   });
 
+  // Snackbar open / close handlers
   const handleSnackbarClose = () => setSnackbarOpen(false);
+  const handleSnackbarOpen = () => setSnackbarOpen(true);
 
-  const processButtonStatus = (status: boolean) => {
-    setIsLoading(status);
-    setIsSubmitting(status);
+  // Callback for button click handlers
+  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
+    handleSnackbarOpen();
   };
+  const onSuccess: SuccessCallbackFunction = ({ action }) => {};
 
-  // Room ID Submitted
-  const handleJoinRoom = (data: FormDataType) => {
-    processButtonStatus(true);
-    setErrorMessage(''); // Reset error message
-
-    const roomId = data.roomId.trim().toUpperCase();
-
-    if (!roomId) {
-      setErrorMessage('Please enter a valid Room ID.');
-      setSnackbarOpen(true);
-      processButtonStatus(false);
-      return;
-    }
-
-    // Create a timeout to check if the response is received
-    const timeoutId = setTimeout(() => {
-      processButtonStatus(false);
-      outputResponseTimeoutError();
-    }, 5000);
-
-    /** @socket_send - Send to socket & receive response */
-    socket.emit('join-room', roomId, async ({ error, user, room }: JoinRoomResponse) => {
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
-
-      if (error) {
-        setErrorMessage('Internal Server Error: Please try again.');
-        outputServerError({ error });
-      } else {
-        // User can join room
-        if (typeof room === 'object') {
-          updateUser(user ? user : null); // Store updated user info to local storage
-          updateRoom(room ? room : null); // Save room info to local storage and navigate
-          navigateWaiting(navigate); // Navigate
-        }
-        // User cannot join room
-        else {
-          setErrorMessage(room ? room : 'You cannot join this room for unknown reason.');
-          setSnackbarOpen(true);
-        }
-      }
-
-      processButtonStatus(false);
-    });
-  };
+  // Button click handlers
+  const { handleJoinRoom, loadingButton, errorMessage } = useAction({ onError, onSuccess });
 
   return (
     <Box display="flex" flexDirection="column" alignItems="flex-start" gap={4}>
@@ -145,7 +96,7 @@ function JoinRoom() {
         </Card>
 
         {/* Submit Button */}
-        <TextButtonStyled type="submit" variant="contained" loading={isLoading}>
+        <TextButtonStyled type="submit" variant="contained" loading={loadingButton}>
           Join Room
         </TextButtonStyled>
 

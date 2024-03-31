@@ -31,6 +31,7 @@ export const outputServerError = (error: unknown, message?: string): void => {
   console.error(
     `[Server Error]: ${message ? ` ${message}` : ''}${errorMessage ? `\n${errorMessage}` : ''}`
   );
+  /** @todo - no alert */
   alert('Internal Server Error: Please try again later.');
 };
 

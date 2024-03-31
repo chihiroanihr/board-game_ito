@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Typography,
   Stack,
@@ -11,16 +10,19 @@ import {
 } from '@mui/material';
 import { Logout, MeetingRoom, Settings } from '@mui/icons-material';
 
-import type { LogoutResponse, LeaveRoomResponse, EditRoomResponse, RoomSetting } from '@bgi/shared';
+import { NamespaceEnum } from '@bgi/shared';
 
 import { IconButtonStyled, RoomSettingForm } from '@/components';
-import { useAuth, useRoom, useSocket, useSubmissionStatus } from '@/hooks';
 import {
-  navigateHome,
-  navigateDashboard,
-  outputServerError,
-  outputResponseTimeoutError,
-} from '@/utils';
+  useAuth,
+  useRoom,
+  useAction,
+  type ErrorCallbackParams,
+  type ErrorCallbackFunction,
+  type SuccessCallbackParams,
+  type SuccessCallbackFunction,
+  useSubmissionStatus,
+} from '@/hooks';
 
 const commonButtonStyle = {
   bgcolor: 'primary.main',
@@ -30,112 +32,40 @@ const commonButtonStyle = {
   },
 };
 
-const enum ButtonIdEnum {
-  EDIT_ROOM = 'editRoomButton',
-  LEAVE_ROOM = 'leaveRoomButton',
-  LOGOUT = 'logoutButton',
-}
-
 /**
  * Layout for Dashboard
  * @returns
  */
 export default function HeaderLayout() {
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { room } = useRoom();
+  const { isSubmitting } = useSubmissionStatus();
 
-  const { socket } = useSocket();
-  const { user, discardUser } = useAuth();
-  const { room, updateRoom, discardRoom } = useRoom();
-  const { isSubmitting, setIsSubmitting } = useSubmissionStatus();
-
-  const [loadingButton, setLoadingButton] = useState<ButtonIdEnum | undefined>(); // Track the active (clicked) button
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [triggeredButton, setTriggeredButton] = useState<NamespaceEnum>();
 
-  const submitBtnRef = useRef<HTMLButtonElement>();
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
 
+  // Dialog open / close handlers
   const handleDialogOpen = () => setDialogOpen(true);
   const handleDialogClose = () => setDialogOpen(false);
 
-  const processButtonStatus = (status: boolean, buttonId?: ButtonIdEnum) => {
-    setLoadingButton(buttonId);
-    setIsSubmitting(status);
+  // Callback for button click handlers
+  const onError: ErrorCallbackFunction = ({ message }: ErrorCallbackParams) => {};
+  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
+    setTriggeredButton(action); // Set which button was triggered
+
+    // If triggered button is "edit-room" then close dialog
+    if (action && action === NamespaceEnum.EDIT_ROOM) {
+      dialogOpen && handleDialogClose();
+    }
   };
 
-  const handleEditRoom = (formData: RoomSetting) => {
-    processButtonStatus(true, ButtonIdEnum.EDIT_ROOM); // Disable all buttons and make target button loading
-
-    // Create a timeout to check if the response is received
-    const timeoutId = setTimeout(() => {
-      processButtonStatus(false); // Set submitting to false when error happens
-      outputResponseTimeoutError();
-    }, 5000);
-
-    /** @socket_send - Send to socket & receive response */
-    socket.emit('edit-room', formData, async ({ error, room }: EditRoomResponse) => {
-      clearTimeout(timeoutId); // Clear the timeout as response is received before timeout
-
-      if (error) {
-        // setErrorMessage('Internal Server Error: Please try again.');
-        outputServerError({ error });
-      } else {
-        updateRoom(room ? room : null); // Update room info to local storage
-        setDialogOpen(false); // Close dialog
-      }
-
-      processButtonStatus(false); // Set submitting to false when the response or error is received
-    });
-  };
-
-  const handleLeaveRoom = () => {
-    processButtonStatus(true, ButtonIdEnum.LEAVE_ROOM); // Set submitting to true when the request is initiated
-
-    // Create a timeout to check if the response is received
-    const timeoutId = setTimeout(() => {
-      processButtonStatus(false); // Set submitting to false when error happens
-      outputResponseTimeoutError();
-    }, 5000);
-
-    /** @socket_send - Send to socket & receive response */
-    socket.emit('leave-room', async ({ error }: LeaveRoomResponse) => {
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
-
-      if (error) {
-        outputServerError({ error });
-      } else {
-        discardRoom();
-        navigateDashboard(navigate);
-      }
-
-      processButtonStatus(false); // Set submitting to false when the response or error is received
-    });
-  };
-
-  const handleLogout = () => {
-    processButtonStatus(true, ButtonIdEnum.LOGOUT); // Set submitting to true when the request is initiated
-
-    // Create a timeout to check if the response is received
-    const timeoutId = setTimeout(() => {
-      processButtonStatus(false); // Set submitting to false when error happens
-      outputResponseTimeoutError();
-    }, 5000);
-
-    /** @socket_send - Send to socket & receive response */
-    socket.emit('logout', async ({ error }: LogoutResponse) => {
-      // Clear the timeout as response is received before timeout
-      clearTimeout(timeoutId);
-
-      if (error) {
-        outputServerError({ error });
-      } else {
-        room && discardRoom();
-        user && discardUser();
-        navigateHome(navigate); // navigate
-      }
-
-      processButtonStatus(false); // Set submitting to false when the response or error is received
-    });
-  };
+  // Button click handlers
+  const { handleEditRoom, handleLeaveRoom, handleLogout, loadingButton } = useAction({
+    onSuccess,
+    onError,
+  });
 
   if (!user) return null;
   return (
@@ -144,8 +74,9 @@ export default function HeaderLayout() {
         {/* Leave Game Button */}
         <IconButtonStyled
           onClick={handleLogout}
-          loading={loadingButton === ButtonIdEnum.LOGOUT}
-          tooltipProps={{ title: 'Exit Game', placement: 'top' }}
+          loading={loadingButton && triggeredButton === NamespaceEnum.LOGOUT}
+          tooltipTitle="Exit Game"
+          tooltipProps={{ placement: 'top' }}
           sx={{
             ...commonButtonStyle,
             // transform: 'scaleX(-1)',
@@ -158,8 +89,9 @@ export default function HeaderLayout() {
         {room && (
           <IconButtonStyled
             onClick={handleLeaveRoom}
-            loading={loadingButton === ButtonIdEnum.LEAVE_ROOM}
-            tooltipProps={{ title: 'Leave This Room', placement: 'top' }}
+            loading={loadingButton && triggeredButton === NamespaceEnum.LEAVE_ROOM}
+            tooltipTitle="Leave This Room"
+            tooltipProps={{ placement: 'top' }}
             sx={commonButtonStyle}
           >
             <MeetingRoom />
@@ -176,8 +108,9 @@ export default function HeaderLayout() {
         <>
           <IconButtonStyled
             onClick={handleDialogOpen}
-            loading={loadingButton === ButtonIdEnum.EDIT_ROOM}
-            tooltipProps={{ title: 'Edit Room Configuration', placement: 'top' }}
+            loading={loadingButton && triggeredButton === NamespaceEnum.EDIT_ROOM}
+            tooltipTitle="Edit Room Configuration"
+            tooltipProps={{ placement: 'top' }}
             sx={commonButtonStyle}
           >
             <Settings />

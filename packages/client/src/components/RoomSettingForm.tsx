@@ -31,6 +31,13 @@ import {
 } from '@/components';
 import { useRoom } from '@/hooks';
 
+interface RoomSettingFormProps {
+  onSubmit: (data: RoomSetting) => void;
+  isLoading?: boolean;
+  isInsideModal?: boolean;
+  children?: React.ReactNode;
+}
+
 const formDefaultValues: RoomSetting = {
   numRound: roomSettingConfig.numRound.defaultRounds,
   answerThemeTime: roomSettingConfig.answerThemeTime.defaultSeconds,
@@ -39,13 +46,6 @@ const formDefaultValues: RoomSetting = {
   dupNumCard: false,
   communicationMethod: CommunicationMethodEnum.MIC,
 };
-
-interface RoomSettingFormProps {
-  onSubmit: (data: RoomSetting) => void;
-  isLoading?: boolean;
-  isInsideModal?: boolean;
-  children?: React.ReactNode;
-}
 
 const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFormProps> = (
   { onSubmit, isLoading, isInsideModal, children },
@@ -111,7 +111,7 @@ const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFo
         type="submit"
         variant="contained"
         loading={isLoading}
-        sx={{ display: isInsideModal && 'none' }} // If inside modal, submit button will belong to modal action
+        sx={{ display: isInsideModal ? 'none' : undefined }} // If inside modal, submit button will belong to modal action
       >
         {children}
       </TextButtonStyled>
