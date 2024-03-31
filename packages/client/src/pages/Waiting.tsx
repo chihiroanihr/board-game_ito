@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useBeforeUnload } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useBlocker } from 'react-router-dom';
 import { ObjectId } from 'mongodb';
 import {
   Typography,
@@ -10,6 +10,10 @@ import {
   ListItemAvatar,
   Avatar,
   ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  Button,
 } from '@mui/material';
 
 import {
@@ -31,6 +35,7 @@ import {
   useAuth,
   useRoom,
   useAction,
+  useSubmissionStatus,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
   type SuccessCallbackParams,
@@ -43,6 +48,7 @@ export default function Waiting() {
   const { socket } = useSocket();
   const { user: myself } = useAuth();
   const { room, updateRoom } = useRoom();
+  const { isSubmitting } = useSubmissionStatus();
 
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
@@ -50,14 +56,15 @@ export default function Waiting() {
   const [playerOut, setPlayerOut] = useState<User | undefined>();
   const [allowStart, setAllowStart] = useState<boolean>(false);
 
-  useEffect(() => {}, []);
+  // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
+  const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
 
   // Callback for button click handlers
   const onError: ErrorCallbackFunction = ({ message }: ErrorCallbackParams) => {};
   const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
 
   // Button click handlers
-  const { handleStartGame, loadingButton } = useAction({ onError, onSuccess });
+  const { handleLeaveRoom, handleStartGame, loadingButton } = useAction({ onSuccess, onError });
 
   /**
    * [1] Myself arrives
@@ -224,17 +231,6 @@ export default function Waiting() {
         </List>
       </Stack>
 
-      <SnackbarPlayerIn
-        open={!!playerIn}
-        player={playerIn}
-        onClose={() => setPlayerIn(undefined)}
-      />
-      <SnackbarPlayerOut
-        open={!!playerOut}
-        player={playerOut}
-        onClose={() => setPlayerOut(undefined)}
-      />
-
       {adminId?.toString() === myself?._id.toString() && (
         <>
           {!allowStart && (
@@ -263,6 +259,32 @@ export default function Waiting() {
           </TextButtonStyled>
         </>
       )}
+
+      {/* Snackbar player in / out notification */}
+      <SnackbarPlayerIn
+        open={!!playerIn}
+        player={playerIn}
+        onClose={() => setPlayerIn(undefined)}
+      />
+      <SnackbarPlayerOut
+        open={!!playerOut}
+        player={playerOut}
+        onClose={() => setPlayerOut(undefined)}
+      />
+
+      {/* Dialog before leaving (press back button) */}
+      <Dialog open={blocker.state === 'blocked'}>
+        <DialogTitle>Are you sure you want to leave?</DialogTitle>
+        <DialogActions>
+          {/* No need of blocker.proceed?.() as handleLeaveRoom() automatically redirects */}
+          <Button onClick={() => blocker.reset?.()} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button onClick={handleLeaveRoom} disabled={isSubmitting}>
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
