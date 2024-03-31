@@ -22,7 +22,7 @@ import {
   navigateDashboard,
   navigateWaiting,
 } from '@/utils';
-import { type LoginFormDataType, type JoinRoomFormDataType } from '../enum.js';
+import { type LoginFormDataType, type JoinRoomFormDataType } from '../enum';
 
 export type ErrorCallbackParams = { action?: NamespaceEnum; message?: string };
 export interface ErrorCallbackFunction {

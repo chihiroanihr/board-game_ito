@@ -21,7 +21,7 @@ import {
   type ErrorCallbackFunction,
   type SuccessCallbackFunction,
 } from '@/hooks';
-import { type JoinRoomFormDataType } from '../enum.js';
+import { type JoinRoomFormDataType } from '../enum';
 
 /**
  * Subpage for Dashboard

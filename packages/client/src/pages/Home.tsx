@@ -21,7 +21,7 @@ import {
   type SuccessCallbackParams,
   type SuccessCallbackFunction,
 } from '@/hooks';
-import { type LoginFormDataType } from '../enum.js';
+import { type LoginFormDataType } from '../enum';
 
 /**
  * Main page for Home
