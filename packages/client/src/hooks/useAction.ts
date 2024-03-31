@@ -63,7 +63,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
     if (!userName) {
       setErrorMessage('Please enter a valid name.');
       processButtonStatus(false);
-      // onError && onError({ action: NamespaceEnum.LOGIN });
+      // onError?.({ action: NamespaceEnum.LOGIN });
       return;
     }
 
@@ -80,8 +80,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
       // [*] ERROR
       if (error) {
         outputServerError({ error });
-        // onError &&
-        //   onError({
+        // onError?.({
         //     action: NamespaceEnum.LOGIN,
         //     message: 'Internal Server Error: Please try again.',
         //   });
@@ -90,7 +89,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
       else {
         updateUser(user ? user : null); // Login and save user info to local storage
         navigateDashboard(navigate); // Navigate
-        // onSuccess && onSuccess({ action: NamespaceEnum.LOGIN, user: user });
+        // onSuccess?.({ action: NamespaceEnum.LOGIN, user: user });
       }
 
       processButtonStatus(false); // Set submitting to false when the response is received
@@ -112,8 +111,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
       // [*] ERROR
       if (error) {
         outputServerError({ error });
-        // onError &&
-        //   onError({
+        // onError?.({
         //     action: NamespaceEnum.LOGOUT,
         //     message: 'Internal Server Error: Please try again.',
         //   });
@@ -125,7 +123,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
         navigateHome(navigate); // navigate
 
         // Callback
-        onSuccess && onSuccess({ action: NamespaceEnum.LOGOUT });
+        onSuccess?.({ action: NamespaceEnum.LOGOUT });
       }
 
       processButtonStatus(false);
@@ -152,8 +150,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
         if (error) {
           outputServerError({ error });
           setErrorMessage('Internal Server Error: Please try again.');
-          //   onError &&
-          //     onError({
+          //   onError?.({
           //       action: NamespaceEnum.CREATE_ROOM,
           //       message: 'Internal Server Error: Please try again.',
           //     });
@@ -163,7 +160,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
           updateUser(user ? user : null); // Store updated user info to local storage
           updateRoom(room ? room : null); // Store room info to local storage and redirect
           navigateWaiting(navigate); // Navigate
-          // onSucccess && onSuccess({ action: NamespaceEnum.CREATE_ROOM, user, room });
+          // onSuccess?.({ action: NamespaceEnum.CREATE_ROOM, user, room });
         }
 
         processButtonStatus(false);
@@ -180,8 +177,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
     if (!roomId) {
       processButtonStatus(false);
       setErrorMessage('Please enter a valid Room ID.');
-      //   onError &&
-      //     onError({ action: NamespaceEnum.JOIN_ROOM, message: 'Please enter a valid Room ID.' });
+      //   onError?.({ action: NamespaceEnum.JOIN_ROOM, message: 'Please enter a valid Room ID.' });
       return;
     }
 
@@ -201,8 +197,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
         if (error) {
           outputServerError({ error });
           setErrorMessage('Internal Server Error: Please try again.');
-          //   onError &&
-          //     onError({
+          //   onError?.({
           //       action: NamespaceEnum.JOIN_ROOM,
           //       message: 'Internal Server Error: Please try again.',
           //     });
@@ -212,14 +207,13 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
             updateUser(user ? user : null); // Store updated user info to local storage
             updateRoom(room ? room : null); // Save room info to local storage and navigate
             navigateWaiting(navigate); // Navigate
-            // onSuccess && onSuccess({ action: NamespaceEnum.JOIN_ROOM, user, room });
+            // onSuccess?.({ action: NamespaceEnum.JOIN_ROOM, user, room });
           }
           // [*] ERROR: User cannot join room
           else {
             const unavailableMsg = room; // room is now string message
             setErrorMessage(unavailableMsg || 'You cannot join this room for unknown reason.');
-            // onError &&
-            //   onError({
+            // onError?.({
             //     action: NamespaceEnum.JOIN_ROOM,
             //     message: unavailableMsg || 'You cannot join this room for unknown reason.',
             //   });
@@ -247,8 +241,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
       // [*] ERROR
       if (error) {
         outputServerError({ error });
-        // onError &&
-        //   onError({
+        // onError?.({
         //     action: NamespaceEnum.EDIT_ROOM,
         //     message: 'Internal Server Error: Please try again.',
         //   });
@@ -256,7 +249,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
       // [*] SUCCESS
       else {
         updateRoom(room ? room : null); // Update room info to local storage
-        onSuccess && onSuccess({ action: NamespaceEnum.EDIT_ROOM }); // Callback
+        onSuccess?.({ action: NamespaceEnum.EDIT_ROOM }); // Callback
       }
 
       processButtonStatus(false);
@@ -278,8 +271,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
 
       if (error) {
         outputServerError({ error });
-        // onError &&
-        //   onError({
+        // onError?.({
         //     action: NamespaceEnum.LEAVE_ROOM,
         //     message: 'Internal Server Error: Please try again.',
         //   });
@@ -288,7 +280,7 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
         navigateDashboard(navigate);
 
         // Callback
-        onSuccess && onSuccess({ action: NamespaceEnum.LEAVE_ROOM });
+        onSuccess?.({ action: NamespaceEnum.LEAVE_ROOM });
       }
 
       processButtonStatus(false);
@@ -310,14 +302,13 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
 
       if (error) {
         outputServerError({ error });
-        // onError &&
-        //   onError({
+        //   onError?.({
         //     action: NamespaceEnum.START_GAME,
         //     message: 'Internal Server Error: Please try again.',
         //   });
       } else {
         // Navigate to start game
-        // onSuccess && onSuccess({ action: NamespaceEnum.START_GAME });
+        // onSuccess?.({ action: NamespaceEnum.START_GAME });
       }
 
       processButtonStatus(false);
