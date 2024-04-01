@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, Typography, Alert } from '@mui/material';
+import { Box, Typography, Alert, Stack } from '@mui/material';
 
 import { RoomSettingForm } from '@/components';
 import {
@@ -39,10 +39,15 @@ function CreateRoom() {
   }, [errorMessage, setErrorMessage]);
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={4}>
-      <Typography variant="h4" component="h2">
-        Create Room
-      </Typography>
+    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={3}>
+      <Stack direction="column" spacing={0.5}>
+        <Typography variant="h4" component="h2">
+          Create Room
+        </Typography>
+        <Typography variant="body2" component="div">
+          Configure the below game room options.
+        </Typography>
+      </Stack>
 
       {/* Form */}
       <RoomSettingForm onSubmit={handleCreateRoom} isLoading={loadingButton}>

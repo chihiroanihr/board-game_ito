@@ -16,6 +16,16 @@ export const isObjectEmpty = (obj: Record<string, unknown>): boolean => {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
 };
 
+export const convertStringToNumber = (value: string | number) => {
+  if (typeof value === 'number') return value;
+  return parseInt(value);
+};
+
+export const convertStringToBoolean = (value: string | boolean) => {
+  if (typeof value === 'boolean') return value;
+  return value === 'true';
+};
+
 /**
  * Logs a server error to the console and displays an alert to the user.
  *

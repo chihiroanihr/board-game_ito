@@ -11,6 +11,7 @@ export const enum NamespaceEnum {
   LEAVE_ROOM = 'leave-room',
   PLAYER_IN = 'player-in',
   PLAYER_OUT = 'player-out',
+  ROOM_EDITED = 'room-edited',
   START_GAME = 'start-game',
   DEBUG_INITIALIZE = 'initialize',
 }

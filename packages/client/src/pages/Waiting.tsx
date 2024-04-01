@@ -6,14 +6,11 @@ import {
   Box,
   Stack,
   List,
-  ListItem,
-  ListItemAvatar,
-  Avatar,
-  ListItemText,
   Dialog,
   DialogTitle,
   DialogActions,
   Button,
+  useTheme,
 } from '@mui/material';
 
 import {
@@ -22,12 +19,14 @@ import {
   type PlayerInResponse,
   type PlayerOutResponse,
   NamespaceEnum,
+  MIN_NUM_PLAYERS,
+  MAX_NUM_PLAYERS,
 } from '@bgi/shared';
 
 import {
   TextButtonStyled,
-  BadgeOnline,
   AnimateTextThreeDots,
+  PlayerListItem,
   SnackbarPlayerIn,
   SnackbarPlayerOut,
 } from '@/components';
@@ -42,9 +41,11 @@ import {
   type SuccessCallbackFunction,
   useSocket,
 } from '@/hooks';
-import { outputServerError, stringAvatar } from '@/utils';
+import { outputServerError } from '@/utils';
 
 export default function Waiting() {
+  const theme = useTheme();
+
   const { socket } = useSocket();
   const { user: myself } = useAuth();
   const { room, updateRoom } = useRoom();
@@ -102,7 +103,7 @@ export default function Waiting() {
    * - Receive new room info (Room obj), list of players (Array<User>), and user (participated) info (User obj) from the response
    * - Update room info in the local storage
    * - Append new user to the list of players (just replace oroginal list of players with new list of players received)
-   * - If list of players reaches more than 4, enable "allowStart"
+   * - If list of players reaches more than MIN_NUM_PLAYERS, enable "allowStart"
    * - Display message that new user has arrived
    */
   useEffect(() => {
@@ -116,13 +117,13 @@ export default function Waiting() {
       // Store new player
       setPlayerIn(player);
 
-      // Enable start button if more than 4 players
-      if (players.length >= 4) {
+      // Enable start button if more than MIN_NUM_PLAYERS players
+      if (players.length >= MIN_NUM_PLAYERS) {
         setAllowStart(true);
       }
     }
 
-    // Runs whenever a socket event is recieved from the server
+    // Executes whenever a socket event is recieved from the server
     socket.on(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
     return () => {
       socket.off(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
@@ -141,7 +142,7 @@ export default function Waiting() {
    * - Receive new room (Room obj), list of players (Array<User>), and user (left) info (User obj) from the response
    * - Update room info in the local storage
    * - Remove the user from the list of players (just replace original list of players with new list of players received)
-   * - If list of players decreases to less than 4, disable "allowStart"
+   * - If list of players decreases to less than MIN_NUM_PLAYERS, disable "allowStart"
    * - Check if the player left was an admin (from the new room info received)
    * 1. If the participant was a room admin:
    *    - Set new room admin ID (room.createdBy)
@@ -151,8 +152,8 @@ export default function Waiting() {
    */
   useEffect(() => {
     async function onPlayerOutEvent(data: PlayerOutResponse) {
-      // Disable start button if less than 4 players
-      if (players.length <= 4) {
+      // Disable start button if less than MIN_NUM_PLAYERS players
+      if (players.length <= MIN_NUM_PLAYERS) {
         setAllowStart(false);
       }
 
@@ -174,7 +175,7 @@ export default function Waiting() {
       setPlayerOut(player);
     }
 
-    // Runs whenever a socket event is recieved from the server
+    // Executes whenever a socket event is recieved from the server
     socket.on(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
     return () => {
       socket.off(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
@@ -183,82 +184,94 @@ export default function Waiting() {
 
   if (!room) return null;
   return (
-    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={4}>
-      <Stack direction="column" spacing={0.5}>
-        <Typography variant="h4" component="h2">
-          Room ID:{' '}
-          <Typography variant="inherit" fontWeight="bold" component="span">
-            {room._id}
-          </Typography>
-        </Typography>
-        <Typography variant="body1" component="div">
-          Invite other players with this room ID.
-        </Typography>
-      </Stack>
+    <>
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="space-between"
+        flexGrow={1}
+        gap={4}
+        width={'100%'}
+      >
+        <Stack gap={4}>
+          {/* Room ID display */}
+          <Stack
+            spacing={0.5}
+            bgcolor={theme.palette.grey[300]}
+            width={'100%'}
+            p={3}
+            border={0.5}
+            borderRadius={1.5}
+            borderColor={theme.palette.grey[400]}
+          >
+            <Typography variant="h4" component="h2">
+              Room ID:{' '}
+              <Typography variant="inherit" fontWeight="bold" component="span">
+                {room._id}
+              </Typography>
+            </Typography>
+            <Typography variant="body1" component="div">
+              Invite other players with this room ID.
+            </Typography>
+          </Stack>
 
-      <Stack direction="column" spacing={1}>
-        <Typography variant="body1" component="div">
-          Waiting for other players <AnimateTextThreeDots />
-        </Typography>
+          {/* Description */}
+          <Stack direction="column" spacing={2}>
+            <Stack spacing={0} alignItems="flex-start" width={'100%'}>
+              <Typography variant="body1" component="div">
+                Waiting for other players <AnimateTextThreeDots />
+              </Typography>
 
-        <List>
-          {players.map((player) => (
-            <ListItem key={player._id.toString()}>
-              <ListItemAvatar>
-                <BadgeOnline
-                  variant="dot"
-                  overlap="circular"
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                >
-                  <Avatar {...stringAvatar(player.name)} />
-                </BadgeOnline>
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                  <Typography component="div">
-                    {player.name}
-                    {adminId?.toString() === player._id.toString() && (
-                      <Typography component="span" fontWeight="bold">
-                        {' '}
-                        (admin)
-                      </Typography>
-                    )}
-                  </Typography>
-                }
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Stack>
+              {!allowStart && (
+                <Typography component="p">
+                  <Typography component="span" fontWeight="bold">
+                    {MIN_NUM_PLAYERS - players.length}
+                  </Typography>{' '}
+                  more players required to begin the game.
+                </Typography>
+              )}
 
-      {adminId?.toString() === myself?._id.toString() && (
-        <>
-          {!allowStart && (
-            <Typography component="p">
-              You need to have{' '}
-              <Typography component="span" fontWeight="bold">
-                {4 - players.length}
-              </Typography>{' '}
-              more players to begin the game.
+              {players.length >= MAX_NUM_PLAYERS && (
+                <Typography component="p">
+                  Maximum number of players reached. Please start the game.
+                </Typography>
+              )}
+            </Stack>
+
+            {/* Players List */}
+            <List
+              sx={{
+                display: 'grid',
+                ...(players.length > MAX_NUM_PLAYERS / 2 && {
+                  gridTemplateRows: `repeat(${Math.floor(MAX_NUM_PLAYERS / 2) + (MAX_NUM_PLAYERS % 2)}, 1fr)`,
+                  gridAutoFlow: 'column',
+                }),
+              }}
+            >
+              {players.map((player) => (
+                <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
+              ))}
+            </List>
+          </Stack>
+        </Stack>
+
+        {/* Start Game Button */}
+        <Stack spacing={0.5} alignItems="center" alignSelf="center">
+          {adminId?.toString() !== myself?._id.toString() && (
+            <Typography variant="body2" component="div" color="grey.500">
+              Only admin can start the game.
             </Typography>
           )}
-
-          {players.length >= 10 && (
-            <Typography component="p">
-              You have reached maximum number of players. Please start the game.
-            </Typography>
-          )}
-
           <TextButtonStyled
             onClick={handleStartGame}
             variant="contained"
             loading={loadingButton}
-            disabled={!allowStart}
+            disabled={adminId?.toString() !== myself?._id.toString() || !allowStart} // Only admin can start the game
           >
             Start Game
           </TextButtonStyled>
-        </>
-      )}
+        </Stack>
+      </Box>
 
       {/* Snackbar player in / out notification */}
       <SnackbarPlayerIn
@@ -285,6 +298,6 @@ export default function Waiting() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 }

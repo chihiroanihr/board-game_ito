@@ -7,6 +7,9 @@ import {
   type Room,
   type RoomSetting,
   type SessionResponse,
+  type PlayerInResponse,
+  type PlayerOutResponse,
+  type RoomEditedResponse,
   type LoginCallback,
   type LogoutCallback,
   type CreateRoomCallback,
@@ -182,7 +185,7 @@ const handleSocketDisconnect = (socket: Socket, io: Server) => {
         // Start a transaction session
         dbSession.startTransaction();
         // [1] If user in room and room is not playing, then just leave room
-        socket.room?._id && (await disconnectLeaveRoom(socket, dbSession));
+        // socket.room?._id && (await disconnectLeaveRoom(socket, dbSession));
         // [2] Update session
         await handler.handleSaveSession(socket);
         // Commit the transaction
@@ -386,7 +389,10 @@ const handleSocketEditRoom = (socket: Socket) => {
         // No need to save session
         /** [2] @socket_update - Update socket info */
         socket.room = room;
-        /** [3] @socket_emit - Send back result to client */
+        /** [3] @socket_emit - Notify others in the room */
+        const roomEditedInfo: RoomEditedResponse = { room };
+        socket.to(room._id).emit(NamespaceEnum.ROOM_EDITED, roomEditedInfo);
+        /** [4] @socket_emit - Send back result to client */
         callback({ room: room });
 
         log.logSocketEvent('Edit Room', socket);
@@ -604,7 +610,8 @@ const socketJoinRoom = (socket: Socket, user: User, room: Room): void => {
   /** [2] @socket_update - Join the user to a socket room */
   socket.join(room._id);
   /** [3] @socket_emit - Notify others in the room */
-  socket.to(room._id).emit(NamespaceEnum.PLAYER_IN, { user, room });
+  const playerInInfo: PlayerInResponse = { user, room };
+  socket.to(room._id).emit(NamespaceEnum.PLAYER_IN, playerInInfo);
 };
 
 const socketLeaveRoom = (socket: Socket, user: User, room: Room | null): void => {
@@ -613,7 +620,8 @@ const socketLeaveRoom = (socket: Socket, user: User, room: Room | null): void =>
     /** [1] @socket_update - Leave the user from the socket room */
     socket.leave(socket.room._id);
     /** [2] @socket_emit - Notify others in the room */
-    room && socket.to(socket.room._id).emit(NamespaceEnum.PLAYER_OUT, { user, room });
+    const playerOutInfo: PlayerOutResponse = { user, room };
+    room && socket.to(socket.room._id).emit(NamespaceEnum.PLAYER_OUT, playerOutInfo);
     /** [3] @socket_update - Update socket info */
     socket.room = null;
   }

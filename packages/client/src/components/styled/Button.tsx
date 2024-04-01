@@ -19,15 +19,16 @@ interface TextButtonStyledProps extends Omit<ButtonProps, 'startIcon'> {
 
 interface IconButtonStyledProps extends IconButtonProps {
   loading?: boolean;
-  tooltipTitle: React.ReactNode;
-  tooltipProps?: Partial<TooltipProps>;
+  tooltipProps?: Partial<TooltipProps> & { bgColor?: string; textColor?: string };
 }
 
 const TextButtonStyled = React.forwardRef(function TextButtonStyled(
   props: TextButtonStyledProps,
   ref: React.Ref<HTMLButtonElement>
 ) {
+  // Destructure all props
   const { onClick, type, variant, disabled, loading, children, ...rest } = props;
+
   const { isSubmitting } = useSubmissionStatus();
 
   return (
@@ -51,24 +52,30 @@ const IconButtonStyled = React.forwardRef(function TextButtonStyled(
   props: IconButtonStyledProps,
   ref: React.Ref<HTMLButtonElement>
 ) {
-  const { onClick, type, disabled, loading, tooltipTitle, tooltipProps, children, ...rest } = props;
+  // Destructure all props
+  const { onClick, type, disabled, loading, tooltipProps, children, ...rest } = props;
+  // Destructure title, bgColor and textColor from tooltipProps if they exist
+  const { title, bgColor, textColor, ...otherProps } = tooltipProps || {};
+
   const { isSubmitting } = useSubmissionStatus();
 
   return (
-    <TooltipStyled title={tooltipTitle} {...tooltipProps}>
-      <IconButton
-        ref={ref}
-        onClick={onClick}
-        type={type}
-        disabled={disabled || isSubmitting || loading}
-        {...rest}
-      >
-        {loading ? (
-          <CircularProgress color="inherit" size={25} sx={{ padding: '0.1em' }} />
-        ) : (
-          children
-        )}
-      </IconButton>
+    <TooltipStyled title={title} bgColor={bgColor} textColor={textColor} {...otherProps}>
+      <span>
+        <IconButton
+          ref={ref}
+          onClick={onClick}
+          type={type}
+          disabled={disabled || isSubmitting || loading}
+          {...rest}
+        >
+          {loading ? (
+            <CircularProgress color="inherit" size={25} sx={{ padding: '0.1em' }} />
+          ) : (
+            children
+          )}
+        </IconButton>
+      </span>
     </TooltipStyled>
   );
 }) as React.ForwardRefExoticComponent<

@@ -21,7 +21,7 @@ import {
   type ErrorCallbackFunction,
   type SuccessCallbackFunction,
 } from '@/hooks';
-import { type JoinRoomFormDataType } from '../enum';
+import { type JoinRoomFormDataType } from '../enum.js';
 
 /**
  * Subpage for Dashboard
@@ -53,7 +53,7 @@ function JoinRoom() {
   const { handleJoinRoom, loadingButton, errorMessage } = useAction({ onError, onSuccess });
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={4}>
+    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={3}>
       <Typography variant="h4" component="h2">
         Join Room
       </Typography>
@@ -89,7 +89,7 @@ function JoinRoom() {
                 })}
                 // Validation Error
                 error={Boolean(errors.roomId)}
-                helperText={errors.roomId?.message || ''}
+                helperText={errors.roomId?.message ?? ''}
               />
             </Stack>
           </CardContent>

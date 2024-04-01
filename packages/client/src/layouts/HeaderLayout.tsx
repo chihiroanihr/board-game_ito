@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Typography,
   Stack,
@@ -8,12 +8,13 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { Logout, MeetingRoom, Settings } from '@mui/icons-material';
+import { Logout, MeetingRoom, Settings, Visibility } from '@mui/icons-material';
 
-import { NamespaceEnum } from '@bgi/shared';
+import { NamespaceEnum, type RoomEditedResponse } from '@bgi/shared';
 
-import { IconButtonStyled, RoomSettingForm } from '@/components';
+import { IconButtonStyled, RoomSettingForm, RoomSettingViewer } from '@/components';
 import {
+  useSocket,
   useAuth,
   useRoom,
   useAction,
@@ -37,8 +38,9 @@ const commonButtonStyle = {
  * @returns
  */
 export default function HeaderLayout() {
+  const { socket } = useSocket();
   const { user } = useAuth();
-  const { room } = useRoom();
+  const { room, updateRoom } = useRoom();
   const { isSubmitting } = useSubmissionStatus();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -67,6 +69,20 @@ export default function HeaderLayout() {
     onError,
   });
 
+  // When room setting is edited by admin
+  useEffect(() => {
+    async function onRoomEditedEvent({ room }: RoomEditedResponse) {
+      // Update room in the local storage first
+      updateRoom(room);
+    }
+
+    // Executes whenever a socket event is recieved from the server
+    socket.on(NamespaceEnum.ROOM_EDITED, onRoomEditedEvent);
+    return () => {
+      socket.off(NamespaceEnum.ROOM_EDITED, onRoomEditedEvent);
+    };
+  }, [socket, updateRoom]);
+
   if (!user) return null;
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -75,8 +91,7 @@ export default function HeaderLayout() {
         <IconButtonStyled
           onClick={handleLogout}
           loading={loadingButton && triggeredButton === NamespaceEnum.LOGOUT}
-          tooltipTitle="Exit Game"
-          tooltipProps={{ placement: 'top' }}
+          tooltipProps={{ title: 'Exit Game', placement: 'top' }}
           sx={{
             ...commonButtonStyle,
             // transform: 'scaleX(-1)',
@@ -90,8 +105,7 @@ export default function HeaderLayout() {
           <IconButtonStyled
             onClick={handleLeaveRoom}
             loading={loadingButton && triggeredButton === NamespaceEnum.LEAVE_ROOM}
-            tooltipTitle="Leave This Room"
-            tooltipProps={{ placement: 'top' }}
+            tooltipProps={{ title: 'Leave This Room', placement: 'top' }}
             sx={commonButtonStyle}
           >
             <MeetingRoom />
@@ -103,17 +117,21 @@ export default function HeaderLayout() {
         </Typography>
       </Stack>
 
-      {/* Edit Room Button */}
+      {/* Edit Room Button (only admin can configure this) */}
       {room && (
         <>
           <IconButtonStyled
             onClick={handleDialogOpen}
             loading={loadingButton && triggeredButton === NamespaceEnum.EDIT_ROOM}
-            tooltipTitle="Edit Room Configuration"
-            tooltipProps={{ placement: 'top' }}
+            tooltipProps={{
+              title:
+                user._id === room.createdBy ? 'Edit Room Configuration' : 'View Room Configuration',
+              placement: 'top',
+              // ...(user._id !== room.createdBy && { bgColor: 'grey.500' }),
+            }}
             sx={commonButtonStyle}
           >
-            <Settings />
+            {user._id === room.createdBy ? <Settings /> : <Visibility />}
           </IconButtonStyled>
 
           {/* Form Modal */}
@@ -122,17 +140,30 @@ export default function HeaderLayout() {
 
             <DialogContent sx={{ paddingTop: '20px !important' }}>
               {/* Place RoomSettingForm inside DialogContent */}
-              <RoomSettingForm ref={submitBtnRef} onSubmit={handleEditRoom} isInsideModal />
+              {user._id === room.createdBy ? (
+                // Admin can edit room setting modal
+                <RoomSettingForm
+                  ref={submitBtnRef}
+                  roomSetting={room.setting}
+                  onSubmit={handleEditRoom}
+                  isInsideModal
+                />
+              ) : (
+                // Other players can only view room setting modal
+                <RoomSettingViewer roomSetting={room.setting} />
+              )}
             </DialogContent>
 
-            <DialogActions>
-              <Button onClick={handleDialogClose} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button onClick={() => submitBtnRef.current?.click()} disabled={isSubmitting}>
-                Save
-              </Button>
-            </DialogActions>
+            {user._id === room.createdBy && (
+              <DialogActions>
+                <Button onClick={handleDialogClose} disabled={isSubmitting}>
+                  Cancel
+                </Button>
+                <Button onClick={() => submitBtnRef.current?.click()} disabled={isSubmitting}>
+                  Save
+                </Button>
+              </DialogActions>
+            )}
           </Dialog>
         </>
       )}

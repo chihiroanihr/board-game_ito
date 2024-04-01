@@ -13,10 +13,6 @@ import { useLocalStorage } from './useLocalStorage';
 
 type RoomDataType = Room | null;
 
-type RoomProviderProps = {
-  children: ReactNode;
-};
-
 export type RoomContextType = {
   room: RoomDataType;
   updateRoom: (data: RoomDataType) => void;
@@ -27,6 +23,10 @@ export type RoomContextType = {
 const RoomContext: Context<RoomContextType | undefined> = createContext<
   RoomContextType | undefined
 >(undefined);
+
+type RoomProviderProps = {
+  children: ReactNode;
+};
 
 export const RoomProvider: React.FC<RoomProviderProps> = ({ children }) => {
   const [room, setRoom] = useLocalStorage<Room | null>('room', null);

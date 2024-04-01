@@ -1,10 +1,10 @@
 import Loader from './Loader';
 import Copyright from './Copyright';
-import RoomSettingForm from './RoomSettingForm';
-
-export { Loader, Copyright, RoomSettingForm };
+import PlayerListItem from './PlayerListItem';
+export { Loader, Copyright, PlayerListItem };
 
 export * from './Snackbar';
 
-export * from './debug';
+export * from './room-setting';
 export * from './styled';
+export * from './debug';

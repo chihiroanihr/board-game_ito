@@ -6,6 +6,7 @@ import {
   type RoomSetting,
   RoomStatusEnum,
   UserStatusEnum,
+  MAX_NUM_PLAYERS,
 } from '@bgi/shared';
 
 import * as controller from '../controllers';
@@ -178,7 +179,7 @@ export const handleLeaveRoom = async (
     // Error
     if (!room) throw new Error('Failed to obtain room info (given room might not exist).');
 
-    if (room.players.length <= 10) {
+    if (room.players.length <= MAX_NUM_PLAYERS) {
       /** @api_call - Update room status (PUT) */
       await controller.updateRoomStatus(roomId, RoomStatusEnum.AVAILABLE, dbSession);
     }

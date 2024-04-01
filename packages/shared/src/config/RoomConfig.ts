@@ -1,3 +1,6 @@
+export const MIN_NUM_PLAYERS = 4;
+export const MAX_NUM_PLAYERS = 10;
+
 export const roomIdConfig = {
   numLetters: 8,
   regex: new RegExp(`^[A-Za-z0-9]{${8}}$`), // or A-Za-z, or A-Za-z0-9
