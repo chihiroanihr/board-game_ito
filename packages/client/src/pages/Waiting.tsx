@@ -35,6 +35,7 @@ import {
   useRoom,
   useAction,
   useSubmissionStatus,
+  type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
   type SuccessCallbackParams,
@@ -61,11 +62,16 @@ export default function Waiting() {
   const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
 
   // Callback for button click handlers
+  const beforeSubmit: BeforeSubmitCallbackFunction = () => {};
   const onError: ErrorCallbackFunction = ({ message }: ErrorCallbackParams) => {};
   const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
 
   // Button click handlers
-  const { handleLeaveRoom, handleStartGame, loadingButton } = useAction({ onSuccess, onError });
+  const { handleLeaveRoom, handleStartGame, loadingButton } = useAction({
+    beforeSubmit,
+    onError,
+    onSuccess,
+  });
 
   /**
    * [1] Myself arrives

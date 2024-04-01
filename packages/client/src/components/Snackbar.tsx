@@ -1,7 +1,7 @@
 // SnackbarPlayerOut.js
 import React from 'react';
 import { Snackbar, Slide, Avatar, useTheme, type SlideProps } from '@mui/material';
-import { Login, Logout, ManageHistory } from '@mui/icons-material';
+import { Login, Logout, ManageHistory, CheckCircleOutline } from '@mui/icons-material';
 
 import type { User } from '@bgi/shared';
 
@@ -72,9 +72,14 @@ export const SnackbarPlayerOut: React.FC<SnackbarPlayerOutProps> = ({ open, play
 interface SnackbarRoomEditedProps {
   open: boolean;
   onClose: () => void;
+  isAdmin: boolean;
 }
 
-export const SnackbarRoomEdited: React.FC<SnackbarRoomEditedProps> = ({ open, onClose }) => {
+export const SnackbarRoomEdited: React.FC<SnackbarRoomEditedProps> = ({
+  open,
+  onClose,
+  isAdmin,
+}) => {
   const theme = useTheme();
 
   return (
@@ -86,10 +91,21 @@ export const SnackbarRoomEdited: React.FC<SnackbarRoomEditedProps> = ({ open, on
       autoHideDuration={SNACKBAR_DURATION}
       message={
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Avatar sx={{ bgcolor: theme.palette.error.main }}>
-            <ManageHistory />
-          </Avatar>
-          <span>Admin has changed the room setting.</span>
+          {isAdmin ? (
+            <>
+              <Avatar sx={{ bgcolor: theme.palette.success.main }}>
+                <CheckCircleOutline />
+              </Avatar>
+              <span>Successfully changed the room setting.</span>
+            </>
+          ) : (
+            <>
+              <Avatar sx={{ bgcolor: theme.palette.info.main }}>
+                <ManageHistory />
+              </Avatar>
+              <span>Admin has changed the room setting.</span>
+            </>
+          )}
         </div>
       }
     />

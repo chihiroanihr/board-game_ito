@@ -17,6 +17,7 @@ import { roomIdConfig } from '@bgi/shared';
 import { TextButtonStyled } from '@/components';
 import {
   useAction,
+  type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
   type SuccessCallbackFunction,
@@ -44,13 +45,18 @@ function JoinRoom() {
   const handleSnackbarOpen = () => setSnackbarOpen(true);
 
   // Callback for button click handlers
+  const beforeSubmit: BeforeSubmitCallbackFunction = () => {};
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
     handleSnackbarOpen();
   };
   const onSuccess: SuccessCallbackFunction = ({ action }) => {};
 
   // Button click handlers
-  const { handleJoinRoom, loadingButton, errorMessage } = useAction({ onError, onSuccess });
+  const { handleJoinRoom, loadingButton, errorMessage } = useAction({
+    beforeSubmit,
+    onError,
+    onSuccess,
+  });
 
   return (
     <Box display="flex" flexDirection="column" alignItems="flex-start" gap={3}>

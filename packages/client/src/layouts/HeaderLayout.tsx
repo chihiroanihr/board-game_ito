@@ -23,6 +23,7 @@ import {
   useAuth,
   useRoom,
   useAction,
+  type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
   type SuccessCallbackParams,
@@ -52,6 +53,8 @@ export default function HeaderLayout() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [triggeredButton, setTriggeredButton] = useState<NamespaceEnum>();
 
+  const isAdmin = !!(user?._id === room?.createdBy);
+
   const submitBtnRef = useRef<HTMLButtonElement>(null);
 
   // Dialog open / close handlers
@@ -62,20 +65,25 @@ export default function HeaderLayout() {
   const handleSnackbarClose = () => setSnackbarOpen(false);
 
   // Callback for button click handlers
+  const beforeSubmit: BeforeSubmitCallbackFunction = () => {
+    snackbarOpen && handleSnackbarClose(); // Make sure to close all snackbars that are opened
+  };
   const onError: ErrorCallbackFunction = ({ message }: ErrorCallbackParams) => {};
   const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
     setTriggeredButton(action); // Set which button was triggered
 
     // If triggered button is "edit-room" then close dialog
     if (action && action === NamespaceEnum.EDIT_ROOM) {
-      dialogOpen && handleDialogClose();
+      handleDialogClose();
+      handleSnackbarOpen();
     }
   };
 
   // Button click handlers
   const { handleEditRoom, handleLeaveRoom, handleLogout, loadingButton } = useAction({
-    onSuccess,
+    beforeSubmit,
     onError,
+    onSuccess,
   });
 
   // When room setting is edited by admin
@@ -134,16 +142,13 @@ export default function HeaderLayout() {
               onClick={handleDialogOpen}
               loading={loadingButton && triggeredButton === NamespaceEnum.EDIT_ROOM}
               tooltipProps={{
-                title:
-                  user._id === room.createdBy
-                    ? 'Edit Room Configuration'
-                    : 'View Room Configuration',
+                title: isAdmin ? 'Edit Game Room Setting' : 'View Game Room Setting',
                 placement: 'top',
                 // ...(user._id !== room.createdBy && { bgColor: 'grey.500' }),
               }}
               sx={commonButtonStyle}
             >
-              {user._id === room.createdBy ? <Settings /> : <Visibility />}
+              {isAdmin ? <Settings /> : <Visibility />}
             </IconButtonStyled>
 
             {/* Form Modal */}
@@ -152,7 +157,7 @@ export default function HeaderLayout() {
 
               <DialogContent sx={{ paddingTop: '20px !important' }}>
                 {/* Place RoomSettingForm inside DialogContent */}
-                {user._id === room.createdBy ? (
+                {isAdmin ? (
                   // Admin can edit room setting modal
                   <RoomSettingForm
                     ref={submitBtnRef}
@@ -166,7 +171,7 @@ export default function HeaderLayout() {
                 )}
               </DialogContent>
 
-              {user._id === room.createdBy && (
+              {isAdmin && (
                 <DialogActions>
                   <Button onClick={handleDialogClose} disabled={isSubmitting}>
                     Cancel
@@ -182,7 +187,7 @@ export default function HeaderLayout() {
       </Stack>
 
       {/* Room setting modified by admin notification */}
-      <SnackbarRoomEdited open={snackbarOpen} onClose={handleSnackbarClose} />
+      <SnackbarRoomEdited open={snackbarOpen} onClose={handleSnackbarClose} isAdmin={isAdmin} />
     </>
   );
 }

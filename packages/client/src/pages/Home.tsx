@@ -16,6 +16,7 @@ import { TextButtonStyled } from '@/components';
 import {
   useAuth,
   useAction,
+  type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
   type SuccessCallbackParams,
@@ -40,13 +41,15 @@ function Home() {
   });
 
   // Callback for button click handlers
+  const beforeSubmit: BeforeSubmitCallbackFunction = () => {};
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
   const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
 
   // Button click handlers
   const { handleLogin, loadingButton, errorMessage, setErrorMessage } = useAction({
-    onSuccess,
+    beforeSubmit,
     onError,
+    onSuccess,
   });
 
   // Disappear error message after 5 seconds

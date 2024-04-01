@@ -24,6 +24,8 @@ import {
 } from '@/utils';
 import { type LoginFormDataType, type JoinRoomFormDataType } from '../enum';
 
+export type BeforeSubmitCallbackFunction = () => void;
+
 export type ErrorCallbackParams = { action?: NamespaceEnum; message?: string };
 export interface ErrorCallbackFunction {
   (error: ErrorCallbackParams): void;
@@ -35,11 +37,12 @@ export interface SuccessCallbackFunction {
 }
 
 interface UseActionCallback {
+  beforeSubmit?: BeforeSubmitCallbackFunction;
   onError?: ErrorCallbackFunction;
   onSuccess?: SuccessCallbackFunction;
 }
 
-export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
+export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallback) => {
   const navigate = useNavigate();
   const { socket } = useSocket();
   const { user, updateUser, discardUser } = useAuth();
@@ -57,6 +60,8 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
   const handleLogin = (data: LoginFormDataType) => {
     processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
+
+    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
 
     const userName = data.name.trim(); // Trim any start/end spaces
     // [*] ERROR
@@ -97,7 +102,9 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
   };
 
   const handleLogout = () => {
-    processButtonStatus(true);
+    processButtonStatus(true); // Set submitting to true when the request is initiated
+
+    beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
 
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
@@ -131,8 +138,10 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
   };
 
   const handleCreateRoom = (formData: RoomSetting) => {
+    processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
-    processButtonStatus(true);
+
+    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
 
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
@@ -169,8 +178,10 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
   };
 
   const handleJoinRoom = (data: JoinRoomFormDataType) => {
+    processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
-    processButtonStatus(true);
+
+    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
 
     const roomId = data.roomId.trim().toUpperCase();
     // [*] ERROR
@@ -228,6 +239,8 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
   const handleEditRoom = (formData: RoomSetting) => {
     processButtonStatus(true);
 
+    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
@@ -259,6 +272,8 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
   const handleLeaveRoom = () => {
     processButtonStatus(true);
 
+    beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
@@ -289,6 +304,8 @@ export const useAction = ({ onError, onSuccess }: UseActionCallback) => {
 
   const handleStartGame = () => {
     processButtonStatus(true);
+
+    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
