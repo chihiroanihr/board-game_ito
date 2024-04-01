@@ -1,14 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import {
-  Box,
-  FormHelperText,
-  Typography,
-  TextField,
-  Stack,
-  FormControl,
-  Alert,
-} from '@mui/material';
+import { Box, FormHelperText, Typography, TextField, Stack, Alert } from '@mui/material';
 
 import { userNameConfig } from '@bgi/shared';
 
@@ -73,56 +65,54 @@ function Home() {
       </Typography>
 
       <Box component="form" onSubmit={handleSubmit(handleLogin)} noValidate>
-        <FormControl>
-          <Stack direction="row">
-            {/* Input Field */}
-            <TextField
-              id="name"
-              type="text"
-              label="Name"
-              variant="outlined"
-              InputProps={{
-                sx: {
-                  borderTopRightRadius: 0,
-                  borderBottomRightRadius: 0,
-                },
-              }}
-              // Validate the name with react-hook-form
-              {...register('name', {
-                required: 'Name is required.',
-                minLength: {
-                  value: userNameConfig.minLength,
-                  message: userNameConfig.minLengthErrorMessage,
-                },
-                maxLength: {
-                  value: userNameConfig.maxLength,
-                  message: userNameConfig.maxLengthErrorMessage,
-                },
-                pattern: {
-                  value: userNameConfig.regex,
-                  message: userNameConfig.regexErrorMessage,
-                },
-              })}
-            />
+        <Stack direction="row">
+          {/* Input Field */}
+          <TextField
+            id="name"
+            type="text"
+            variant="outlined"
+            label="Name"
+            InputProps={{
+              sx: {
+                borderTopRightRadius: 0,
+                borderBottomRightRadius: 0,
+              },
+            }}
+            // Validate the name with react-hook-form
+            {...register('name', {
+              required: 'Name is required.',
+              minLength: {
+                value: userNameConfig.minLength,
+                message: userNameConfig.minLengthErrorMessage,
+              },
+              maxLength: {
+                value: userNameConfig.maxLength,
+                message: userNameConfig.maxLengthErrorMessage,
+              },
+              pattern: {
+                value: userNameConfig.regex,
+                message: userNameConfig.regexErrorMessage,
+              },
+            })}
+          />
 
-            {/* Submit Button */}
-            <TextButtonStyled
-              type="submit"
-              variant="contained"
-              loading={loadingButton}
-              disableElevation
-              sx={{
-                borderTopLeftRadius: 0,
-                borderBottomLeftRadius: 0,
-              }}
-            >
-              Submit
-            </TextButtonStyled>
-          </Stack>
+          {/* Submit Button */}
+          <TextButtonStyled
+            type="submit"
+            variant="contained"
+            loading={loadingButton}
+            disableElevation
+            sx={{
+              borderTopLeftRadius: 0,
+              borderBottomLeftRadius: 0,
+            }}
+          >
+            Submit
+          </TextButtonStyled>
+        </Stack>
 
-          {/* Validation Error */}
-          <FormHelperText error={'name' in errors}>{errors.name?.message}</FormHelperText>
-        </FormControl>
+        {/* Validation Error */}
+        <FormHelperText error={Boolean(errors.name)}>{errors.name?.message ?? null}</FormHelperText>
 
         {/* Form Request Error */}
         {errorMessage && <Alert severity="error">{errorMessage}</Alert>}

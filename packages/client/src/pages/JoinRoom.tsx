@@ -95,7 +95,7 @@ function JoinRoom() {
                 })}
                 // Validation Error
                 error={Boolean(errors.roomId)}
-                helperText={errors.roomId?.message ?? ''}
+                helperText={errors.roomId?.message ?? null}
               />
             </Stack>
           </CardContent>
