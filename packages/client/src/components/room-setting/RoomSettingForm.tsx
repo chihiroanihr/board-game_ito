@@ -1,11 +1,5 @@
 import React, { forwardRef, type ForwardRefRenderFunction } from 'react';
-import {
-  useForm,
-  Controller,
-  type UseFormRegister,
-  type FieldErrors,
-  type Control,
-} from 'react-hook-form';
+import { useForm, Controller, type Control } from 'react-hook-form';
 import {
   Stack,
   Card,
@@ -29,9 +23,10 @@ import {
   TextFieldWithIcon,
   ToggleButtonWithIcon,
 } from '@/components';
-import { useRoom } from '@/hooks';
+import { convertStringToBoolean, convertStringToNumber } from '@/utils';
 
 interface RoomSettingFormProps {
+  roomSetting: RoomSetting;
   onSubmit: (data: RoomSetting) => void;
   isLoading?: boolean;
   isInsideModal?: boolean;
@@ -48,32 +43,31 @@ const formDefaultValues: RoomSetting = {
 };
 
 const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFormProps> = (
-  { onSubmit, isLoading, isInsideModal, children },
+  { roomSetting, onSubmit, isLoading, isInsideModal, children },
   btnRef
 ) => {
-  const { room } = useRoom();
-
   // Prepare react-hook-form
   const {
-    register,
     control,
     handleSubmit,
     formState,
-    formState: { errors },
     reset, // reset input form data
   } = useForm<RoomSetting>({
-    defaultValues: room?.setting || formDefaultValues,
+    mode: 'onChange',
+    defaultValues: roomSetting || formDefaultValues,
   });
 
   const handleFormSubmit = (data: RoomSetting) => {
     // Adjust / clean the type of form inputs
     const roomSettingData: RoomSetting = {
       ...data,
+      // Convert string to number
+      numRound: convertStringToNumber(data.numRound),
+      answerThemeTime: convertStringToNumber(data.answerThemeTime),
+      answerNumberTime: convertStringToNumber(data.answerNumberTime),
       // Convert string to boolean
-      heartEnabled:
-        typeof data.heartEnabled === 'boolean' ? data.heartEnabled : data.heartEnabled === 'true',
-      dupNumCard:
-        typeof data.dupNumCard === 'boolean' ? data.dupNumCard : data.dupNumCard === 'true',
+      heartEnabled: convertStringToBoolean(data.heartEnabled),
+      dupNumCard: convertStringToBoolean(data.dupNumCard),
     };
 
     // Call the onSubmit function with submitted data
@@ -98,12 +92,12 @@ const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFo
         // If not inside modal, wrap the form in Card component
         <Card variant="outlined" sx={{ px: '2rem', py: '3rem', borderRadius: '0.8rem' }}>
           <CardContent sx={{ paddingTop: '9px' }}>
-            <FormContent register={register} control={control} errors={errors} />
+            <FormContent control={control} />
           </CardContent>
         </Card>
       ) : (
         // If inside modal, do not wrap the form with anything
-        <FormContent register={register} control={control} errors={errors} />
+        <FormContent control={control} inModal={true} />
       )}
 
       <TextButtonStyled
@@ -120,12 +114,11 @@ const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFo
 };
 
 interface FormContentProps {
-  register: UseFormRegister<RoomSetting>;
   control: Control<RoomSetting, unknown>;
-  errors: FieldErrors<RoomSetting>;
+  inModal?: boolean;
 }
 
-const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) => {
+const FormContent: React.FC<FormContentProps> = ({ control, inModal }) => {
   const validateNumberInput = (value: { toString: () => string }) => {
     if (!value) return 'Please enter a number.'; // Check if the field is empty
     if (!/^[1-9]\d*$/.test(value.toString())) return 'Please enter a valid number.'; // Check if it's only integer
@@ -136,24 +129,10 @@ const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) 
     <Stack direction="column" spacing={4}>
       {/* Field 1 */}
       <Stack direction="column" spacing={1}>
-        <TextFieldWithIcon
-          fullWidth
-          id="numRound"
-          type="number"
-          label={
-            <>
-              Number of Rounds
-              <TooltipStyled title={roomSettingConfig.numRound.helperText} placement="right">
-                <Help fontSize="small" />
-              </TooltipStyled>
-            </>
-          }
-          size="small"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          {...register('numRound', {
-            valueAsNumber: true,
+        <Controller
+          name="numRound"
+          control={control}
+          rules={{
             validate: validateNumberInput,
             min: {
               value: roomSettingConfig.numRound.minRounds,
@@ -163,34 +142,37 @@ const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) 
               value: roomSettingConfig.numRound.maxRounds,
               message: roomSettingConfig.numRound.maxRoundsErrorMessage,
             },
-          })}
-          // Validation Error
-          error={Boolean(errors.numRound)}
-          helperText={errors.numRound?.message || ''}
+          }}
+          render={({ field, fieldState: { error } }) => (
+            <TextFieldWithIcon
+              {...field}
+              id="numRound"
+              type="number"
+              label={
+                <>
+                  Number of Rounds
+                  <TooltipStyled title={roomSettingConfig.numRound.helperText} placement="right">
+                    <Help fontSize="small" />
+                  </TooltipStyled>
+                </>
+              }
+              InputLabelProps={{ shrink: true }}
+              error={!!error}
+              helperText={error ? error.message : null}
+              fullWidth
+              size="small"
+            />
+          )}
         />
         {/** @todo: Mobile version form helper text: <FormHelperText>{roomSettingConfig.numRound.helperText}</FormHelperText> */}
       </Stack>
 
       {/* Field 2 */}
       <Stack direction="column" spacing={1}>
-        <TextFieldWithIcon
-          fullWidth
-          id="answerThemeTime"
-          type="number"
-          label={
-            <>
-              Answer Theme Time
-              <TooltipStyled title={roomSettingConfig.answerThemeTime.helperText} placement="right">
-                <Help fontSize="small" />
-              </TooltipStyled>
-            </>
-          }
-          size="small"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          {...register('answerThemeTime', {
-            valueAsNumber: true,
+        <Controller
+          name="answerThemeTime"
+          control={control}
+          rules={{
             validate: validateNumberInput,
             min: {
               value: roomSettingConfig.answerThemeTime.minSeconds,
@@ -200,36 +182,39 @@ const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) 
               value: roomSettingConfig.answerThemeTime.maxSeconds,
               message: roomSettingConfig.answerThemeTime.maxSecondsErrorMessage,
             },
-          })}
-          // Validation Error
-          error={Boolean(errors.answerThemeTime)}
-          helperText={errors.answerThemeTime?.message || ''}
+          }}
+          render={({ field, fieldState: { error } }) => (
+            <TextFieldWithIcon
+              {...field}
+              id="answerThemeTime"
+              type="number"
+              label={
+                <>
+                  Answer Theme Time
+                  <TooltipStyled
+                    title={roomSettingConfig.answerThemeTime.helperText}
+                    placement="right"
+                  >
+                    <Help fontSize="small" />
+                  </TooltipStyled>
+                </>
+              }
+              InputLabelProps={{ shrink: true }}
+              error={!!error}
+              helperText={error ? error.message : null}
+              fullWidth
+              size="small"
+            />
+          )}
         />
       </Stack>
 
       {/* Field 3 */}
       <Stack direction="column" spacing={1}>
-        <TextFieldWithIcon
-          fullWidth
-          id="answerNumberTime"
-          type="number"
-          label={
-            <>
-              Answer Number Time
-              <TooltipStyled
-                title={roomSettingConfig.answerNumberTime.helperText}
-                placement="right"
-              >
-                <Help fontSize="small" />
-              </TooltipStyled>
-            </>
-          }
-          size="small"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          {...register('answerNumberTime', {
-            valueAsNumber: true,
+        <Controller
+          name="answerNumberTime"
+          control={control}
+          rules={{
             validate: validateNumberInput,
             min: {
               value: roomSettingConfig.answerNumberTime.minSeconds,
@@ -239,17 +224,37 @@ const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) 
               value: roomSettingConfig.answerNumberTime.maxSeconds,
               message: roomSettingConfig.answerNumberTime.maxSecondsErrorMessage,
             },
-          })}
-          // Validation Error
-          error={Boolean(errors.answerNumberTime)}
-          helperText={errors.answerNumberTime?.message || ''}
+          }}
+          render={({ field, fieldState: { error } }) => (
+            <TextFieldWithIcon
+              {...field}
+              id="answerNumberTime"
+              type="number"
+              label={
+                <>
+                  Answer Number Time
+                  <TooltipStyled
+                    title={roomSettingConfig.answerNumberTime.helperText}
+                    placement="right"
+                  >
+                    <Help fontSize="small" />
+                  </TooltipStyled>
+                </>
+              }
+              InputLabelProps={{ shrink: true }}
+              error={!!error}
+              helperText={error ? error.message : null}
+              fullWidth
+              size="small"
+            />
+          )}
         />
       </Stack>
 
       <Stack direction="column" spacing={2}>
         {/* Radio Buttons 1 */}
         <FormControl>
-          <FormLabel>
+          <FormLabel id="heartEnabled_radio-buttons-group">
             <FormHelperText sx={{ margin: 0 }}>
               {roomSettingConfig.heartEnabled.label}
             </FormHelperText>
@@ -258,7 +263,7 @@ const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) 
               name="heartEnabled"
               control={control}
               render={({ field }) => (
-                <RadioGroup {...field} row>
+                <RadioGroup {...field} aria-labelledby="heartEnabled_radio-buttons-group" row>
                   <FormControlLabel
                     value={true}
                     label={roomSettingConfig.heartEnabled.radioTrue} // "Enabled"
@@ -277,14 +282,14 @@ const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) 
 
         {/* Radio Buttons 2 */}
         <FormControl>
-          <FormLabel>
+          <FormLabel id="dupNumCard_radio-buttons-group">
             <FormHelperText sx={{ margin: 0 }}>{roomSettingConfig.dupNumCard.label}</FormHelperText>
 
             <Controller
               name="dupNumCard"
               control={control}
               render={({ field }) => (
-                <RadioGroup {...field} row>
+                <RadioGroup {...field} aria-labelledby="dupNumCard_radio-buttons-group" row>
                   <FormControlLabel
                     value={true}
                     label={roomSettingConfig.dupNumCard.radioTrue} // "Enabled"
@@ -303,10 +308,23 @@ const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) 
 
         {/* Toggle Button 1 */}
         <FormControl>
-          <FormLabel>
-            <FormHelperText sx={{ margin: 0 }}>
-              {roomSettingConfig.communicationMethod.label}
-            </FormHelperText>
+          <FormLabel id="communicationMethod_toggle-buttons-group">
+            {inModal ? (
+              <FormHelperText sx={{ margin: 0, lineHeight: 1.4, color: 'warning.light' }}>
+                Editing communication methods is disabled in active game waiting rooms.
+                <br />
+                Please create a new room to modify this setting.
+              </FormHelperText>
+            ) : (
+              <>
+                <FormHelperText sx={{ margin: 0 }}>
+                  {roomSettingConfig.communicationMethod.label}
+                </FormHelperText>
+                <FormHelperText sx={{ margin: 0, lineHeight: 1.4, color: 'warning.light' }}>
+                  Choose carefully, as this setting cannot be edited after room creation.
+                </FormHelperText>
+              </>
+            )}
 
             <Controller
               name="communicationMethod"
@@ -314,9 +332,11 @@ const FormContent: React.FC<FormContentProps> = ({ register, control, errors }) 
               render={({ field }) => (
                 <ToggleButtonGroup
                   {...field}
+                  aria-labelledby="communicationMethod_toggle-buttons-group"
+                  exclusive
+                  disabled={inModal} // Disable this form if inModal === true
                   size="small"
                   fullWidth
-                  exclusive
                   sx={{ marginTop: '9px' }}
                 >
                   <ToggleButtonWithIcon value={CommunicationMethodEnum.MIC}>
