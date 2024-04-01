@@ -161,8 +161,8 @@ export default function Waiting() {
 
       // Update room in the local storage first
       updateRoom(room);
-      // If admin changed then set new admin
-      if (room.createdBy.toString() !== adminId?.toString()) {
+      // If room still exists (at least one player left in the room) AND If admin changed then set new admin
+      if (room && room.createdBy.toString() !== adminId?.toString()) {
         setAdminId(room.createdBy);
       }
       // Remove player from the list of players
