@@ -12,7 +12,12 @@ import { Logout, MeetingRoom, Settings, Visibility } from '@mui/icons-material';
 
 import { NamespaceEnum, type RoomEditedResponse } from '@bgi/shared';
 
-import { IconButtonStyled, RoomSettingForm, RoomSettingViewer } from '@/components';
+import {
+  IconButtonStyled,
+  RoomSettingForm,
+  RoomSettingViewer,
+  SnackbarRoomEdited,
+} from '@/components';
 import {
   useSocket,
   useAuth,
@@ -44,6 +49,7 @@ export default function HeaderLayout() {
   const { isSubmitting } = useSubmissionStatus();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [triggeredButton, setTriggeredButton] = useState<NamespaceEnum>();
 
   const submitBtnRef = useRef<HTMLButtonElement>(null);
@@ -51,6 +57,9 @@ export default function HeaderLayout() {
   // Dialog open / close handlers
   const handleDialogOpen = () => setDialogOpen(true);
   const handleDialogClose = () => setDialogOpen(false);
+
+  const handleSnackbarOpen = () => setSnackbarOpen(true);
+  const handleSnackbarClose = () => setSnackbarOpen(false);
 
   // Callback for button click handlers
   const onError: ErrorCallbackFunction = ({ message }: ErrorCallbackParams) => {};
@@ -72,8 +81,8 @@ export default function HeaderLayout() {
   // When room setting is edited by admin
   useEffect(() => {
     async function onRoomEditedEvent({ room }: RoomEditedResponse) {
-      // Update room in the local storage first
-      updateRoom(room);
+      updateRoom(room); // Update room in the local storage first
+      handleSnackbarOpen(); // Open snackbar to give notification that room has changed
     }
 
     // Executes whenever a socket event is recieved from the server
@@ -85,88 +94,95 @@ export default function HeaderLayout() {
 
   if (!user) return null;
   return (
-    <Stack direction="row" alignItems="center" justifyContent="space-between">
-      <Stack direction="row" alignItems="center" spacing={2}>
-        {/* Leave Game Button */}
-        <IconButtonStyled
-          onClick={handleLogout}
-          loading={loadingButton && triggeredButton === NamespaceEnum.LOGOUT}
-          tooltipProps={{ title: 'Exit Game', placement: 'top' }}
-          sx={{
-            ...commonButtonStyle,
-            // transform: 'scaleX(-1)',
-          }}
-        >
-          <Logout />
-        </IconButtonStyled>
-
-        {/* Leave Room Button */}
-        {room && (
+    <>
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack direction="row" alignItems="center" spacing={2}>
+          {/* Leave Game Button */}
           <IconButtonStyled
-            onClick={handleLeaveRoom}
-            loading={loadingButton && triggeredButton === NamespaceEnum.LEAVE_ROOM}
-            tooltipProps={{ title: 'Leave This Room', placement: 'top' }}
-            sx={commonButtonStyle}
+            onClick={handleLogout}
+            loading={loadingButton && triggeredButton === NamespaceEnum.LOGOUT}
+            tooltipProps={{ title: 'Exit Game', placement: 'top' }}
+            sx={{
+              ...commonButtonStyle,
+              // transform: 'scaleX(-1)',
+            }}
           >
-            <MeetingRoom />
+            <Logout />
           </IconButtonStyled>
-        )}
 
-        <Typography variant="h5" component="h3">
-          Hello, <b>{user.name}</b>
-        </Typography>
+          {/* Leave Room Button */}
+          {room && (
+            <IconButtonStyled
+              onClick={handleLeaveRoom}
+              loading={loadingButton && triggeredButton === NamespaceEnum.LEAVE_ROOM}
+              tooltipProps={{ title: 'Leave This Room', placement: 'top' }}
+              sx={commonButtonStyle}
+            >
+              <MeetingRoom />
+            </IconButtonStyled>
+          )}
+
+          <Typography variant="h5" component="h3">
+            Hello, <b>{user.name}</b>
+          </Typography>
+        </Stack>
+
+        {/* Edit Room Button (only admin can configure this) */}
+        {room && (
+          <>
+            <IconButtonStyled
+              onClick={handleDialogOpen}
+              loading={loadingButton && triggeredButton === NamespaceEnum.EDIT_ROOM}
+              tooltipProps={{
+                title:
+                  user._id === room.createdBy
+                    ? 'Edit Room Configuration'
+                    : 'View Room Configuration',
+                placement: 'top',
+                // ...(user._id !== room.createdBy && { bgColor: 'grey.500' }),
+              }}
+              sx={commonButtonStyle}
+            >
+              {user._id === room.createdBy ? <Settings /> : <Visibility />}
+            </IconButtonStyled>
+
+            {/* Form Modal */}
+            <Dialog open={dialogOpen} onClose={handleDialogClose} scroll="body">
+              <DialogTitle>Edit Game Room Setting</DialogTitle>
+
+              <DialogContent sx={{ paddingTop: '20px !important' }}>
+                {/* Place RoomSettingForm inside DialogContent */}
+                {user._id === room.createdBy ? (
+                  // Admin can edit room setting modal
+                  <RoomSettingForm
+                    ref={submitBtnRef}
+                    roomSetting={room.setting}
+                    onSubmit={handleEditRoom}
+                    isInsideModal
+                  />
+                ) : (
+                  // Other players can only view room setting modal
+                  <RoomSettingViewer roomSetting={room.setting} />
+                )}
+              </DialogContent>
+
+              {user._id === room.createdBy && (
+                <DialogActions>
+                  <Button onClick={handleDialogClose} disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => submitBtnRef.current?.click()} disabled={isSubmitting}>
+                    Save
+                  </Button>
+                </DialogActions>
+              )}
+            </Dialog>
+          </>
+        )}
       </Stack>
 
-      {/* Edit Room Button (only admin can configure this) */}
-      {room && (
-        <>
-          <IconButtonStyled
-            onClick={handleDialogOpen}
-            loading={loadingButton && triggeredButton === NamespaceEnum.EDIT_ROOM}
-            tooltipProps={{
-              title:
-                user._id === room.createdBy ? 'Edit Room Configuration' : 'View Room Configuration',
-              placement: 'top',
-              // ...(user._id !== room.createdBy && { bgColor: 'grey.500' }),
-            }}
-            sx={commonButtonStyle}
-          >
-            {user._id === room.createdBy ? <Settings /> : <Visibility />}
-          </IconButtonStyled>
-
-          {/* Form Modal */}
-          <Dialog open={dialogOpen} onClose={handleDialogClose} scroll="body">
-            <DialogTitle>Edit Game Room Setting</DialogTitle>
-
-            <DialogContent sx={{ paddingTop: '20px !important' }}>
-              {/* Place RoomSettingForm inside DialogContent */}
-              {user._id === room.createdBy ? (
-                // Admin can edit room setting modal
-                <RoomSettingForm
-                  ref={submitBtnRef}
-                  roomSetting={room.setting}
-                  onSubmit={handleEditRoom}
-                  isInsideModal
-                />
-              ) : (
-                // Other players can only view room setting modal
-                <RoomSettingViewer roomSetting={room.setting} />
-              )}
-            </DialogContent>
-
-            {user._id === room.createdBy && (
-              <DialogActions>
-                <Button onClick={handleDialogClose} disabled={isSubmitting}>
-                  Cancel
-                </Button>
-                <Button onClick={() => submitBtnRef.current?.click()} disabled={isSubmitting}>
-                  Save
-                </Button>
-              </DialogActions>
-            )}
-          </Dialog>
-        </>
-      )}
-    </Stack>
+      {/* Room setting modified by admin notification */}
+      <SnackbarRoomEdited open={snackbarOpen} onClose={handleSnackbarClose} />
+    </>
   );
 }
