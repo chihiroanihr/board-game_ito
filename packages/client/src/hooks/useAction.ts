@@ -239,7 +239,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
   const handleEditRoom = (formData: RoomSetting) => {
     processButtonStatus(true);
 
-    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {

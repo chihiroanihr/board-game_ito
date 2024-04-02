@@ -153,7 +153,7 @@ export default function HeaderLayout() {
 
             {/* Form Modal */}
             <Dialog open={dialogOpen} onClose={handleDialogClose} scroll="body">
-              <DialogTitle>Edit Game Room Setting</DialogTitle>
+              <DialogTitle>{isAdmin ? 'Edit Game Room Setting' : 'Game Room Setting'}</DialogTitle>
 
               <DialogContent sx={{ paddingTop: '20px !important' }}>
                 {/* Place RoomSettingForm inside DialogContent */}

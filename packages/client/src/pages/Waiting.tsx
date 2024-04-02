@@ -27,8 +27,7 @@ import {
   TextButtonStyled,
   AnimateTextThreeDots,
   PlayerListItem,
-  SnackbarPlayerIn,
-  SnackbarPlayerOut,
+  SnackbarPlayer,
 } from '@/components';
 import {
   useAuth,
@@ -43,6 +42,7 @@ import {
   useSocket,
 } from '@/hooks';
 import { outputServerError } from '@/utils';
+import { type SnackbarPlayerInfoType } from '../enum';
 
 export default function Waiting() {
   const theme = useTheme();
@@ -54,9 +54,13 @@ export default function Waiting() {
 
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
-  const [playerIn, setPlayerIn] = useState<User | undefined>();
-  const [playerOut, setPlayerOut] = useState<User | undefined>();
   const [allowStart, setAllowStart] = useState<boolean>(false);
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarPlayerInfo, setSnackbarPlayerInfo] = useState<SnackbarPlayerInfoType>(undefined);
+  const [playerSnackbars, setPlayerSnackbars] = React.useState<readonly SnackbarPlayerInfoType[]>(
+    []
+  );
 
   // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
   const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
@@ -72,6 +76,25 @@ export default function Waiting() {
     onError,
     onSuccess,
   });
+
+  // Snackbar handlers
+  const handleSnackbarOpen = () => setSnackbarOpen(true);
+  const handleSnackbarClose = () => setSnackbarOpen(false);
+  const handleSnackbarExited = () => setSnackbarPlayerInfo(undefined);
+
+  // Consecutive snackbars (multiple snackbars without stacking them): (https://mui.com/material-ui/react-snackbar/#consecutive-snackbars)
+  useEffect(() => {
+    // Set a new snack when we don't have an active one
+    if (playerSnackbars.length && !snackbarPlayerInfo) {
+      setSnackbarPlayerInfo(playerSnackbars[0]);
+      setPlayerSnackbars((prev) => prev.slice(1));
+      handleSnackbarOpen();
+    }
+    // Close an active snack when a new one is added
+    else if (playerSnackbars.length && snackbarPlayerInfo && snackbarOpen) {
+      handleSnackbarClose();
+    }
+  }, [playerSnackbars, snackbarOpen, snackbarPlayerInfo]);
 
   /**
    * [1] Myself arrives
@@ -120,9 +143,15 @@ export default function Waiting() {
       updateRoom(room);
       // Add new player in the list of players
       setPlayers((prevPlayers: User[]) => [...prevPlayers, player]);
-      // Store new player
-      setPlayerIn(player);
-
+      // Store player and snackbar info for snackbar notification + Add to snackbar queue
+      setPlayerSnackbars((prev) => [
+        ...prev,
+        {
+          key: new Date().getTime(),
+          player: player,
+          status: 'in',
+        },
+      ]);
       // Enable start button if more than MIN_NUM_PLAYERS players
       if (players.length >= MIN_NUM_PLAYERS) {
         setAllowStart(true);
@@ -177,8 +206,15 @@ export default function Waiting() {
           (prevPlayer: User) => prevPlayer._id.toString() !== player._id.toString()
         )
       );
-      // Store player left
-      setPlayerOut(player);
+      // Store player and snackbar info for snackbar notification + Add to snackbar queue
+      setPlayerSnackbars((prev) => [
+        ...prev,
+        {
+          key: new Date().getTime(),
+          player: player,
+          status: 'out',
+        },
+      ]);
     }
 
     // Executes whenever a socket event is recieved from the server
@@ -280,15 +316,11 @@ export default function Waiting() {
       </Box>
 
       {/* Snackbar player in / out notification */}
-      <SnackbarPlayerIn
-        open={!!playerIn}
-        player={playerIn}
-        onClose={() => setPlayerIn(undefined)}
-      />
-      <SnackbarPlayerOut
-        open={!!playerOut}
-        player={playerOut}
-        onClose={() => setPlayerOut(undefined)}
+      <SnackbarPlayer
+        open={snackbarOpen}
+        snackbarInfo={snackbarPlayerInfo}
+        onClose={handleSnackbarClose}
+        onExited={handleSnackbarExited}
       />
 
       {/* Dialog before leaving (press back button) */}
