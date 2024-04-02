@@ -62,6 +62,8 @@ export default function Waiting() {
     []
   );
 
+  const isAdmin = !!(adminId?.toString() === myself?._id.toString());
+
   // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
   const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
 
@@ -299,7 +301,7 @@ export default function Waiting() {
 
         {/* Start Game Button */}
         <Stack spacing={0.5} alignItems="center" alignSelf="center">
-          {adminId?.toString() !== myself?._id.toString() && (
+          {!isAdmin && (
             <Typography variant="body2" component="div" color="grey.500">
               Only admin can start the game.
             </Typography>
@@ -308,7 +310,7 @@ export default function Waiting() {
             onClick={handleStartGame}
             variant="contained"
             loading={loadingButton}
-            disabled={adminId?.toString() !== myself?._id.toString() || !allowStart} // Only admin can start the game
+            disabled={!isAdmin || !allowStart} // Only admin can start the game
           >
             Start Game
           </TextButtonStyled>
