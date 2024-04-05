@@ -3,13 +3,13 @@ import { useBlocker } from 'react-router-dom';
 import { ObjectId } from 'mongodb';
 import {
   Typography,
-  Box,
   Stack,
   List,
   Dialog,
   DialogTitle,
   DialogActions,
   Button,
+  useMediaQuery,
   useTheme,
 } from '@mui/material';
 
@@ -45,16 +45,18 @@ import { outputServerError } from '@/utils';
 import { type SnackbarPlayerInfoType } from '../enum';
 
 export default function Waiting() {
-  const theme = useTheme();
-
   const { socket } = useSocket();
   const { user: myself } = useAuth();
   const { room, updateRoom } = useRoom();
   const { isSubmitting } = useSubmissionStatus();
 
+  const theme = useTheme();
+  const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
+
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
   const [allowStart, setAllowStart] = useState<boolean>(false);
+  const [synchronousBlock, setSynchronousBlock] = useState<boolean>(false); // Block other execution synchronously until state sets back to true (loading state just for consistent execution
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarPlayerInfo, setSnackbarPlayerInfo] = useState<SnackbarPlayerInfoType>(undefined);
@@ -83,6 +85,16 @@ export default function Waiting() {
   const handleSnackbarOpen = () => setSnackbarOpen(true);
   const handleSnackbarClose = () => setSnackbarOpen(false);
   const handleSnackbarExited = () => setSnackbarPlayerInfo(undefined);
+
+  // Enabling start game depending on player number
+  useEffect(() => {
+    // Enable start button if more than MIN_NUM_PLAYERS players
+    if (players.length >= MIN_NUM_PLAYERS) {
+      setAllowStart(true);
+    } else {
+      setAllowStart(false);
+    }
+  }, [players.length]);
 
   // Consecutive snackbars (multiple snackbars without stacking them): (https://mui.com/material-ui/react-snackbar/#consecutive-snackbars)
   useEffect(() => {
@@ -138,8 +150,8 @@ export default function Waiting() {
    * - Display message that new user has arrived
    */
   useEffect(() => {
-    async function onPlayerInEvent(data: PlayerInResponse) {
-      const { user: player, room } = data;
+    async function onPlayerInEvent({ user: player, room }: PlayerInResponse) {
+      setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
 
       // Update room in the local storage first
       updateRoom(room);
@@ -154,10 +166,8 @@ export default function Waiting() {
           status: 'in',
         },
       ]);
-      // Enable start button if more than MIN_NUM_PLAYERS players
-      if (players.length >= MIN_NUM_PLAYERS) {
-        setAllowStart(true);
-      }
+
+      setSynchronousBlock(false); // Unblock
     }
 
     // Executes whenever a socket event is recieved from the server
@@ -165,7 +175,7 @@ export default function Waiting() {
     return () => {
       socket.off(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
     };
-  }, [players, socket, updateRoom]);
+  }, [socket, updateRoom]);
 
   /**
    * [3] Myself leaves
@@ -188,13 +198,8 @@ export default function Waiting() {
    *    - Display message that new user has left
    */
   useEffect(() => {
-    async function onPlayerOutEvent(data: PlayerOutResponse) {
-      // Disable start button if less than MIN_NUM_PLAYERS players
-      if (players.length <= MIN_NUM_PLAYERS) {
-        setAllowStart(false);
-      }
-
-      const { user: player, room } = data;
+    async function onPlayerOutEvent({ user: player, room }: PlayerOutResponse) {
+      setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
 
       // Update room in the local storage first
       updateRoom(room);
@@ -219,103 +224,161 @@ export default function Waiting() {
       ]);
     }
 
+    setSynchronousBlock(false); // Unblock
+
     // Executes whenever a socket event is recieved from the server
     socket.on(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
     return () => {
       socket.off(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
     };
-  }, [adminId, players, socket, updateRoom]);
+  }, [adminId, socket, updateRoom]);
+
+  const PlayerList = () => {
+    return (
+      <List id="waiting_player-list" dense={true} sx={{ overflowY: 'auto' }}>
+        {players.map((player) => (
+          <>
+            <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
+            <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
+            <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
+            <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
+          </>
+        ))}
+      </List>
+    );
+  };
+
+  const RoomIdDisplay = () => {
+    return (
+      <Stack
+        id="waiting_id-display_wrapper"
+        spacing="0.25rem"
+        bgcolor="grey.200"
+        p={{ xs: '1.4rem', lg: '2rem' }}
+        border={2}
+        borderColor="grey.300"
+      >
+        <Typography variant="h4" component="h2">
+          Room ID:{' '}
+          <Typography variant="inherit" fontWeight="bold" component="span">
+            {room._id}
+          </Typography>
+        </Typography>
+        <Typography variant="body1" component="div">
+          Invite other players with this room ID.
+        </Typography>
+      </Stack>
+    );
+  };
+
+  const PlayerWaitingCaption = () => {
+    return (
+      <Stack id="waiting_other-info_wrapper" spacing={0} alignItems="flex-start" width={'100%'}>
+        <Typography variant="body1" component="div">
+          Waiting for other players <AnimateTextThreeDots />
+        </Typography>
+
+        <Typography component="p">
+          <Typography component="span" fontWeight="bold" color="error">
+            {!allowStart ? MIN_NUM_PLAYERS - players.length : 0}{' '}
+          </Typography>
+          more players required to begin the game.
+        </Typography>
+
+        {players.length >= MAX_NUM_PLAYERS && (
+          <Typography component="p">
+            Maximum number of players reached. Please start the game.
+          </Typography>
+        )}
+      </Stack>
+    );
+  };
+
+  const StartGameButton = () => {
+    return (
+      <Stack
+        id="waiting_start-game_wrapper"
+        spacing="0.5rem"
+        alignItems="center"
+        alignSelf="center"
+      >
+        {!isAdmin && (
+          <Typography variant="body2" component="div" color="grey.500">
+            Only admin can start the game.
+          </Typography>
+        )}
+        <TextButtonStyled
+          onClick={handleStartGame}
+          variant="contained"
+          loading={loadingButton}
+          loadingElement="Loading..."
+          disabled={!isAdmin || !allowStart || !synchronousBlock} // Only admin can start the game
+        >
+          Start Game
+        </TextButtonStyled>
+      </Stack>
+    );
+  };
 
   if (!room) return null;
   return (
     <>
-      <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="space-between"
-        flexGrow={1}
-        gap={4}
-        width={'100%'}
-      >
-        <Stack gap={4}>
-          {/* Room ID display */}
+      {isLgViewport ? (
+        // Large Viewport
+        <Stack direction="row" gap={{ xs: '1.4rem', lg: '2rem' }} width="100%" height="100%">
+          {/* Players List */}
           <Stack
-            spacing={0.5}
-            bgcolor={theme.palette.grey[300]}
-            width={'100%'}
-            p={3}
-            border={0.5}
-            borderRadius={1.5}
-            borderColor={theme.palette.grey[400]}
+            id="waiting_player-list_wrapper"
+            width="100%"
+            border="2px solid"
+            borderColor="grey.300"
           >
-            <Typography variant="h4" component="h2">
-              Room ID:{' '}
-              <Typography variant="inherit" fontWeight="bold" component="span">
-                {room._id}
-              </Typography>
-            </Typography>
-            <Typography variant="body1" component="div">
-              Invite other players with this room ID.
-            </Typography>
+            <PlayerList />
+          </Stack>
+
+          <Stack id="waiting_info-action_wrapper" justifyContent="space-between" width="100%">
+            <Stack direction="column" spacing="1rem">
+              {/* Room ID display */}
+              <RoomIdDisplay />
+
+              {/* Description */}
+              <PlayerWaitingCaption />
+            </Stack>
+
+            {/* Start Game Button */}
+            <StartGameButton />
+          </Stack>
+        </Stack>
+      ) : (
+        // Small Viewport
+        <Stack
+          id="waiting_info-action_wrapper"
+          direction="column"
+          gap={{ xs: '1.4rem', lg: '2rem' }}
+          width="100%"
+          height="100%"
+        >
+          {/* Room ID display */}
+          <RoomIdDisplay />
+
+          {/* Players List */}
+          <Stack
+            id="waiting_player-list_wrapper"
+            width="100%"
+            border="2px solid"
+            borderColor="grey.300"
+            sx={{ overflowY: 'auto' }}
+          >
+            <PlayerList />
           </Stack>
 
           {/* Description */}
-          <Stack direction="column" spacing={2}>
-            <Stack spacing={0} alignItems="flex-start" width={'100%'}>
-              <Typography variant="body1" component="div">
-                Waiting for other players <AnimateTextThreeDots />
-              </Typography>
+          <PlayerWaitingCaption />
 
-              {!allowStart && (
-                <Typography component="p">
-                  <Typography component="span" fontWeight="bold">
-                    {MIN_NUM_PLAYERS - players.length}
-                  </Typography>{' '}
-                  more players required to begin the game.
-                </Typography>
-              )}
-
-              {players.length >= MAX_NUM_PLAYERS && (
-                <Typography component="p">
-                  Maximum number of players reached. Please start the game.
-                </Typography>
-              )}
-            </Stack>
-
-            {/* Players List */}
-            <List
-              sx={{
-                display: 'grid',
-                ...(players.length > MAX_NUM_PLAYERS / 2 && {
-                  gridTemplateRows: `repeat(${Math.floor(MAX_NUM_PLAYERS / 2) + (MAX_NUM_PLAYERS % 2)}, 1fr)`,
-                  gridAutoFlow: 'column',
-                }),
-              }}
-            >
-              {players.map((player) => (
-                <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
-              ))}
-            </List>
-          </Stack>
+          {/* Start Game Button */}
+          <StartGameButton />
         </Stack>
-
-        {/* Start Game Button */}
-        <Stack spacing={0.5} alignItems="center" alignSelf="center">
-          {!isAdmin && (
-            <Typography variant="body2" component="div" color="grey.500">
-              Only admin can start the game.
-            </Typography>
-          )}
-          <TextButtonStyled
-            onClick={handleStartGame}
-            variant="contained"
-            loading={loadingButton}
-            disabled={!isAdmin || !allowStart} // Only admin can start the game
-          >
-            Start Game
-          </TextButtonStyled>
-        </Stack>
-      </Box>
+      )}
 
       {/* Snackbar player in / out notification */}
       <SnackbarPlayer
@@ -326,7 +389,7 @@ export default function Waiting() {
       />
 
       {/* Dialog before leaving (press back button) */}
-      <Dialog open={blocker.state === 'blocked'}>
+      <Dialog id="waiting_before-leave_dialog" open={blocker.state === 'blocked'}>
         <DialogTitle>Are you sure you want to leave?</DialogTitle>
         <DialogActions>
           {/* No need of blocker.proceed?.() as handleLeaveRoom() automatically redirects */}
@@ -341,3 +404,12 @@ export default function Waiting() {
     </>
   );
 }
+
+// LIST
+// sx={{
+//   display: 'grid',
+//   ...(players.length > MAX_NUM_PLAYERS / 2 && {
+//     gridTemplateRows: `repeat(${Math.floor(MAX_NUM_PLAYERS / 2) + (MAX_NUM_PLAYERS % 2)}, 1fr)`,
+//     gridAutoFlow: 'column',
+//   }),
+// }}

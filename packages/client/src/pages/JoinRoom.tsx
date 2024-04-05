@@ -79,11 +79,9 @@ function JoinRoom() {
               <FormHelperText>Enter Room ID to Join:</FormHelperText>
               {/* Input Field */}
               <TextField
-                fullWidth
                 id="roomId"
                 type="text"
                 label="Room ID"
-                size="small"
                 placeholder={roomIdConfig.placeholder}
                 // Validate the roomId with react-hook-form
                 {...register('roomId', {
@@ -96,13 +94,21 @@ function JoinRoom() {
                 // Validation Error
                 error={Boolean(errors.roomId)}
                 helperText={errors.roomId?.message ?? null}
+                // CSS
+                size="small"
+                fullWidth
               />
             </Stack>
           </CardContent>
         </Card>
 
         {/* Submit Button */}
-        <TextButtonStyled type="submit" variant="contained" loading={loadingButton}>
+        <TextButtonStyled
+          type="submit"
+          variant="contained"
+          loading={loadingButton}
+          loadingElement="Loading..."
+        >
           Join Room
         </TextButtonStyled>
 

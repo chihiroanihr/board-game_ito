@@ -1,6 +1,6 @@
 // SnackbarPlayerOut.js
 import React from 'react';
-import { Snackbar, Slide, Avatar, useTheme, type SlideProps } from '@mui/material';
+import { Stack, Snackbar, Slide, Avatar, useTheme, type SlideProps } from '@mui/material';
 import { Login, Logout, ManageHistory, CheckCircleOutline } from '@mui/icons-material';
 
 import { SnackbarPlayerInfoType } from '../enum';
@@ -35,11 +35,11 @@ export const SnackbarPlayer: React.FC<SnackbarPlayerProps> = ({
       key={snackbarInfo ? snackbarInfo.key : undefined}
       open={open}
       onClose={onClose}
+      TransitionProps={{ onExited: onExited }}
       TransitionComponent={SlideFromRight}
       autoHideDuration={SNACKBAR_DURATION}
-      TransitionProps={{ onExited: onExited }}
       message={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Stack direction="row" alignItems="center" spacing={1}>
           {snackbarInfo?.status === 'in' && (
             <>
               <Avatar sx={{ bgcolor: theme.palette.success.main }}>
@@ -50,15 +50,13 @@ export const SnackbarPlayer: React.FC<SnackbarPlayerProps> = ({
           )}
           {snackbarInfo?.status === 'out' && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Avatar sx={{ bgcolor: theme.palette.error.main }}>
-                  <Logout />
-                </Avatar>
-                <span>{`${snackbarInfo?.player.name} just left.`}</span>
-              </div>
+              <Avatar sx={{ bgcolor: theme.palette.error.main }}>
+                <Logout />
+              </Avatar>
+              <span>{`${snackbarInfo?.player.name} just left.`}</span>
             </>
           )}
-        </div>
+        </Stack>
       }
     />
   );
@@ -85,7 +83,7 @@ export const SnackbarRoomEdited: React.FC<SnackbarRoomEditedProps> = ({
       TransitionComponent={SlideFromDown}
       autoHideDuration={SNACKBAR_DURATION}
       message={
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Stack direction="row" alignItems="center" spacing={1}>
           {isAdmin ? (
             <>
               <Avatar sx={{ bgcolor: theme.palette.success.main }}>
@@ -101,7 +99,7 @@ export const SnackbarRoomEdited: React.FC<SnackbarRoomEditedProps> = ({
               <span>Admin has changed the room setting.</span>
             </>
           )}
-        </div>
+        </Stack>
       }
     />
   );

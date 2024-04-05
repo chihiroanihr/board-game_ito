@@ -9,7 +9,7 @@ import React, {
 
 import type { User } from '@bgi/shared';
 
-import { useLocalStorage } from './useLocalStorage';
+import useLocalStorage from './useLocalStorage';
 
 type UserDataType = User | null;
 

@@ -1,8 +1,31 @@
 import { createTheme } from '@mui/material';
 import { red } from '@mui/material/colors';
 
+// Module augmentation
+declare module '@mui/material/styles' {
+  interface BreakpointOverrides {
+    // xs: false; // 0px // removes the `xs` breakpoint
+    // sm: false; // 600px
+    // md: false; // 900px
+    // lg: false; // 1200px
+    // xl: false; // 1536px
+    // mobile: true; // adds the `mobile` breakpoint
+    // tablet: true;
+    // laptop: true;
+    // desktop: true;
+  }
+}
+
 // A custom theme for this app
 let theme = createTheme({
+  // breakpoints: {
+  //   values: {
+  //     mobile: 0,
+  //     tablet: 640,
+  //     laptop: 1024,
+  //     desktop: 1200,
+  //   },
+  // },
   palette: {
     primary: {
       main: '#556cd6',
@@ -15,6 +38,16 @@ let theme = createTheme({
     },
   },
   components: {
+    MuiOutlinedInput: {
+      styleOverrides: {
+        notchedOutline: { bottom: '-3px' },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        startIcon: { marginLeft: 0, marginRight: 0 },
+      },
+    },
     MuiCardContent: {
       styleOverrides: {
         root: {
@@ -56,3 +89,11 @@ theme = createTheme(theme, {
 });
 
 export default theme;
+
+export const commonIconButtonStyle = {
+  bgcolor: 'primary.main',
+  color: 'background.default',
+  '&:hover': {
+    bgcolor: 'primary.dark', // Background color on hover
+  },
+};

@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
+  type User,
+  type Room,
+  type RoomSetting,
+  type RoomChatMessage,
   type LoginResponse,
   type LogoutResponse,
   type CreateRoomResponse,
   type JoinRoomResponse,
   type EditRoomResponse,
   type LeaveRoomResponse,
-  type RoomSetting,
-  type User,
-  type Room,
+  type SendChatResponse,
   NamespaceEnum,
 } from '@bgi/shared';
 
@@ -22,7 +24,11 @@ import {
   navigateDashboard,
   navigateWaiting,
 } from '@/utils';
-import { type LoginFormDataType, type JoinRoomFormDataType } from '../enum';
+import {
+  type LoginFormDataType,
+  type JoinRoomFormDataType,
+  type SendChatFormDataType,
+} from '../enum';
 
 export type BeforeSubmitCallbackFunction = () => void;
 
@@ -52,11 +58,17 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [loadingButton, setLoadingButton] = useState<boolean | undefined>();
 
+  // Shared loading button
   const processButtonStatus = (status: boolean) => {
     setLoadingButton(status);
     setIsSubmitting(status);
   };
 
+  /**
+   * Handler for user logging into the game.
+   * @param data
+   * @returns
+   */
   const handleLogin = (data: LoginFormDataType) => {
     processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
@@ -76,6 +88,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     const timeoutId = setTimeout(() => {
       processButtonStatus(false); // Set submitting to false when the input error happens
       outputResponseTimeoutError();
+      // onError?.({ action: NamespaceEnum.LOGIN });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -94,13 +107,16 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
       else {
         updateUser(user ? user : null); // Login and save user info to local storage
         navigateDashboard(navigate); // Navigate
-        // onSuccess?.({ action: NamespaceEnum.LOGIN, user: user });
+        // onSuccess?.({ action: NamespaceEnum.LOGIN, user: user }); // Success callback
       }
 
       processButtonStatus(false); // Set submitting to false when the response is received
     });
   };
 
+  /**
+   * Handler for user logging out of the game.
+   */
   const handleLogout = () => {
     processButtonStatus(true); // Set submitting to true when the request is initiated
 
@@ -109,6 +125,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
+      // onError?.({ action: NamespaceEnum.LOGOUT });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -128,15 +145,17 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
         room && discardRoom();
         user && discardUser();
         navigateHome(navigate); // navigate
-
-        // Callback
-        onSuccess?.({ action: NamespaceEnum.LOGOUT });
+        onSuccess?.({ action: NamespaceEnum.LOGOUT }); // Success callback
       }
 
       processButtonStatus(false);
     });
   };
 
+  /**
+   * Handler for creating game room (by admin).
+   * @param formData
+   */
   const handleCreateRoom = (formData: RoomSetting) => {
     processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
@@ -146,6 +165,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
+      // onError?.({ action: NamespaceEnum.CREATE_ROOM });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -169,7 +189,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
           updateUser(user ? user : null); // Store updated user info to local storage
           updateRoom(room ? room : null); // Store room info to local storage and redirect
           navigateWaiting(navigate); // Navigate
-          // onSuccess?.({ action: NamespaceEnum.CREATE_ROOM, user, room });
+          // onSuccess?.({ action: NamespaceEnum.CREATE_ROOM, user, room }); // Success callback
         }
 
         processButtonStatus(false);
@@ -177,6 +197,11 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     );
   };
 
+  /**
+   * Handler for joining to game waiting room.
+   * @param data
+   * @returns
+   */
   const handleJoinRoom = (data: JoinRoomFormDataType) => {
     processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
@@ -195,6 +220,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
+      // onError?.({ action: NamespaceEnum.JOIN_ROOM });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -218,7 +244,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
             updateUser(user ? user : null); // Store updated user info to local storage
             updateRoom(room ? room : null); // Save room info to local storage and navigate
             navigateWaiting(navigate); // Navigate
-            // onSuccess?.({ action: NamespaceEnum.JOIN_ROOM, user, room });
+            // onSuccess?.({ action: NamespaceEnum.JOIN_ROOM, user, room }); // Success callback
           }
           // [*] ERROR: User cannot join room
           else {
@@ -236,6 +262,10 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     );
   };
 
+  /**
+   * Handler for editing room setting (inside game waiting room).
+   * @param formData
+   */
   const handleEditRoom = (formData: RoomSetting) => {
     processButtonStatus(true);
 
@@ -245,6 +275,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
+      // onError?.({ action: NamespaceEnum.EDIT_ROOM });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -262,13 +293,16 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
       // [*] SUCCESS
       else {
         updateRoom(room ? room : null); // Update room info to local storage
-        onSuccess?.({ action: NamespaceEnum.EDIT_ROOM }); // Callback
+        onSuccess?.({ action: NamespaceEnum.EDIT_ROOM }); // Success callback
       }
 
       processButtonStatus(false);
     });
   };
 
+  /**
+   * Handler for leaving gamer room.
+   */
   const handleLeaveRoom = () => {
     processButtonStatus(true);
 
@@ -278,6 +312,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
+      // onError?.({ action: NamespaceEnum.LEAVE_ROOM });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -293,15 +328,65 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
       } else {
         discardRoom();
         navigateDashboard(navigate);
-
-        // Callback
-        onSuccess?.({ action: NamespaceEnum.LEAVE_ROOM });
+        onSuccess?.({ action: NamespaceEnum.LEAVE_ROOM }); // Success callback
       }
 
       processButtonStatus(false);
     });
   };
 
+  /**
+   * Handler for sending chat message.
+   * (NO SHARED LOADING BUTTON)
+   * @param data
+   * @returns
+   */
+  const handleSendChat = (data: SendChatFormDataType) => {
+    setErrorMessage(''); // Reset error message
+
+    beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+
+    const message = data.message.trim(); // Trim any start/end spaces
+    // [*] ERROR
+    if (!message) {
+      setErrorMessage('Please enter a message.');
+      onError?.({ action: NamespaceEnum.SEND_CHAT });
+      return;
+    }
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      outputResponseTimeoutError();
+      onError?.({ action: NamespaceEnum.SEND_CHAT });
+    }, 5000);
+
+    const chatData: RoomChatMessage = {
+      fromUser: user,
+      message: message,
+      timestamp: Date.now(),
+    };
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(NamespaceEnum.SEND_CHAT, chatData, async ({ error }: SendChatResponse) => {
+      clearTimeout(timeoutId);
+
+      if (error) {
+        outputServerError({ error });
+        onError?.({
+          action: NamespaceEnum.SEND_CHAT,
+          // message: 'Internal Server Error: Please try again.',
+        });
+      } else {
+        onSuccess?.({ action: NamespaceEnum.SEND_CHAT }); // Success callback
+      }
+
+      processButtonStatus(false);
+    });
+  };
+
+  /**
+   * Handler for starting game.
+   */
   const handleStartGame = () => {
     processButtonStatus(true);
 
@@ -311,6 +396,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
+      // onError?.({ action: NamespaceEnum.START_GAME });
     }, 5000);
 
     // Send to socket
@@ -324,8 +410,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
         //     message: 'Internal Server Error: Please try again.',
         //   });
       } else {
-        // Navigate to start game
-        // onSuccess?.({ action: NamespaceEnum.START_GAME });
+        // onSuccess?.({ action: NamespaceEnum.START_GAME }); // Success callback
       }
 
       processButtonStatus(false);
@@ -339,6 +424,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     handleEditRoom,
     handleJoinRoom,
     handleLeaveRoom,
+    handleSendChat,
     handleStartGame,
     loadingButton,
     errorMessage,

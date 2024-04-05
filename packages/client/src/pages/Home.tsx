@@ -101,6 +101,7 @@ function Home() {
             type="submit"
             variant="contained"
             loading={loadingButton}
+            loadingElement="Loading..."
             disableElevation
             sx={{
               borderTopLeftRadius: 0,

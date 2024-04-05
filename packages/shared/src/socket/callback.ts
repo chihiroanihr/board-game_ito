@@ -1,4 +1,4 @@
-import type { User, Room } from '../model/data';
+import type { User, Room, RoomChatMessage } from '../model/data';
 
 export type SessionResponse = { sessionId: string; user: User | null; room: Room | null };
 
@@ -42,6 +42,13 @@ export type PlayerInResponse = { user: User; room: Room };
 export type PlayerOutResponse = { user: User; room: Room | null };
 
 export type RoomEditedResponse = { room: Room };
+
+export type SendChatResponse = { error?: Error };
+export type SendChatCallback = {
+  (response: SendChatResponse): void;
+};
+
+export type ReceiveChatResponse = RoomChatMessage;
 
 export type InitializeResponse = {
   error?: Error;

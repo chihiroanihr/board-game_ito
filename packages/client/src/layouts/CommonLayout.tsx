@@ -1,9 +1,12 @@
 import React, { Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Box, useTheme } from '@mui/material';
+import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 
-import { HeaderLayout } from '@/layouts';
+import { CommunicationMethodEnum } from '@bgi/shared';
+
+import { HeaderLayout, CommunicationLayout } from '@/layouts';
 import { Loader, Copyright } from '@/components';
+import { useAuth, useRoom } from '@/hooks';
 
 /** @/debug - Display amount of sockets connected: Only for development environment */
 const SocketsConnected = React.lazy(() => import('../components/debug/SocketsConnected'));
@@ -14,41 +17,78 @@ const Initialize = React.lazy(() => import('../components/debug/Initialize'));
 
 export default function CommonLayout() {
   const theme = useTheme();
+  const { user } = useAuth();
+  const { room } = useRoom();
   const location = useLocation(); /** @/debug */
 
-  const FOOTER_SPACING = 2;
+  const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
+
+  const communicationMethod = room?.setting.communicationMethod;
 
   return (
-    <>
-      <Box minHeight="100vh" display="flex" flexDirection="column">
-        <Box pt={5} px={4} pb={FOOTER_SPACING} display="flex" flexDirection="column" flexGrow={1}>
-          {/* -------------- Header -------------- */}
-          <Box component="header" marginBottom={4}>
+    <Box>
+      <Box height="100vh" display="flex" flexDirection="column" pb="0.5rem">
+        {/* -------------- Header -------------- */}
+        {user && (
+          <Box
+            component="header"
+            mb={{ xs: '1.4rem', lg: '2%' }}
+            px={{ xs: '1.4rem', lg: '2%' }}
+            py="0.8rem"
+            borderBottom="2px solid"
+            borderColor="grey.300"
+          >
             <HeaderLayout />
           </Box>
-          {/* -------------- Main -------------- */}
-          <Box
-            component="main"
+        )}
+
+        {/* -------------- Main -------------- */}
+        <Grid
+          container
+          component="main"
+          flexGrow={1}
+          position="relative"
+          height="100%"
+          px={{ xs: '1.4rem', lg: '2%' }}
+          sx={{ overflowY: 'hidden' }}
+        >
+          {/* Main Layout */}
+          <Grid
+            id="main_outlet-wrapper"
+            item
             display="flex"
-            flexDirection="column"
+            flexGrow={1} // grid item width
             justifyContent="center"
             alignItems="center"
-            flexGrow={1}
+            height="100%"
           >
             <Outlet />
-          </Box>
-          {/* -------------- Footer -------------- */}
-          <Box component="footer" marginTop={4}>
-            <hr
-              style={{
-                border: 0,
-                borderTop: `1px solid ${theme.palette.grey[500]}`,
-                marginBlockStart: theme.spacing(FOOTER_SPACING),
-                marginBlockEnd: theme.spacing(FOOTER_SPACING),
+          </Grid>
+
+          {/* Communication Method Layout */}
+          {communicationMethod && (
+            <Grid
+              id="communication-wrapper"
+              item
+              xs={3.6} // grid item width
+              sx={{
+                ...(isLgViewport && communicationMethod === CommunicationMethodEnum.CHAT
+                  ? { display: 'flex', height: '100%', ml: '2rem' } // Only when chat option + viewport > large, grow horizontally
+                  : {
+                      position: 'fixed',
+                      bottom: '1.4rem',
+                      right: { xs: '1.4rem', lg: '2%' },
+                    }), // Otherwise, fixed position with chat / mic button on the bottom-left
               }}
-            />
-            <Copyright />
-          </Box>
+            >
+              <CommunicationLayout />
+            </Grid>
+          )}
+        </Grid>
+
+        {/* -------------- Footer -------------- */}
+        <Box component="footer" mt="1rem">
+          <Copyright />
         </Box>
       </Box>
 
@@ -63,6 +103,6 @@ export default function CommonLayout() {
           </Box>
         </Suspense>
       )} */}
-    </>
+    </Box>
   );
 }

@@ -5,7 +5,7 @@ import { ListItem, ListItemAvatar, Avatar, ListItemText, Typography } from '@mui
 import { type User } from '@bgi/shared';
 
 import { BadgeOnline } from '@/components';
-import { stringAvatar } from '@/utils';
+import { avatarBgColor } from '@/utils';
 
 interface PlayerListItemProps {
   player: User;
@@ -21,7 +21,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId }) => {
           overlap="circular"
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          <Avatar {...stringAvatar(player.name)} />
+          <Avatar {...avatarBgColor(player.name)} />
         </BadgeOnline>
       </ListItemAvatar>
       <ListItemText

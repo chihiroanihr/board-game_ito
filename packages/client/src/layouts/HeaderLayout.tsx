@@ -8,7 +8,12 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { Logout, MeetingRoom, Settings, Visibility } from '@mui/icons-material';
+import {
+  Logout as LogoutIcon,
+  MeetingRoom as MeetingRoomIcon,
+  Settings as SettingsIcon,
+  Visibility as VisibilityIcon,
+} from '@mui/icons-material';
 
 import { NamespaceEnum, type RoomEditedResponse } from '@bgi/shared';
 
@@ -30,14 +35,7 @@ import {
   type SuccessCallbackFunction,
   useSubmissionStatus,
 } from '@/hooks';
-
-const commonButtonStyle = {
-  bgcolor: 'primary.main',
-  color: 'background.default',
-  '&:hover': {
-    bgcolor: 'primary.dark', // Background color on hover
-  },
-};
+import { commonIconButtonStyle } from '../theme';
 
 /**
  * Layout for Dashboard
@@ -111,11 +109,11 @@ export default function HeaderLayout() {
             loading={loadingButton && triggeredButton === NamespaceEnum.LOGOUT}
             tooltipProps={{ title: 'Exit Game', placement: 'top' }}
             sx={{
-              ...commonButtonStyle,
+              ...commonIconButtonStyle,
               // transform: 'scaleX(-1)',
             }}
           >
-            <Logout />
+            <LogoutIcon />
           </IconButtonStyled>
 
           {/* Leave Room Button */}
@@ -124,9 +122,9 @@ export default function HeaderLayout() {
               onClick={handleLeaveRoom}
               loading={loadingButton && triggeredButton === NamespaceEnum.LEAVE_ROOM}
               tooltipProps={{ title: 'Leave This Room', placement: 'top' }}
-              sx={commonButtonStyle}
+              sx={commonIconButtonStyle}
             >
-              <MeetingRoom />
+              <MeetingRoomIcon />
             </IconButtonStyled>
           )}
 
@@ -146,9 +144,9 @@ export default function HeaderLayout() {
                 placement: 'top',
                 // ...(user._id !== room.createdBy && { bgColor: 'grey.500' }),
               }}
-              sx={commonButtonStyle}
+              sx={commonIconButtonStyle}
             >
-              {isAdmin ? <Settings /> : <Visibility />}
+              {isAdmin ? <SettingsIcon /> : <VisibilityIcon />}
             </IconButtonStyled>
 
             {/* Form Modal */}

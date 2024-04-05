@@ -41,12 +41,22 @@ export default function Dashboard() {
 
       <Stack direction="row" alignItems="center" spacing={2}>
         {/* Create Room Button */}
-        <TextButtonStyled onClick={joinRoomHandler} variant="contained" loading={isLoading}>
+        <TextButtonStyled
+          onClick={joinRoomHandler}
+          variant="contained"
+          loading={isLoading}
+          loadingElement="Loading..."
+        >
           Join Room
         </TextButtonStyled>
 
         {/* Create Room Button */}
-        <TextButtonStyled onClick={createRoomHandler} variant="contained" loading={isLoading}>
+        <TextButtonStyled
+          onClick={createRoomHandler}
+          variant="contained"
+          loading={isLoading}
+          loadingElement="Loading..."
+        >
           Create Room
         </TextButtonStyled>
       </Stack>

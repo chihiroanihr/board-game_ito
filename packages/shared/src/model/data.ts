@@ -23,6 +23,7 @@ export interface Room {
   creationTime: Date;
   players: Array<ObjectId>; // User._id
   setting: RoomSetting;
+  // chat: RoomChat -> array of ChatMessageInfo
 }
 
 export interface RoomSetting {
@@ -32,4 +33,10 @@ export interface RoomSetting {
   heartEnabled: boolean;
   dupNumCard: boolean;
   communicationMethod: CommunicationMethodEnum;
+}
+
+export interface RoomChatMessage {
+  fromUser: User;
+  message: string;
+  timestamp: number;
 }

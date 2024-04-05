@@ -6,6 +6,7 @@ import {
   type User,
   type Room,
   type RoomSetting,
+  type RoomChatMessage,
   type SessionResponse,
   type PlayerInResponse,
   type PlayerOutResponse,
@@ -17,6 +18,8 @@ import {
   type JoinRoomCallback,
   type WaitRoomCallback,
   type LeaveRoomCallback,
+  type SendChatCallback,
+  type SendChatResponse,
   type InitializeCallback,
   NamespaceEnum,
 } from '@bgi/shared';
@@ -121,6 +124,7 @@ const socketHandlers = (io: Server) => {
     handleSocketJoinRoom(socket);
     handleSocketWaitRoom(socket);
     handleSocketLeaveRoom(socket);
+    handleSocketChatMessage(socket, io);
     handleSocketInitialize(socket, io);
 
     /** @/debug */
@@ -546,6 +550,35 @@ const handleSocketLeaveRoom = (socket: Socket) => {
       await dbSession.endSession();
     }
   });
+};
+
+const handleSocketChatMessage = (socket: Socket, io: Server) => {
+  socket.on(
+    NamespaceEnum.SEND_CHAT,
+    async (chatData: RoomChatMessage, callback: SendChatCallback) => {
+      try {
+        // * If user is not connected
+        if (!socket.user?._id) {
+          throw new Error('[Socket Error]: User is not connected.');
+        }
+        // * If user is not in room
+        if (!socket.room?._id) {
+          throw new Error('[Socket Error]: Room is not connected.');
+        }
+        /** [1] @socket_emit - Broadcast to everyone in the room INCLUDING YOURSELF */
+        io.to(socket.room._id).emit(NamespaceEnum.RECEIVE_CHAT, chatData);
+        /** [2] @socket_emit - Send back result to client */
+        callback({});
+
+        log.logSocketEvent('Send Chat', socket);
+      } catch (error) {
+        /** @socket_emit - Send back error to client */
+        callback({ error: error instanceof Error ? error : new Error(String(error)) });
+
+        log.handleServerError(error, 'handleSocketChatMessage');
+      }
+    }
+  );
 };
 
 /** @debug */ /** @socket_handler - Initialize */

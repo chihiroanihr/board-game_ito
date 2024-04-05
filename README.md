@@ -112,6 +112,10 @@ docker-compose -f .docker/docker-compose.yaml down -v
 
 - [How to refresh a React component when local storage has changed](https://michalkotowski.pl/writings/how-to-refresh-a-react-component-when-local-storage-has-changed)
 
+### Chatbox
+
+- [Building a Scrollable Chat Box with React](https://blog.bitsrc.io/building-a-scrollable-chat-box-with-react-b3848a4459fc)
+
 ### Socket.io
 
 - [Real-Time Data Exchange: Building a Socket.io Backend Server in Node.js](https://medium.com/@ritikkhndelwal/real-time-data-exchange-building-a-socket-io-backend-server-in-node-js-aff454f13683)

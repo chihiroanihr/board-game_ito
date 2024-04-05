@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from 'react';
 
-import { useLocalStorage } from './useLocalStorage';
+import useLocalStorage from './useLocalStorage';
 
 type SessionIdType = string | null;
 

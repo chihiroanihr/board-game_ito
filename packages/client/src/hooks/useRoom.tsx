@@ -9,7 +9,7 @@ import React, {
 
 import type { Room } from '@bgi/shared';
 
-import { useLocalStorage } from './useLocalStorage';
+import useLocalStorage from './useLocalStorage';
 
 type RoomDataType = Room | null;
 

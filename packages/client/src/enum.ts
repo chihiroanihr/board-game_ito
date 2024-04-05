@@ -8,6 +8,10 @@ export type JoinRoomFormDataType = {
   roomId: string;
 };
 
+export type SendChatFormDataType = {
+  message: string;
+};
+
 export type SnackbarPlayerInfoType =
   | {
       key: number;

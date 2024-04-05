@@ -18,11 +18,19 @@ export const stringToColor = (string: string) => {
   return color;
 };
 
-export const stringAvatar = (name: string) => {
+export const avatarBgColor = (name: string) => {
   return {
     sx: {
       bgcolor: stringToColor(name),
     },
     children: `${name[0]}${name[1]}`,
+  };
+};
+
+export const avatarTextColor = (name: string) => {
+  return {
+    sx: {
+      color: stringToColor(name),
+    },
   };
 };

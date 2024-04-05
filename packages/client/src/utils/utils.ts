@@ -26,6 +26,31 @@ export const convertStringToBoolean = (value: string | boolean) => {
   return value === 'true';
 };
 
+export const computeRelativeTime = (timestamp: number) => {
+  const date = new Date(timestamp);
+  const now = new Date();
+
+  // Get the time components of the given timestamp
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  // Calculate the time difference in milliseconds
+  const timeDifference = now.getTime() - date.getTime();
+  const timeDifferenceInMinutes = timeDifference / (1000 * 60);
+
+  // Convert the time to a relative format based on the time difference
+  if (timeDifferenceInMinutes < 60) {
+    // Less than an hour ago
+    return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+  } else if (timeDifferenceInMinutes < 24 * 60) {
+    // Less than a day ago
+    return `Yesterday, ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+  } else {
+    // More than a day ago
+    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}, ${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+  }
+};
+
 /**
  * Logs a server error to the console and displays an alert to the user.
  *

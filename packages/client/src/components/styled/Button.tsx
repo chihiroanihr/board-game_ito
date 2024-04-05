@@ -15,6 +15,7 @@ import { useSubmissionStatus } from '@/hooks';
 
 interface TextButtonStyledProps extends Omit<ButtonProps, 'startIcon'> {
   loading?: boolean;
+  loadingElement?: React.ReactNode;
 }
 
 interface IconButtonStyledProps extends IconButtonProps {
@@ -27,7 +28,7 @@ const TextButtonStyled = React.forwardRef(function TextButtonStyled(
   ref: React.Ref<HTMLButtonElement>
 ) {
   // Destructure all props
-  const { onClick, type, variant, disabled, loading, children, ...rest } = props;
+  const { onClick, type, variant, disabled, loading, loadingElement, children, ...rest } = props;
 
   const { isSubmitting } = useSubmissionStatus();
 
@@ -38,10 +39,18 @@ const TextButtonStyled = React.forwardRef(function TextButtonStyled(
       type={type}
       variant={variant}
       disabled={disabled || isSubmitting || loading}
-      startIcon={loading && <CircularProgress color="inherit" size={20} />}
+      startIcon={
+        loading && (
+          <CircularProgress
+            color="inherit"
+            size="1em"
+            sx={{ mr: loadingElement ? 1 : 0, p: '0.02rem' }}
+          />
+        )
+      }
       {...rest}
     >
-      {loading ? 'Loading...' : children}
+      {loading ? loadingElement : children}
     </Button>
   );
 }) as React.ForwardRefExoticComponent<
@@ -54,29 +63,46 @@ const IconButtonStyled = React.forwardRef(function TextButtonStyled(
 ) {
   // Destructure all props
   const { onClick, type, disabled, loading, tooltipProps, children, ...rest } = props;
-  // Destructure title, bgColor and textColor from tooltipProps if they exist
-  const { title, bgColor, textColor, ...otherProps } = tooltipProps || {};
 
   const { isSubmitting } = useSubmissionStatus();
 
+  // Check if tooltipProps exists
+  if (tooltipProps) {
+    // Destructure title, bgColor, and textColor from tooltipProps if they exist
+    const { title, bgColor, textColor, ...otherProps } = tooltipProps;
+    // Render IconButton with TooltipStyled
+    return (
+      <TooltipStyled title={title} bgColor={bgColor} textColor={textColor} {...otherProps}>
+        <span>
+          <IconButton
+            ref={ref}
+            onClick={onClick}
+            type={type}
+            disabled={disabled || isSubmitting || loading}
+            {...rest}
+          >
+            {loading ? (
+              <CircularProgress color="inherit" size="1em" sx={{ p: '0.1rem' }} />
+            ) : (
+              children
+            )}
+          </IconButton>
+        </span>
+      </TooltipStyled>
+    );
+  }
+
+  // If tooltipProps does not exist, render IconButton without TooltipStyled
   return (
-    <TooltipStyled title={title} bgColor={bgColor} textColor={textColor} {...otherProps}>
-      <span>
-        <IconButton
-          ref={ref}
-          onClick={onClick}
-          type={type}
-          disabled={disabled || isSubmitting || loading}
-          {...rest}
-        >
-          {loading ? (
-            <CircularProgress color="inherit" size={25} sx={{ padding: '0.1em' }} />
-          ) : (
-            children
-          )}
-        </IconButton>
-      </span>
-    </TooltipStyled>
+    <IconButton
+      ref={ref}
+      onClick={onClick}
+      type={type}
+      disabled={disabled || isSubmitting || loading}
+      {...rest}
+    >
+      {loading ? <CircularProgress color="inherit" size="1em" sx={{ p: '0.1rem' }} /> : children}
+    </IconButton>
   );
 }) as React.ForwardRefExoticComponent<
   IconButtonStyledProps & React.RefAttributes<HTMLButtonElement>

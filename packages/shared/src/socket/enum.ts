@@ -13,5 +13,7 @@ export const enum NamespaceEnum {
   PLAYER_OUT = 'player-out',
   ROOM_EDITED = 'room-edited',
   START_GAME = 'start-game',
+  SEND_CHAT = 'send-chat',
+  RECEIVE_CHAT = 'receive-chat',
   DEBUG_INITIALIZE = 'initialize',
 }

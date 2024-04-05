@@ -5,6 +5,7 @@ export { Loader, Copyright, PlayerListItem };
 
 export * from './Snackbar';
 
+export * from './chat';
 export * from './room-setting';
 export * from './styled';
 export * from './debug';

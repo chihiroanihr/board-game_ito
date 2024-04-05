@@ -5,7 +5,6 @@ import {
   createBrowserRouter,
   createRoutesFromElements,
 } from 'react-router-dom';
-import { Container } from '@mui/material';
 
 import {
   SessionProvider,
@@ -37,19 +36,17 @@ function App() {
   );
 
   return (
-    <Container>
-      <SessionProvider>
-        <AuthProvider>
-          <RoomProvider>
-            <SocketProvider socket={socket}>
-              <SubmissionStatusProvider>
-                <RouterProvider router={routes} />
-              </SubmissionStatusProvider>
-            </SocketProvider>
-          </RoomProvider>
-        </AuthProvider>
-      </SessionProvider>
-    </Container>
+    <SessionProvider>
+      <AuthProvider>
+        <RoomProvider>
+          <SocketProvider socket={socket}>
+            <SubmissionStatusProvider>
+              <RouterProvider router={routes} />
+            </SubmissionStatusProvider>
+          </SocketProvider>
+        </RoomProvider>
+      </AuthProvider>
+    </SessionProvider>
   );
 }
 

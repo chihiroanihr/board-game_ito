@@ -1,0 +1,61 @@
+import React from 'react';
+import { Fab, Popper, Paper, Typography, Grow } from '@mui/material';
+import { Chat as ChatIcon } from '@mui/icons-material';
+
+const CHAT_POPPER_STYLE = { width: '30%', minWidth: '280px' };
+const CHAT_POPPER_CORNER_RADIUS = '0.25rem';
+const CHAT_POPPER_DISTANCE_FROM_BOTTOM = '0.5rem';
+
+interface ChatPopperProps {
+  anchorEl: HTMLButtonElement | null;
+  isOpen: boolean;
+  handleToggle: () => void;
+  children: React.ReactNode;
+}
+
+const ChatPopper: React.FC<ChatPopperProps> = ({ anchorEl, isOpen, handleToggle, children }) => {
+  return (
+    <>
+      <Fab
+        component="button"
+        color="primary"
+        aria-describedby={isOpen ? 'chat-popper' : undefined}
+        onClick={handleToggle}
+      >
+        <ChatIcon />
+      </Fab>
+
+      <Popper
+        open={isOpen}
+        anchorEl={anchorEl}
+        placement="top-end"
+        sx={{ ...CHAT_POPPER_STYLE, pb: CHAT_POPPER_DISTANCE_FROM_BOTTOM }}
+      >
+        {({ TransitionProps }) => (
+          //   <Grow timeout={350}>
+          <Paper
+            {...TransitionProps}
+            elevation={8}
+            sx={{ borderRadius: CHAT_POPPER_CORNER_RADIUS, overflow: 'hidden' }}
+          >
+            <Typography
+              variant="body1"
+              component="div"
+              bgcolor="primary.main"
+              color="primary.contrastText"
+              sx={{ p: 1.4 }}
+            >
+              Room Chat
+            </Typography>
+
+            {/* Chat Content */}
+            {children}
+          </Paper>
+          //   </Grow>
+        )}
+      </Popper>
+    </>
+  );
+};
+
+export default ChatPopper;
