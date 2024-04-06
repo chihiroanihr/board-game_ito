@@ -17,6 +17,7 @@ import { roomIdConfig } from '@bgi/shared';
 import { TextButtonStyled } from '@/components';
 import {
   useAction,
+  type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
@@ -45,7 +46,7 @@ function JoinRoom() {
   const handleSnackbarOpen = () => setSnackbarOpen(true);
 
   // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = () => {};
+  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {};
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
     handleSnackbarOpen();
   };

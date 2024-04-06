@@ -28,6 +28,7 @@ import {
   useAuth,
   useRoom,
   useAction,
+  type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
@@ -63,10 +64,10 @@ export default function HeaderLayout() {
   const handleSnackbarClose = () => setSnackbarOpen(false);
 
   // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = () => {
+  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {
     snackbarOpen && handleSnackbarClose(); // Make sure to close all snackbars that are opened
   };
-  const onError: ErrorCallbackFunction = ({ message }: ErrorCallbackParams) => {};
+  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
   const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
     setTriggeredButton(action); // Set which button was triggered
 
@@ -102,7 +103,7 @@ export default function HeaderLayout() {
   return (
     <>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Stack direction="row" alignItems="center" spacing={2}>
+        <Stack direction="row" alignItems="center" spacing={{ xs: '0.75rem', md: '1rem' }}>
           {/* Leave Game Button */}
           <IconButtonStyled
             onClick={handleLogout}
@@ -128,7 +129,7 @@ export default function HeaderLayout() {
             </IconButtonStyled>
           )}
 
-          <Typography variant="h5" component="h3">
+          <Typography variant="h6" component="div">
             Hello, <b>{user.name}</b>
           </Typography>
         </Stack>

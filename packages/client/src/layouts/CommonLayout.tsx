@@ -87,7 +87,7 @@ export default function CommonLayout() {
         </Grid>
 
         {/* -------------- Footer -------------- */}
-        <Box component="footer" mt="1rem">
+        <Box component="footer" mt="0.5rem">
           <Copyright />
         </Box>
       </Box>

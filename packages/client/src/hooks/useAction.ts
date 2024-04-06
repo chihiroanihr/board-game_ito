@@ -30,7 +30,10 @@ import {
   type SendChatFormDataType,
 } from '../enum';
 
-export type BeforeSubmitCallbackFunction = () => void;
+export type BeforeSubmitCallbackParams = { action?: NamespaceEnum };
+export interface BeforeSubmitCallbackFunction {
+  (data: BeforeSubmitCallbackParams): void;
+}
 
 export type ErrorCallbackParams = { action?: NamespaceEnum; message?: string };
 export interface ErrorCallbackFunction {
@@ -73,14 +76,14 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
 
-    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.({ action: NamespaceEnum.LOGIN }); // Execute the beforeSubmit callback before initiating the request
 
     const userName = data.name.trim(); // Trim any start/end spaces
     // [*] ERROR
     if (!userName) {
       setErrorMessage('Please enter a valid name.');
       processButtonStatus(false);
-      // onError?.({ action: NamespaceEnum.LOGIN });
+      onError?.({ action: NamespaceEnum.LOGIN });
       return;
     }
 
@@ -88,7 +91,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     const timeoutId = setTimeout(() => {
       processButtonStatus(false); // Set submitting to false when the input error happens
       outputResponseTimeoutError();
-      // onError?.({ action: NamespaceEnum.LOGIN });
+      onError?.({ action: NamespaceEnum.LOGIN });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -98,16 +101,16 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
       // [*] ERROR
       if (error) {
         outputServerError({ error });
-        // onError?.({
-        //     action: NamespaceEnum.LOGIN,
-        //     message: 'Internal Server Error: Please try again.',
-        //   });
+        onError?.({
+          action: NamespaceEnum.LOGIN,
+          message: 'Internal Server Error: Please try again.',
+        });
       }
       // [*] SUCCESS
       else {
         updateUser(user ? user : null); // Login and save user info to local storage
         navigateDashboard(navigate); // Navigate
-        // onSuccess?.({ action: NamespaceEnum.LOGIN, user: user }); // Success callback
+        onSuccess?.({ action: NamespaceEnum.LOGIN, user: user }); // Success callback
       }
 
       processButtonStatus(false); // Set submitting to false when the response is received
@@ -120,12 +123,12 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
   const handleLogout = () => {
     processButtonStatus(true); // Set submitting to true when the request is initiated
 
-    beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.({ action: NamespaceEnum.LOGOUT }); // Execute the beforeSubmit callback before initiating the request
 
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
-      // onError?.({ action: NamespaceEnum.LOGOUT });
+      onError?.({ action: NamespaceEnum.LOGOUT });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -135,10 +138,10 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
       // [*] ERROR
       if (error) {
         outputServerError({ error });
-        // onError?.({
-        //     action: NamespaceEnum.LOGOUT,
-        //     message: 'Internal Server Error: Please try again.',
-        //   });
+        onError?.({
+          action: NamespaceEnum.LOGOUT,
+          message: 'Internal Server Error: Please try again.',
+        });
       }
       // [*] SUCCESS
       else {
@@ -160,12 +163,12 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
 
-    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.({ action: NamespaceEnum.CREATE_ROOM }); // Execute the beforeSubmit callback before initiating the request
 
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
-      // onError?.({ action: NamespaceEnum.CREATE_ROOM });
+      onError?.({ action: NamespaceEnum.CREATE_ROOM });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -179,17 +182,17 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
         if (error) {
           outputServerError({ error });
           setErrorMessage('Internal Server Error: Please try again.');
-          //   onError?.({
-          //       action: NamespaceEnum.CREATE_ROOM,
-          //       message: 'Internal Server Error: Please try again.',
-          //     });
+          onError?.({
+            action: NamespaceEnum.CREATE_ROOM,
+            message: 'Internal Server Error: Please try again.',
+          });
         }
         // [*] SUCCESS
         else {
           updateUser(user ? user : null); // Store updated user info to local storage
           updateRoom(room ? room : null); // Store room info to local storage and redirect
           navigateWaiting(navigate); // Navigate
-          // onSuccess?.({ action: NamespaceEnum.CREATE_ROOM, user, room }); // Success callback
+          onSuccess?.({ action: NamespaceEnum.CREATE_ROOM, user, room }); // Success callback
         }
 
         processButtonStatus(false);
@@ -206,21 +209,21 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     processButtonStatus(true); // Set submitting to true when the request is initiated
     setErrorMessage(''); // Reset error message
 
-    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.({ action: NamespaceEnum.JOIN_ROOM }); // Execute the beforeSubmit callback before initiating the request
 
     const roomId = data.roomId.trim().toUpperCase();
     // [*] ERROR
     if (!roomId) {
       processButtonStatus(false);
       setErrorMessage('Please enter a valid Room ID.');
-      //   onError?.({ action: NamespaceEnum.JOIN_ROOM, message: 'Please enter a valid Room ID.' });
+      onError?.({ action: NamespaceEnum.JOIN_ROOM, message: 'Please enter a valid Room ID.' });
       return;
     }
 
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
-      // onError?.({ action: NamespaceEnum.JOIN_ROOM });
+      onError?.({ action: NamespaceEnum.JOIN_ROOM });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -234,26 +237,26 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
         if (error) {
           outputServerError({ error });
           setErrorMessage('Internal Server Error: Please try again.');
-          //   onError?.({
-          //       action: NamespaceEnum.JOIN_ROOM,
-          //       message: 'Internal Server Error: Please try again.',
-          //     });
+          onError?.({
+            action: NamespaceEnum.JOIN_ROOM,
+            message: 'Internal Server Error: Please try again.',
+          });
         } else {
           // [*] SUCCESS: User can join room
           if (typeof room === 'object') {
             updateUser(user ? user : null); // Store updated user info to local storage
             updateRoom(room ? room : null); // Save room info to local storage and navigate
             navigateWaiting(navigate); // Navigate
-            // onSuccess?.({ action: NamespaceEnum.JOIN_ROOM, user, room }); // Success callback
+            onSuccess?.({ action: NamespaceEnum.JOIN_ROOM, user, room }); // Success callback
           }
           // [*] ERROR: User cannot join room
           else {
             const unavailableMsg = room; // room is now string message
             setErrorMessage(unavailableMsg || 'You cannot join this room for unknown reason.');
-            // onError?.({
-            //     action: NamespaceEnum.JOIN_ROOM,
-            //     message: unavailableMsg || 'You cannot join this room for unknown reason.',
-            //   });
+            onError?.({
+              action: NamespaceEnum.JOIN_ROOM,
+              message: unavailableMsg || 'You cannot join this room for unknown reason.',
+            });
           }
         }
 
@@ -269,13 +272,13 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
   const handleEditRoom = (formData: RoomSetting) => {
     processButtonStatus(true);
 
-    beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.({ action: NamespaceEnum.EDIT_ROOM }); // Execute the beforeSubmit callback before initiating the request
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
-      // onError?.({ action: NamespaceEnum.EDIT_ROOM });
+      onError?.({ action: NamespaceEnum.EDIT_ROOM });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -285,10 +288,10 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
       // [*] ERROR
       if (error) {
         outputServerError({ error });
-        // onError?.({
-        //     action: NamespaceEnum.EDIT_ROOM,
-        //     message: 'Internal Server Error: Please try again.',
-        //   });
+        onError?.({
+          action: NamespaceEnum.EDIT_ROOM,
+          message: 'Internal Server Error: Please try again.',
+        });
       }
       // [*] SUCCESS
       else {
@@ -306,13 +309,13 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
   const handleLeaveRoom = () => {
     processButtonStatus(true);
 
-    beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.({ action: NamespaceEnum.LEAVE_ROOM }); // Execute the beforeSubmit callback before initiating the request
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
-      // onError?.({ action: NamespaceEnum.LEAVE_ROOM });
+      onError?.({ action: NamespaceEnum.LEAVE_ROOM });
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
@@ -321,10 +324,10 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
 
       if (error) {
         outputServerError({ error });
-        // onError?.({
-        //     action: NamespaceEnum.LEAVE_ROOM,
-        //     message: 'Internal Server Error: Please try again.',
-        //   });
+        onError?.({
+          action: NamespaceEnum.LEAVE_ROOM,
+          message: 'Internal Server Error: Please try again.',
+        });
       } else {
         discardRoom();
         navigateDashboard(navigate);
@@ -344,7 +347,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
   const handleSendChat = (data: SendChatFormDataType) => {
     setErrorMessage(''); // Reset error message
 
-    beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.({ action: NamespaceEnum.SEND_CHAT }); // Execute the beforeSubmit callback before initiating the request
 
     const message = data.message.trim(); // Trim any start/end spaces
     // [*] ERROR
@@ -390,13 +393,13 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
   const handleStartGame = () => {
     processButtonStatus(true);
 
-    // beforeSubmit?.(); // Execute the beforeSubmit callback before initiating the request
+    beforeSubmit?.({ action: NamespaceEnum.START_GAME }); // Execute the beforeSubmit callback before initiating the request
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
       processButtonStatus(false);
       outputResponseTimeoutError();
-      // onError?.({ action: NamespaceEnum.START_GAME });
+      onError?.({ action: NamespaceEnum.START_GAME });
     }, 5000);
 
     // Send to socket
@@ -405,12 +408,12 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
 
       if (error) {
         outputServerError({ error });
-        //   onError?.({
-        //     action: NamespaceEnum.START_GAME,
-        //     message: 'Internal Server Error: Please try again.',
-        //   });
+        onError?.({
+          action: NamespaceEnum.START_GAME,
+          message: 'Internal Server Error: Please try again.',
+        });
       } else {
-        // onSuccess?.({ action: NamespaceEnum.START_GAME }); // Success callback
+        onSuccess?.({ action: NamespaceEnum.START_GAME }); // Success callback
       }
 
       processButtonStatus(false);

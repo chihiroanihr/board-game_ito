@@ -8,6 +8,7 @@ import { TextButtonStyled } from '@/components';
 import {
   useAuth,
   useAction,
+  type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
@@ -33,7 +34,7 @@ function Home() {
   });
 
   // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = () => {};
+  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {};
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
   const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
 
@@ -113,7 +114,11 @@ function Home() {
         </Stack>
 
         {/* Validation Error */}
-        <FormHelperText error={Boolean(errors.name)}>{errors.name?.message ?? null}</FormHelperText>
+        {Boolean(errors.name) && (
+          <FormHelperText error={Boolean(errors.name)}>
+            {errors.name?.message ?? null}
+          </FormHelperText>
+        )}
 
         {/* Form Request Error */}
         {errorMessage && <Alert severity="error">{errorMessage}</Alert>}

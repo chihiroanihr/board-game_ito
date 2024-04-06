@@ -31,13 +31,8 @@ const ChatPopper: React.FC<ChatPopperProps> = ({ anchorEl, isOpen, handleToggle,
         placement="top-end"
         sx={{ ...CHAT_POPPER_STYLE, pb: CHAT_POPPER_DISTANCE_FROM_BOTTOM }}
       >
-        {({ TransitionProps }) => (
-          //   <Grow timeout={350}>
-          <Paper
-            {...TransitionProps}
-            elevation={8}
-            sx={{ borderRadius: CHAT_POPPER_CORNER_RADIUS, overflow: 'hidden' }}
-          >
+        <Grow in={isOpen} timeout={200}>
+          <Paper elevation={8} sx={{ borderRadius: CHAT_POPPER_CORNER_RADIUS, overflow: 'hidden' }}>
             <Typography
               variant="body1"
               component="div"
@@ -51,8 +46,7 @@ const ChatPopper: React.FC<ChatPopperProps> = ({ anchorEl, isOpen, handleToggle,
             {/* Chat Content */}
             {children}
           </Paper>
-          //   </Grow>
-        )}
+        </Grow>
       </Popper>
     </>
   );

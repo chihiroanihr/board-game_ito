@@ -3,12 +3,14 @@ import { useBlocker } from 'react-router-dom';
 import { ObjectId } from 'mongodb';
 import {
   Typography,
+  Button,
   Stack,
   List,
   Dialog,
   DialogTitle,
   DialogActions,
-  Button,
+  Backdrop,
+  CircularProgress,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -34,6 +36,7 @@ import {
   useRoom,
   useAction,
   useSubmissionStatus,
+  type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
@@ -58,6 +61,7 @@ export default function Waiting() {
   const [allowStart, setAllowStart] = useState<boolean>(false);
   const [synchronousBlock, setSynchronousBlock] = useState<boolean>(false); // Block other execution synchronously until state sets back to true (loading state just for consistent execution
 
+  const [backdropOpen, setBackdropOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarPlayerInfo, setSnackbarPlayerInfo] = useState<SnackbarPlayerInfoType>(undefined);
   const [playerSnackbars, setPlayerSnackbars] = React.useState<readonly SnackbarPlayerInfoType[]>(
@@ -70,9 +74,21 @@ export default function Waiting() {
   const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
 
   // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = () => {};
-  const onError: ErrorCallbackFunction = ({ message }: ErrorCallbackParams) => {};
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
+  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {
+    if (action && action === NamespaceEnum.START_GAME) {
+      setBackdropOpen(true);
+    }
+  };
+  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
+    if (action && action === NamespaceEnum.START_GAME) {
+      setBackdropOpen(false);
+    }
+  };
+  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
+    if (action && action === NamespaceEnum.START_GAME) {
+      setBackdropOpen(false);
+    }
+  };
 
   // Button click handlers
   const { handleLeaveRoom, handleStartGame, loadingButton } = useAction({
@@ -237,12 +253,7 @@ export default function Waiting() {
     return (
       <List id="waiting_player-list" dense={true} sx={{ overflowY: 'auto' }}>
         {players.map((player) => (
-          <>
-            <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
-            <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
-            <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
-            <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
-          </>
+          <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
         ))}
       </List>
     );
@@ -298,13 +309,13 @@ export default function Waiting() {
     return (
       <Stack
         id="waiting_start-game_wrapper"
-        spacing="0.5rem"
+        spacing="0.25rem"
         alignItems="center"
         alignSelf="center"
       >
         {!isAdmin && (
-          <Typography variant="body2" component="div" color="grey.500">
-            Only admin can start the game.
+          <Typography variant="body2" component="div" color="grey.500" fontSize="0.7rem">
+            Waiting for admin to start the game.
           </Typography>
         )}
         <TextButtonStyled
@@ -354,26 +365,35 @@ export default function Waiting() {
         <Stack
           id="waiting_info-action_wrapper"
           direction="column"
-          gap={{ xs: '1.4rem', lg: '2rem' }}
+          // gap={{ xs: '1.4rem', lg: '2rem' }}
+          justifyContent="space-between"
           width="100%"
           height="100%"
         >
-          {/* Room ID display */}
-          <RoomIdDisplay />
-
-          {/* Players List */}
           <Stack
-            id="waiting_player-list_wrapper"
-            width="100%"
-            border="2px solid"
-            borderColor="grey.300"
+            direction="column"
+            gap={{ xs: '1.4rem', lg: '2rem' }}
+            height="100%"
+            mb="2rem"
             sx={{ overflowY: 'auto' }}
           >
-            <PlayerList />
-          </Stack>
+            {/* Room ID display */}
+            <RoomIdDisplay />
 
-          {/* Description */}
-          <PlayerWaitingCaption />
+            {/* Players List */}
+            <Stack
+              id="waiting_player-list_wrapper"
+              width="100%"
+              border="2px solid"
+              borderColor="grey.300"
+              sx={{ overflowY: 'auto' }}
+            >
+              <PlayerList />
+            </Stack>
+
+            {/* Description */}
+            <PlayerWaitingCaption />
+          </Stack>
 
           {/* Start Game Button */}
           <StartGameButton />
@@ -401,6 +421,13 @@ export default function Waiting() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Backdrop
+        sx={{ color: 'primary.main', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={backdropOpen}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </>
   );
 }

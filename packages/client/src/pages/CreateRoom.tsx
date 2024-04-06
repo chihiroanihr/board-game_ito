@@ -4,6 +4,7 @@ import { Box, Typography, Alert, Stack } from '@mui/material';
 import { RoomSettingForm } from '@/components';
 import {
   useAction,
+  type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
@@ -17,7 +18,7 @@ import {
  */
 function CreateRoom() {
   // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = () => {};
+  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {};
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
   const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
 

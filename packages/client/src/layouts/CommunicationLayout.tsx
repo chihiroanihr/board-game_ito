@@ -15,6 +15,7 @@ import {
   useSocket,
   useAction,
   usePageVisibility,
+  type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
@@ -49,7 +50,7 @@ const CommunicationLayout = () => {
   };
 
   // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = () => {
+  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {
     setIsChatButtonLoading(true);
   };
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {

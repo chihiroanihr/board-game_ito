@@ -111,16 +111,17 @@ const ChatContent: React.FC<ChatContentProps> = ({
                 }}
                 // Validation error or other form error
                 error={!!error}
-                helperText={
-                  <FormHelperText
-                    component="span"
-                    sx={{ position: 'absolute', top: '-43%', right: 0 }}
-                  >
-                    {error ? error.message : null}
-                  </FormHelperText>
-                }
                 fullWidth
               />
+              {error && (
+                <FormHelperText
+                  component="span"
+                  error={error}
+                  sx={{ position: 'absolute', top: '-43%', right: 0 }}
+                >
+                  {error ? error.message : null}
+                </FormHelperText>
+              )}
             </Box>
           )}
         />
