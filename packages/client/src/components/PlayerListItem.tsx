@@ -4,7 +4,7 @@ import { ListItem, ListItemAvatar, Avatar, ListItemText, Typography } from '@mui
 
 import { type User } from '@bgi/shared';
 
-import { BadgeOnline } from './styled';
+import { OnlineBadgeStyled } from './styled';
 import { avatarBgColor } from '@/utils';
 
 interface PlayerListItemProps {
@@ -16,13 +16,13 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId }) => {
   return (
     <ListItem>
       <ListItemAvatar>
-        <BadgeOnline
+        <OnlineBadgeStyled
           variant="dot"
           overlap="circular"
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
           <Avatar {...avatarBgColor(player.name)} />
-        </BadgeOnline>
+        </OnlineBadgeStyled>
       </ListItemAvatar>
       <ListItemText
         primary={

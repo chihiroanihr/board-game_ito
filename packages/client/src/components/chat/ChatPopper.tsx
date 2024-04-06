@@ -2,28 +2,39 @@ import React from 'react';
 import { Fab, Popper, Paper, Typography, Grow } from '@mui/material';
 import { Chat as ChatIcon } from '@mui/icons-material';
 
+import { NotificationBadge } from '@/components';
+
 const CHAT_POPPER_STYLE = { width: '30%', minWidth: '280px' };
 const CHAT_POPPER_CORNER_RADIUS = '0.25rem';
 const CHAT_POPPER_DISTANCE_FROM_BOTTOM = '0.5rem';
 
 interface ChatPopperProps {
+  numNotif: number;
   anchorEl: HTMLButtonElement | null;
   isOpen: boolean;
   handleToggle: () => void;
   children: React.ReactNode;
 }
 
-const ChatPopper: React.FC<ChatPopperProps> = ({ anchorEl, isOpen, handleToggle, children }) => {
+const ChatPopper: React.FC<ChatPopperProps> = ({
+  numNotif,
+  anchorEl,
+  isOpen,
+  handleToggle,
+  children,
+}) => {
   return (
     <>
-      <Fab
-        component="button"
-        color="primary"
-        aria-describedby={isOpen ? 'chat-popper' : undefined}
-        onClick={handleToggle}
-      >
-        <ChatIcon />
-      </Fab>
+      <NotificationBadge badgeContent={numNotif}>
+        <Fab
+          component="button"
+          color="primary"
+          aria-describedby={isOpen ? 'chat-popper' : undefined}
+          onClick={handleToggle}
+        >
+          <ChatIcon />
+        </Fab>
+      </NotificationBadge>
 
       <Popper
         open={isOpen}

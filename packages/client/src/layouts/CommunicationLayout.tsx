@@ -129,6 +129,7 @@ const CommunicationLayout = () => {
         ) : isSmViewport ? (
           // Popper Button (Screen > sm)
           <ChatPopper
+            numNotif={unreadMessages.length}
             anchorEl={anchorEl}
             isOpen={Boolean(anchorEl)}
             handleToggle={handleTogglePopper}
@@ -145,6 +146,7 @@ const CommunicationLayout = () => {
         ) : (
           // Popover Button (Screen > 0)
           <ChatPopover
+            numNotif={unreadMessages.length}
             anchorEl={anchorEl}
             isOpen={Boolean(anchorEl)}
             handleToggle={handleTogglePopover}

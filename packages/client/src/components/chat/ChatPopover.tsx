@@ -2,28 +2,39 @@ import React from 'react';
 import { Fab, Popover, Typography } from '@mui/material';
 import { Chat as ChatIcon } from '@mui/icons-material';
 
+import { NotificationBadge } from '@/components';
+
 const CHAT_POPOVER_SIZE = { width: '60%', minWidth: '250px' };
 const CHAT_POPOVER_CORNER_RADIUS = '0.25rem';
 const CHAT_POPOVER_DISTANCE_FROM_BOTTOM = '0.5rem';
 
 interface ChatPopoverProps {
+  numNotif: number;
   anchorEl: HTMLButtonElement | null;
   isOpen: boolean;
   handleToggle: () => void;
   children: React.ReactNode;
 }
 
-const ChatPopover: React.FC<ChatPopoverProps> = ({ anchorEl, isOpen, handleToggle, children }) => {
+const ChatPopover: React.FC<ChatPopoverProps> = ({
+  numNotif,
+  anchorEl,
+  isOpen,
+  handleToggle,
+  children,
+}) => {
   return (
     <>
-      <Fab
-        component="button"
-        color="primary"
-        aria-describedby={isOpen ? 'chat-popover' : undefined}
-        onClick={handleToggle}
-      >
-        <ChatIcon />
-      </Fab>
+      <NotificationBadge badgeContent={numNotif}>
+        <Fab
+          component="button"
+          color="primary"
+          aria-describedby={isOpen ? 'chat-popover' : undefined}
+          onClick={handleToggle}
+        >
+          <ChatIcon />
+        </Fab>
+      </NotificationBadge>
 
       <Popover
         open={isOpen}
