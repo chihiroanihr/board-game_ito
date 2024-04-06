@@ -38,11 +38,6 @@ let theme = createTheme({
     },
   },
   components: {
-    // MuiOutlinedInput: {
-    //   styleOverrides: {
-    //     notchedOutline: { bottom: '-3px' },
-    //   },
-    // },
     MuiButton: {
       styleOverrides: {
         startIcon: { marginLeft: 0, marginRight: 0 },
