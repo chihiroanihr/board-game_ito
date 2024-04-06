@@ -1,8 +1,9 @@
 // SnackbarPlayerOut.js
 import React from 'react';
-import { Stack, Snackbar, Slide, Avatar, useTheme, type SlideProps } from '@mui/material';
+import { Stack, Slide, Avatar, useTheme, type SlideProps } from '@mui/material';
 import { Login, Logout, ManageHistory, CheckCircleOutline } from '@mui/icons-material';
 
+import { SnackbarStyled } from './styled';
 import { SnackbarPlayerInfoType } from '../enum';
 
 const SNACKBAR_DURATION = 5000;
@@ -31,13 +32,14 @@ export const SnackbarPlayer: React.FC<SnackbarPlayerProps> = ({
   const theme = useTheme();
 
   return (
-    <Snackbar
+    <SnackbarStyled
       key={snackbarInfo ? snackbarInfo.key : undefined}
       open={open}
       onClose={onClose}
       TransitionProps={{ onExited: onExited }}
       TransitionComponent={SlideFromRight}
       autoHideDuration={SNACKBAR_DURATION}
+      sx={{ bottom: { xs: '1.4rem', lg: undefined } }}
       message={
         <Stack direction="row" alignItems="center" spacing={1}>
           {snackbarInfo?.status === 'in' && (
@@ -76,7 +78,7 @@ export const SnackbarRoomEdited: React.FC<SnackbarRoomEditedProps> = ({
   const theme = useTheme();
 
   return (
-    <Snackbar
+    <SnackbarStyled
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       open={open}
       onClose={onClose}

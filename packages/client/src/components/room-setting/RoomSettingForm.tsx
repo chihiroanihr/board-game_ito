@@ -17,12 +17,7 @@ import { Help, Mic, Chat } from '@mui/icons-material';
 
 import { type RoomSetting, roomSettingConfig, CommunicationMethodEnum } from '@bgi/shared';
 
-import {
-  TextButtonStyled,
-  TooltipStyled,
-  TextFieldWithIcon,
-  ToggleButtonWithIcon,
-} from '@/components';
+import { TextButton, TooltipStyled, TextFieldWithIcon, ToggleButtonWithIcon } from '@/components';
 import { convertStringToBoolean, convertStringToNumber } from '@/utils';
 
 interface RoomSettingFormProps {
@@ -100,7 +95,7 @@ const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFo
         <FormContent control={control} inModal={true} />
       )}
 
-      <TextButtonStyled
+      <TextButton
         ref={btnRef}
         type="submit"
         variant="contained"
@@ -108,7 +103,7 @@ const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFo
         sx={{ display: isInsideModal ? 'none' : undefined }} // If inside modal, submit button will belong to modal action
       >
         {children}
-      </TextButtonStyled>
+      </TextButton>
     </Box>
   );
 };

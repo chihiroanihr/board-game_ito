@@ -4,7 +4,7 @@ import { Box, FormHelperText, Typography, TextField, Stack, Alert } from '@mui/m
 
 import { userNameConfig } from '@bgi/shared';
 
-import { TextButtonStyled } from '@/components';
+import { TextButton } from '@/components';
 import {
   useAuth,
   useAction,
@@ -98,7 +98,7 @@ function Home() {
           />
 
           {/* Submit Button */}
-          <TextButtonStyled
+          <TextButton
             type="submit"
             variant="contained"
             loading={loadingButton}
@@ -110,7 +110,7 @@ function Home() {
             }}
           >
             Submit
-          </TextButtonStyled>
+          </TextButton>
         </Stack>
 
         {/* Validation Error */}

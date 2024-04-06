@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Stack } from '@mui/material';
 
-import { TextButtonStyled } from '@/components';
+import { TextButton } from '@/components';
 import { useSubmissionStatus } from '@/hooks';
 import { navigateJoinRoom, navigateCreateRoom } from '@/utils';
 
@@ -41,24 +41,24 @@ export default function Dashboard() {
 
       <Stack direction="row" alignItems="center" spacing={2}>
         {/* Create Room Button */}
-        <TextButtonStyled
+        <TextButton
           onClick={joinRoomHandler}
           variant="contained"
           loading={isLoading}
           loadingElement="Loading..."
         >
           Join Room
-        </TextButtonStyled>
+        </TextButton>
 
         {/* Create Room Button */}
-        <TextButtonStyled
+        <TextButton
           onClick={createRoomHandler}
           variant="contained"
           loading={isLoading}
           loadingElement="Loading..."
         >
           Create Room
-        </TextButtonStyled>
+        </TextButton>
       </Stack>
     </Box>
   );

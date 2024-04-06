@@ -18,7 +18,7 @@ import {
 import { NamespaceEnum, type RoomEditedResponse } from '@bgi/shared';
 
 import {
-  IconButtonStyled,
+  IconButton,
   RoomSettingForm,
   RoomSettingViewer,
   SnackbarRoomEdited,
@@ -105,7 +105,7 @@ export default function HeaderLayout() {
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Stack direction="row" alignItems="center" spacing={{ xs: '0.75rem', md: '1rem' }}>
           {/* Leave Game Button */}
-          <IconButtonStyled
+          <IconButton
             onClick={handleLogout}
             loading={loadingButton && triggeredButton === NamespaceEnum.LOGOUT}
             tooltipProps={{ title: 'Exit Game', placement: 'top' }}
@@ -115,18 +115,18 @@ export default function HeaderLayout() {
             }}
           >
             <LogoutIcon />
-          </IconButtonStyled>
+          </IconButton>
 
           {/* Leave Room Button */}
           {room && (
-            <IconButtonStyled
+            <IconButton
               onClick={handleLeaveRoom}
               loading={loadingButton && triggeredButton === NamespaceEnum.LEAVE_ROOM}
               tooltipProps={{ title: 'Leave This Room', placement: 'top' }}
               sx={commonIconButtonStyle}
             >
               <MeetingRoomIcon />
-            </IconButtonStyled>
+            </IconButton>
           )}
 
           <Typography variant="h6" component="div">
@@ -137,7 +137,7 @@ export default function HeaderLayout() {
         {/* Edit Room Button (only admin can configure this) */}
         {room && (
           <>
-            <IconButtonStyled
+            <IconButton
               onClick={handleDialogOpen}
               loading={loadingButton && triggeredButton === NamespaceEnum.EDIT_ROOM}
               tooltipProps={{
@@ -148,7 +148,7 @@ export default function HeaderLayout() {
               sx={commonIconButtonStyle}
             >
               {isAdmin ? <SettingsIcon /> : <VisibilityIcon />}
-            </IconButtonStyled>
+            </IconButton>
 
             {/* Form Modal */}
             <Dialog open={dialogOpen} onClose={handleDialogClose} scroll="body">

@@ -4,6 +4,7 @@ import PlayerListItem from './PlayerListItem';
 export { Loader, Copyright, PlayerListItem };
 
 export * from './Snackbar';
+export * from './Button';
 
 export * from './chat';
 export * from './room-setting';

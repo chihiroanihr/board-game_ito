@@ -1,8 +1,9 @@
 import AnimateTextThreeDots from './AnimateTextThreeDots';
-import BadgeOnline from './BadgeOnline';
-import TooltipStyled from './Tooltip';
-export { AnimateTextThreeDots, BadgeOnline, TooltipStyled };
+import TooltipStyled from './MuiTooltipStyled';
+import SnackbarStyled from './MuiSnackbarStyled';
 
-export * from './TextField';
-export * from './ToggleButton';
-export * from './Button';
+export { AnimateTextThreeDots, TooltipStyled, SnackbarStyled };
+
+export * from './MuiBadgeStyled';
+export * from './MuiTextFieldStyled';
+export * from './MuiToggleButtonStyled';

@@ -2,7 +2,7 @@ import { styled, Badge, type Theme } from '@mui/material';
 
 // The theme object is meant to be used internally within the styled component to access properties of the MUI theme.
 // You shouldn't pass the theme prop manually when using the styled component.
-const BadgeOnline = styled(Badge)(({ theme }: { theme: Theme }) => ({
+export const BadgeOnline = styled(Badge)(({ theme }: { theme: Theme }) => ({
   '& .MuiBadge-badge': {
     backgroundColor: '#44b700',
     color: '#44b700',
@@ -28,5 +28,3 @@ const BadgeOnline = styled(Badge)(({ theme }: { theme: Theme }) => ({
     },
   },
 }));
-
-export default BadgeOnline;

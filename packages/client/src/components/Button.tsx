@@ -1,30 +1,30 @@
 import React from 'react';
 import {
   type TooltipProps,
-  IconButton,
-  Button,
-  type ButtonProps,
-  type IconButtonProps,
-  CircularProgress,
+  type ButtonProps as MuiButtonProps,
+  type IconButtonProps as MuiIconButtonProps,
+  IconButton as MuiIconButton,
+  Button as MuiButton,
+  CircularProgress as MuiCircularProgress,
 } from '@mui/material';
 
-import { TooltipStyled } from '@/components';
+import { TooltipStyled } from './styled';
 import { useSubmissionStatus } from '@/hooks';
 
 // https://github.com/mui/material-ui/issues/32420
 
-interface TextButtonStyledProps extends Omit<ButtonProps, 'startIcon'> {
+interface TextButtonProps extends Omit<MuiButtonProps, 'startIcon'> {
   loading?: boolean;
   loadingElement?: React.ReactNode;
 }
 
-interface IconButtonStyledProps extends IconButtonProps {
+interface IconButtonProps extends MuiIconButtonProps {
   loading?: boolean;
   tooltipProps?: Partial<TooltipProps> & { bgColor?: string; textColor?: string };
 }
 
-const TextButtonStyled = React.forwardRef(function TextButtonStyled(
-  props: TextButtonStyledProps,
+const TextButton = React.forwardRef(function TextButton(
+  props: TextButtonProps,
   ref: React.Ref<HTMLButtonElement>
 ) {
   // Destructure all props
@@ -33,7 +33,7 @@ const TextButtonStyled = React.forwardRef(function TextButtonStyled(
   const { isSubmitting } = useSubmissionStatus();
 
   return (
-    <Button
+    <MuiButton
       ref={ref}
       onClick={onClick}
       type={type}
@@ -41,7 +41,7 @@ const TextButtonStyled = React.forwardRef(function TextButtonStyled(
       disabled={disabled || isSubmitting || loading}
       startIcon={
         loading && (
-          <CircularProgress
+          <MuiCircularProgress
             color="inherit"
             size="1em"
             sx={{ mr: loadingElement ? 1 : 0, p: '0.02rem' }}
@@ -51,14 +51,12 @@ const TextButtonStyled = React.forwardRef(function TextButtonStyled(
       {...rest}
     >
       {loading ? loadingElement : children}
-    </Button>
+    </MuiButton>
   );
-}) as React.ForwardRefExoticComponent<
-  TextButtonStyledProps & React.RefAttributes<HTMLButtonElement>
->;
+}) as React.ForwardRefExoticComponent<TextButtonProps & React.RefAttributes<HTMLButtonElement>>;
 
-const IconButtonStyled = React.forwardRef(function TextButtonStyled(
-  props: IconButtonStyledProps,
+const IconButton = React.forwardRef(function IconButton(
+  props: IconButtonProps,
   ref: React.Ref<HTMLButtonElement>
 ) {
   // Destructure all props
@@ -74,7 +72,7 @@ const IconButtonStyled = React.forwardRef(function TextButtonStyled(
     return (
       <TooltipStyled title={title} bgColor={bgColor} textColor={textColor} {...otherProps}>
         <span>
-          <IconButton
+          <MuiIconButton
             ref={ref}
             onClick={onClick}
             type={type}
@@ -82,11 +80,11 @@ const IconButtonStyled = React.forwardRef(function TextButtonStyled(
             {...rest}
           >
             {loading ? (
-              <CircularProgress color="inherit" size="1em" sx={{ p: '0.1rem' }} />
+              <MuiCircularProgress color="inherit" size="1em" sx={{ p: '0.1rem' }} />
             ) : (
               children
             )}
-          </IconButton>
+          </MuiIconButton>
         </span>
       </TooltipStyled>
     );
@@ -94,18 +92,16 @@ const IconButtonStyled = React.forwardRef(function TextButtonStyled(
 
   // If tooltipProps does not exist, render IconButton without TooltipStyled
   return (
-    <IconButton
+    <MuiIconButton
       ref={ref}
       onClick={onClick}
       type={type}
       disabled={disabled || isSubmitting || loading}
       {...rest}
     >
-      {loading ? <CircularProgress color="inherit" size="1em" sx={{ p: '0.1rem' }} /> : children}
-    </IconButton>
+      {loading ? <MuiCircularProgress color="inherit" size="1em" sx={{ p: '0.1rem' }} /> : children}
+    </MuiIconButton>
   );
-}) as React.ForwardRefExoticComponent<
-  IconButtonStyledProps & React.RefAttributes<HTMLButtonElement>
->;
+}) as React.ForwardRefExoticComponent<IconButtonProps & React.RefAttributes<HTMLButtonElement>>;
 
-export { TextButtonStyled, IconButtonStyled };
+export { TextButton, IconButton };

@@ -25,12 +25,7 @@ import {
   MAX_NUM_PLAYERS,
 } from '@bgi/shared';
 
-import {
-  TextButtonStyled,
-  AnimateTextThreeDots,
-  PlayerListItem,
-  SnackbarPlayer,
-} from '@/components';
+import { TextButton, AnimateTextThreeDots, PlayerListItem, SnackbarPlayer } from '@/components';
 import {
   useAuth,
   useRoom,
@@ -318,7 +313,7 @@ export default function Waiting() {
             Waiting for admin to start the game.
           </Typography>
         )}
-        <TextButtonStyled
+        <TextButton
           onClick={handleStartGame}
           variant="contained"
           loading={loadingButton}
@@ -326,7 +321,7 @@ export default function Waiting() {
           disabled={!isAdmin || !allowStart || !synchronousBlock} // Only admin can start the game
         >
           Start Game
-        </TextButtonStyled>
+        </TextButton>
       </Stack>
     );
   };

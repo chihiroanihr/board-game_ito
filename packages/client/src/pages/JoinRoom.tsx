@@ -14,7 +14,7 @@ import {
 
 import { roomIdConfig } from '@bgi/shared';
 
-import { TextButtonStyled } from '@/components';
+import { TextButton } from '@/components';
 import {
   useAction,
   type BeforeSubmitCallbackParams,
@@ -104,14 +104,14 @@ function JoinRoom() {
         </Card>
 
         {/* Submit Button */}
-        <TextButtonStyled
+        <TextButton
           type="submit"
           variant="contained"
           loading={loadingButton}
           loadingElement="Loading..."
         >
           Join Room
-        </TextButtonStyled>
+        </TextButton>
 
         {/* Form Request Error */}
         <Snackbar

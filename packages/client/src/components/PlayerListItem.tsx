@@ -4,7 +4,7 @@ import { ListItem, ListItemAvatar, Avatar, ListItemText, Typography } from '@mui
 
 import { type User } from '@bgi/shared';
 
-import { BadgeOnline } from '@/components';
+import { BadgeOnline } from './styled';
 import { avatarBgColor } from '@/utils';
 
 interface PlayerListItemProps {

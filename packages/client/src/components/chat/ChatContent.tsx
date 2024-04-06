@@ -5,7 +5,7 @@ import { Send as SendIcon } from '@mui/icons-material';
 
 import { type RoomChatMessage } from '@bgi/shared';
 
-import { MessageItem, ScrollController, IconButtonStyled } from '@/components';
+import { MessageItem, ScrollController, IconButton } from '@/components';
 import { commonIconButtonStyle } from '../../theme';
 import { type SendChatFormDataType } from '../../enum';
 
@@ -127,7 +127,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
         />
 
         {/* Submit Button */}
-        <IconButtonStyled
+        <IconButton
           type="submit"
           loading={isButtonLoading || isSubmitting}
           disabled={!isDirty} // Disable button when form is not dirty or submitting
@@ -139,7 +139,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
           }}
         >
           <SendIcon fontSize={isInModal ? 'medium' : 'large'} />
-        </IconButtonStyled>
+        </IconButton>
       </Stack>
     </Stack>
   );
