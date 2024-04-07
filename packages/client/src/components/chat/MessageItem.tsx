@@ -10,9 +10,9 @@ const MessageItem: React.FC<RoomChatMessage> = ({ fromUser, message, timestamp }
   const { user } = useAuth();
 
   return (
-    <ListItem sx={{ paddingX: 0, paddingY: '2.5%' }}>
+    <ListItem sx={{ px: 0, py: '2.5%' }}>
       {/* Avatar */}
-      <ListItemAvatar sx={{ alignSelf: 'flex-start', paddingRight: '4%', minWidth: 'unset' }}>
+      <ListItemAvatar sx={{ alignSelf: 'flex-start', pr: '0.8rem' }}>
         <Avatar {...avatarBgColor(fromUser.name)} sizes="small" />
       </ListItemAvatar>
 

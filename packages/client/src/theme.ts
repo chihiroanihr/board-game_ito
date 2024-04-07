@@ -54,6 +54,13 @@ let theme = createTheme({
         },
       },
     },
+    MuiListItemAvatar: {
+      styleOverrides: {
+        root: {
+          minWidth: 'auto',
+        },
+      },
+    },
   },
 });
 

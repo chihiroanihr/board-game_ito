@@ -14,6 +14,7 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { People as PeopleIcon } from '@mui/icons-material';
 
 import {
   type User,
@@ -244,7 +245,39 @@ export default function Waiting() {
     };
   }, [adminId, socket, updateRoom]);
 
-  const PlayerList = () => {
+  const PlayersNumber = () => {
+    return (
+      <Stack
+        direction="row"
+        justifyContent="end"
+        alignItems="center"
+        gap="0.25rem"
+        px="0.5rem"
+        py="0.2rem"
+        bgcolor="grey.200"
+        borderBottom="1.2px solid"
+        borderColor="grey.300"
+      >
+        <PeopleIcon color="primary" />
+        <Stack display="inline-flex" direction="row" alignItems="baseline" gap="0.15rem">
+          <Typography variant="body1" component="div" fontWeight={600}>
+            {players.length}
+          </Typography>
+          <Typography
+            variant="body2"
+            component="div"
+            fontSize="0.65rem"
+            fontWeight={500}
+            textTransform="uppercase"
+          >
+            {players.length <= 1 ? 'player' : 'players'}
+          </Typography>
+        </Stack>
+      </Stack>
+    );
+  };
+
+  const PlayersList = () => {
     return (
       <List id="waiting_player-list" dense={true} sx={{ overflowY: 'auto' }}>
         {players.map((player) => (
@@ -339,7 +372,8 @@ export default function Waiting() {
             border="2px solid"
             borderColor="grey.300"
           >
-            <PlayerList />
+            <PlayersNumber />
+            <PlayersList />
           </Stack>
 
           <Stack id="waiting_info-action_wrapper" justifyContent="space-between" width="100%">
@@ -360,7 +394,6 @@ export default function Waiting() {
         <Stack
           id="waiting_info-action_wrapper"
           direction="column"
-          // gap={{ xs: '1.4rem', lg: '2rem' }}
           justifyContent="space-between"
           width="100%"
           height="100%"
@@ -369,7 +402,7 @@ export default function Waiting() {
             direction="column"
             gap={{ xs: '1.4rem', lg: '2rem' }}
             height="100%"
-            mb="2rem"
+            mb="3rem"
             sx={{ overflowY: 'auto' }}
           >
             {/* Room ID display */}
@@ -379,11 +412,13 @@ export default function Waiting() {
             <Stack
               id="waiting_player-list_wrapper"
               width="100%"
+              height="100%"
               border="2px solid"
               borderColor="grey.300"
               sx={{ overflowY: 'auto' }}
             >
-              <PlayerList />
+              <PlayersNumber />
+              <PlayersList />
             </Stack>
 
             {/* Description */}

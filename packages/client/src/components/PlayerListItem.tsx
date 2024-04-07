@@ -15,7 +15,7 @@ interface PlayerListItemProps {
 const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId }) => {
   return (
     <ListItem>
-      <ListItemAvatar>
+      <ListItemAvatar sx={{ pr: '0.8rem' }}>
         <OnlineBadgeStyled
           variant="dot"
           overlap="circular"
