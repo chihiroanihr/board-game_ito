@@ -452,11 +452,12 @@ export default function Waiting() {
         </DialogActions>
       </Dialog>
 
+      {/* Backdrop when game start button is pressed */}
       <Backdrop
-        sx={{ color: 'primary.main', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={backdropOpen}
+        sx={{ color: 'common.white', zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
-        <CircularProgress color="inherit" />
+        <CircularProgress color="inherit" size="3rem" />
       </Backdrop>
     </>
   );
