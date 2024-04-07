@@ -24,16 +24,25 @@ export const convertPlayerIdsToPlayerObjs = async (
 ): Promise<Array<User>> => {
   logQueryEvent("Converting all players' IDs into User objects.");
 
-  // Convert string ID into object ID
   /*
+    Convert string ID into object ID:
     There might be scenarios where the actual runtime objects are not being correctly recognized as ObjectId instances by the MongoDB driver. This could be due to:
     Serialization/deserialization processes that convert ObjectId to strings, such as when receiving data over a network or storing/retrieving data from a place that doesn't preserve the original types (like JSON storage, HTTP requests, etc.).
-    */
-  const playerObjIds: ObjectId[] = playerIds.map((id) => new ObjectId(id));
+  */
+  // const playerObjIds: ObjectId[] = playerIds.map((id) => new ObjectId(id));
+
   // Return array of User objects if each player (user) ID matches with what's in the database
-  const players = await getDB()
-    .users.find({ _id: { $in: playerObjIds } })
-    .toArray();
+  const players: Array<User> = [];
+  for (const playerId of playerIds) {
+    const player = await getDB().users.findOne({ _id: new ObjectId(playerId) });
+    if (player) {
+      players.push(player);
+    }
+  }
+  // The below was unable to fetch the results based on insertion order.
+  // const players = await getDB()
+  //   .users.find({ _id: { $in: playerObjIds } })
+  //   .toArray();
 
   if (players.length !== playerIds.length) {
     throw new Error(
