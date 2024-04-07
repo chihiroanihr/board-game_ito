@@ -47,7 +47,7 @@ export default function HeaderLayout() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [triggeredButton, setTriggeredButton] = useState<NamespaceEnum>();
 
-  const isAdmin = !!(user?._id === room?.createdBy);
+  const isAdmin = !!(user?._id === room?.roomAdmin);
 
   const submitBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -138,7 +138,7 @@ export default function HeaderLayout() {
               tooltipProps={{
                 title: isAdmin ? 'Edit Game Room Setting' : 'View Game Room Setting',
                 placement: 'top',
-                // ...(user._id !== room.createdBy && { bgColor: 'grey.500' }),
+                // ...(user._id !== room.roomAdmin && { bgColor: 'grey.500' }),
               }}
               sx={commonIconButtonStyle}
             >

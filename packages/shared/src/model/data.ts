@@ -19,7 +19,7 @@ export interface User {
 export interface Room {
   _id: string;
   status: RoomStatusEnum;
-  createdBy: ObjectId; // User._id
+  roomAdmin: ObjectId; // User._id
   creationTime: Date;
   players: Array<ObjectId>; // User._id
   setting: RoomSetting;

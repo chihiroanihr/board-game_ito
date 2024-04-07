@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
 const roomSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   status: { type: String, required: true, enum: Object.values(RoomStatusEnum) },
-  createdBy: {
+  roomAdmin: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: 'User',

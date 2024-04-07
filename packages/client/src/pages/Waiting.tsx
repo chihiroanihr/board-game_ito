@@ -132,7 +132,7 @@ export default function Waiting() {
    *    - Include yourself (User obj) in the list of players (Array<User>)
    * 2. If you are a participant:
    *    - Receive new room info (Room obj), list of players (Array<User>), and user (myself) info (User obj) from the response
-   *    - Set admin ID (room.createdBy)
+   *    - Set admin ID (room.roomAdmin)
    *    - Set list of participating players (Array<User>)
    *    - (Set other room config info, etc.)
    */
@@ -145,7 +145,7 @@ export default function Waiting() {
           /** @todo - Failed to fetch players error (create new error) */
         } else {
           // Add admin
-          setAdminId(room.createdBy);
+          setAdminId(room.roomAdmin);
           // Add list of players
           setPlayers(players);
         }
@@ -204,7 +204,7 @@ export default function Waiting() {
    * - If list of players decreases to less than MIN_NUM_PLAYERS, disable "allowStart"
    * - Check if the player left was an admin (from the new room info received)
    * 1. If the participant was a room admin:
-   *    - Set new room admin ID (room.createdBy)
+   *    - Set new room admin ID (room.roomAdmin)
    *    - Display message that new user has left & admin has changed
    * 2. Else:
    *    - Display message that new user has left
@@ -216,8 +216,8 @@ export default function Waiting() {
       // Update room in the local storage first
       updateRoom(room);
       // If room still exists (at least one player left in the room) AND If admin changed then set new admin
-      if (room && room.createdBy.toString() !== adminId?.toString()) {
-        setAdminId(room.createdBy);
+      if (room && room.roomAdmin.toString() !== adminId?.toString()) {
+        setAdminId(room.roomAdmin);
       }
       // Remove player from the list of players
       setPlayers((prevPlayers: User[]) =>

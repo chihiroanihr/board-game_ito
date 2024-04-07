@@ -61,7 +61,7 @@ export const handleCreateRoom = async (
       _id: roomId, // Use roomId directly if it's not intended to be an ObjectId
       status: RoomStatusEnum.AVAILABLE,
       creationTime: new Date(),
-      createdBy: userId,
+      roomAdmin: userId,
       players: [userId],
       setting: roomSetting,
     };
@@ -200,7 +200,7 @@ export const handleLeaveRoom = async (
     }
 
     // * If user leaving = room admin
-    if (userId.equals(room.createdBy)) {
+    if (userId.equals(room.roomAdmin)) {
       const playersId = updatedRoom.players;
 
       // [1] If leftover players in the room -> update admin

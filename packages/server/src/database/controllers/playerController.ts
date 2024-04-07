@@ -129,7 +129,7 @@ export const updateRoomAdmin = async (
   // or null if no document was found.
   return await getDB().rooms.findOneAndUpdate(
     { _id: roomId },
-    { $set: { createdBy: userId } },
+    { $set: { roomAdmin: userId } },
     options
   );
 };
