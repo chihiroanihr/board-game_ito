@@ -1,7 +1,8 @@
+import useWindowDimensions from './useWindowSize';
 import useLocalStorage from './useLocalStorage';
 import usePageVisibility from './usePageVisibility';
 
-export { useLocalStorage, usePageVisibility };
+export { useWindowDimensions, useLocalStorage, usePageVisibility };
 
 export * from './useSocket';
 export * from './useSession';

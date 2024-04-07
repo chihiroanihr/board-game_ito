@@ -32,7 +32,6 @@ export default function CommonLayout() {
         {user && (
           <Box
             component="header"
-            mb={{ xs: '1.4rem', lg: '2%' }}
             px={{ xs: '1.4rem', lg: '2%' }}
             py="0.8rem"
             borderBottom="2px solid"
@@ -49,8 +48,9 @@ export default function CommonLayout() {
           flexGrow={1}
           position="relative"
           height="100%"
+          pt={{ xs: '1.4rem', lg: '2%' }}
           px={{ xs: '1.4rem', lg: '2%' }}
-          sx={{ overflowY: 'hidden' }}
+          sx={{ overflowY: 'auto' }}
         >
           {/* Main Layout */}
           <Grid

@@ -43,9 +43,15 @@ function CreateRoom() {
   }, [errorMessage, setErrorMessage]);
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={3}>
-      <Stack direction="column" spacing={0.5}>
-        <Typography variant="h4" component="h2">
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="flex-start"
+      gap={{ xs: '2rem', md: '1.4rem' }}
+      height="100%"
+    >
+      <Stack direction="column" spacing="0.1rem">
+        <Typography variant="h4" component="h2" fontSize={{ md: '2rem' }}>
           Create Room
         </Typography>
         <Typography variant="body2" component="div">
@@ -54,7 +60,7 @@ function CreateRoom() {
       </Stack>
 
       {/* Form */}
-      <RoomSettingForm onSubmit={handleCreateRoom} isLoading={loadingButton}>
+      <RoomSettingForm onSubmit={handleCreateRoom} isLoading={loadingButton} pb="1.4rem">
         Create
       </RoomSettingForm>
 

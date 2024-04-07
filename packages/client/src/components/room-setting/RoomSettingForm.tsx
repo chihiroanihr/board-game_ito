@@ -38,7 +38,7 @@ const formDefaultValues: RoomSetting = {
 };
 
 const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFormProps> = (
-  { roomSetting, onSubmit, isLoading, isInsideModal, children },
+  { roomSetting, onSubmit, isLoading, isInsideModal, children, ...rest },
   btnRef
 ) => {
   // Prepare react-hook-form
@@ -82,6 +82,7 @@ const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFo
       gap={4}
       onSubmit={handleSubmit(handleFormSubmit)}
       noValidate
+      {...rest}
     >
       {!isInsideModal ? (
         // If not inside modal, wrap the form in Card component

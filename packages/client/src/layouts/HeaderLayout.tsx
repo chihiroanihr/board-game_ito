@@ -17,12 +17,7 @@ import {
 
 import { NamespaceEnum, type RoomEditedResponse } from '@bgi/shared';
 
-import {
-  IconButton,
-  RoomSettingForm,
-  RoomSettingViewer,
-  SnackbarRoomEdited,
-} from '@/components';
+import { IconButton, RoomSettingForm, RoomSettingViewer, SnackbarRoomEdited } from '@/components';
 import {
   useSocket,
   useAuth,

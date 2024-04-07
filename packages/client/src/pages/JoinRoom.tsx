@@ -60,7 +60,12 @@ function JoinRoom() {
   });
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={3}>
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="flex-start"
+      gap={{ xs: '2rem', md: '1.4rem' }}
+    >
       <Typography variant="h4" component="h2">
         Join Room
       </Typography>

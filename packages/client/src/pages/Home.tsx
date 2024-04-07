@@ -1,6 +1,15 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Box, FormHelperText, Typography, TextField, Stack, Alert } from '@mui/material';
+import {
+  Box,
+  FormHelperText,
+  Typography,
+  TextField,
+  Stack,
+  Alert,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 
 import { userNameConfig } from '@bgi/shared';
 
@@ -23,6 +32,8 @@ import { type LoginFormDataType } from '../enum';
  */
 function Home() {
   const { user } = useAuth();
+  const theme = useTheme();
+  const isSmViewport = useMediaQuery(theme.breakpoints.up('sm'));
 
   // Prepare react-hook-form
   const {
@@ -60,12 +71,17 @@ function Home() {
 
   if (user) return null;
   return (
-    <Stack spacing={{ xs: 3, md: 4, lg: 5 }} alignItems="center">
-      <Typography variant="h3" component="h1">
+    <Stack spacing={'1.4rem'} flexGrow={1} alignItems="center">
+      <Typography variant="h3" component="h1" fontSize={{ xs: '2rem', md: '2.5rem' }}>
         Welcome to ITO Game
       </Typography>
 
-      <Box component="form" onSubmit={handleSubmit(handleLogin)} noValidate>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(handleLogin)}
+        noValidate
+        sx={{ width: isSmViewport ? 'auto' : 'calc(100vw - 30%)' }}
+      >
         <Stack direction="row">
           {/* Input Field */}
           <TextField
@@ -95,6 +111,7 @@ function Home() {
                 message: userNameConfig.regexErrorMessage,
               },
             })}
+            fullWidth={!isSmViewport}
           />
 
           {/* Submit Button */}

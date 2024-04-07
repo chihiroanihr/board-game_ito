@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Route,
   RouterProvider,
   createBrowserRouter,
   createRoutesFromElements,
 } from 'react-router-dom';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 import {
   SessionProvider,
@@ -12,12 +13,30 @@ import {
   RoomProvider,
   SocketProvider,
   SubmissionStatusProvider,
+  useWindowDimensions,
 } from '@/hooks';
 import { CommonLayout, ConnectLayout } from '@/layouts';
 import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, NotFound } from '@/pages';
 import { socket } from './service/socket';
 
 function App() {
+  const { width, height } = useWindowDimensions();
+  const theme = useTheme();
+  const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
+
+  useEffect(() => {
+    // Function to calculate window (screen) height and set the CSS variable
+    const setWindowHeightCSS = () => {
+      const doc = document.documentElement;
+      doc.style.setProperty('--window-height', `${height}px`);
+    };
+
+    // Calculate window height only when window width is less than large viewport (a.k.a on mobile screen)
+    if (!isLgViewport) {
+      setWindowHeightCSS();
+    }
+  }, [height, isLgViewport, width]); // * width as dependency is important since it is a value for resize event listener
+
   const routes = createBrowserRouter(
     createRoutesFromElements(
       <Route element={<ConnectLayout />}>
