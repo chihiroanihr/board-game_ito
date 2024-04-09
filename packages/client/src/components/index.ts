@@ -7,6 +7,7 @@ export * from './Snackbar';
 export * from './Button';
 
 export * from './chat';
+export * from './voice';
 export * from './room-setting';
 export * from './styled';
 export * from './debug';

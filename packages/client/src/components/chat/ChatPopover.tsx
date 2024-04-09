@@ -32,7 +32,7 @@ const ChatPopover: React.FC<ChatPopoverProps> = ({
           aria-describedby={isOpen ? 'chat-popover' : undefined}
           onClick={handleToggle}
         >
-          <ChatIcon />
+          <ChatIcon sx={{ width: 'unset', height: 'unset', p: '0.7rem' }} />
         </Fab>
       </NotificationBadge>
 

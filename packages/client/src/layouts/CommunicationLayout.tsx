@@ -8,8 +8,7 @@ import {
   type ReceiveChatResponse,
 } from '@bgi/shared';
 
-import { VoiceLayout } from '@/layouts';
-import { ChatContent, ChatPopover, ChatPopper } from '@/components';
+import { ChatContent, ChatPopover, ChatPopper, VoiceButton } from '@/components';
 import {
   useRoom,
   useSocket,
@@ -163,20 +162,9 @@ const CommunicationLayout = () => {
         ))}
 
       {/* ------------------------- Mic ------------------------- */}
-      {communicationMethod === CommunicationMethodEnum.MIC && <VoiceLayout />}
+      {communicationMethod === CommunicationMethodEnum.MIC && <VoiceButton />}
     </>
   );
 };
 
 export default CommunicationLayout;
-
-/* <Fab
-    component="button"
-    color="primary"
-    aria-describedby={Boolean(anchorEl) ? 'chat-popover' : undefined}
-    aria-label="chat"
-    onClick={handleOpenPopover}
-  >
-    {communicationMethod === CommunicationMethodEnum.CHAT && <ChatIcon />}
-    {communicationMethod === CommunicationMethodEnum.MIC && <MicIcon />}
-  </Fab> */
