@@ -95,6 +95,11 @@ docker-compose -f .docker/docker-compose.yaml down -v
 - [How to Create a React app with a Node backend](https://www.freecodecamp.org/news/how-to-create-a-react-app-with-a-node-backend-the-complete-guide/)
 - [React - Typescript](https://react.dev/learn/typescript)
 
+#### HTTP to HTTPS
+
+- [Https on Localhost for Vite and React , Vue , Vanila , Svelte](https://www.youtube.com/watch?v=s2YxcPR_yhw)
+- [How to Secure Your NodeJS App with HTTPS and SSL Certificates](https://medium.com/@anandam00/how-to-secure-your-nodejs-app-with-https-and-ssl-certificates-e3afcd4533e9)
+
 ### Unique ID
 
 - [How to generate unique ID with node.js?](https://www.geeksforgeeks.org/how-to-generate-unique-id-with-node-js/)

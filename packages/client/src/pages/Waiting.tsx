@@ -138,6 +138,7 @@ export default function Waiting() {
    */
   useEffect(() => {
     room &&
+      /** @todo: Should I only send room.players instead of whole 'room'? */
       socket.emit(NamespaceEnum.WAIT_ROOM, room, async ({ error, players }: WaitRoomResponse) => {
         if (error) {
           outputServerError({ error });

@@ -37,6 +37,10 @@ export type LeaveRoomCallback = {
   (response: LeaveRoomResponse): void;
 };
 
+export type PlayerDisconnectedResponse = { user: User };
+
+export type PlayerReconnectedResponse = { user: User };
+
 export type PlayerInResponse = { user: User; room: Room };
 
 export type PlayerOutResponse = { user: User; room: Room | null };

@@ -1,6 +1,7 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
-import { createServer, Server as HTTPServer } from 'http';
+import fs from 'fs';
+import { createServer, Server as HTTPServer } from 'https';
 import { Server as SocketIOServer } from 'socket.io';
 
 import { connectDB, closeDB } from './database/dbConnect';
@@ -24,7 +25,11 @@ app.use(express.json()); // Using express.json() instead of bodyParser.json() du
 app.use(router); // Mount the routes
 
 // HTTP server initialization
-const server: HTTPServer = createServer(app);
+const options = {
+  key: fs.readFileSync('../../bgi-privateKey.key'),
+  cert: fs.readFileSync('../../bgi.crt'),
+};
+const server: HTTPServer = createServer(options, app);
 
 // Socket.io server initialization
 const io: SocketIOServer = new SocketIOServer(server, {
