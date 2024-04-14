@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { ObjectId } from 'mongodb';
 
-import { type User, NamespaceEnum } from '@bgi/shared';
+import {
+  type User,
+  type PlayerDisconnectedResponse,
+  type PlayerDisconnectedResponse,
+  NamespaceEnum,
+} from '@bgi/shared';
 
 import { VoiceButton } from '@/components';
 import {
@@ -35,11 +40,11 @@ const VoiceCallLayout = () => {
     createAnswerAndSendSignal,
   } = usePeerConnections();
 
-  const handlePlayerDisconnected = (player: User) => {
+  const handlePlayerDisconnected = ({ user: player }: PlayerDisconnectedResponse) => {
     closePeerConnection(player._id.toString()); // Close peer connection for player just disconnected
   };
 
-  const handlePlayerReconnected = (player: User) => {
+  const handlePlayerReconnected = ({ user: player }: PlayerDisconnectedResponse) => {
     restartPeerConnection(player._id.toString());
   };
 

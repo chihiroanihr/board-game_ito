@@ -31,6 +31,7 @@ import {
   useAuth,
   useRoom,
   useAction,
+  usePlayerStatus,
   useSubmissionStatus,
   type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
@@ -162,33 +163,26 @@ export default function Waiting() {
    * - If list of players reaches more than MIN_NUM_PLAYERS, enable "allowStart"
    * - Display message that new user has arrived
    */
-  useEffect(() => {
-    async function onPlayerInEvent({ user: player, room }: PlayerInResponse) {
-      setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
+  const handlePlayerIn = ({ user: player, room }: PlayerInResponse) => {
+    console.log('in');
+    setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
 
-      // Update room in the local storage first
-      updateRoom(room);
-      // Add new player in the list of players
-      setPlayers((prevPlayers: User[]) => [...prevPlayers, player]);
-      // Store player and snackbar info for snackbar notification + Add to snackbar queue
-      setPlayerSnackbars((prev) => [
-        ...prev,
-        {
-          key: new Date().getTime(),
-          player: player,
-          status: 'in',
-        },
-      ]);
+    // Update room in the local storage first
+    updateRoom(room);
+    // Add new player in the list of players
+    setPlayers((prevPlayers: User[]) => [...prevPlayers, player]);
+    // Store player and snackbar info for snackbar notification + Add to snackbar queue
+    setPlayerSnackbars((prev) => [
+      ...prev,
+      {
+        key: new Date().getTime(),
+        player: player,
+        status: 'in',
+      },
+    ]);
 
-      setSynchronousBlock(false); // Unblock
-    }
-
-    // Executes whenever a socket event is recieved from the server
-    socket.on(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
-    return () => {
-      socket.off(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
-    };
-  }, [socket, updateRoom]);
+    setSynchronousBlock(false); // Unblock
+  };
 
   /**
    * [3] Myself leaves
@@ -210,41 +204,38 @@ export default function Waiting() {
    * 2. Else:
    *    - Display message that new user has left
    */
-  useEffect(() => {
-    async function onPlayerOutEvent({ user: player, room }: PlayerOutResponse) {
-      setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
+  const handlePlayerOut = ({ user: player, room }: PlayerOutResponse) => {
+    console.log('out');
+    setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
 
-      // Update room in the local storage first
-      updateRoom(room);
-      // If room still exists (at least one player left in the room) AND If admin changed then set new admin
-      if (room && room.roomAdmin.toString() !== adminId?.toString()) {
-        setAdminId(room.roomAdmin);
-      }
-      // Remove player from the list of players
-      setPlayers((prevPlayers: User[]) =>
-        prevPlayers.filter(
-          (prevPlayer: User) => prevPlayer._id.toString() !== player._id.toString()
-        )
-      );
-      // Store player and snackbar info for snackbar notification + Add to snackbar queue
-      setPlayerSnackbars((prev) => [
-        ...prev,
-        {
-          key: new Date().getTime(),
-          player: player,
-          status: 'out',
-        },
-      ]);
+    // Update room in the local storage first
+    updateRoom(room);
+    // If room still exists (at least one player left in the room) AND If admin changed then set new admin
+    if (room && room.roomAdmin.toString() !== adminId?.toString()) {
+      setAdminId(room.roomAdmin);
     }
+    // Remove player from the list of players
+    setPlayers((prevPlayers: User[]) =>
+      prevPlayers.filter((prevPlayer: User) => prevPlayer._id.toString() !== player._id.toString())
+    );
+    // Store player and snackbar info for snackbar notification + Add to snackbar queue
+    setPlayerSnackbars((prev) => [
+      ...prev,
+      {
+        key: new Date().getTime(),
+        player: player,
+        status: 'out',
+      },
+    ]);
 
     setSynchronousBlock(false); // Unblock
+  };
 
-    // Executes whenever a socket event is recieved from the server
-    socket.on(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
-    return () => {
-      socket.off(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
-    };
-  }, [adminId, socket, updateRoom]);
+  // Player connection status hook
+  usePlayerStatus({
+    onPlayerJoinedCallback: handlePlayerIn,
+    onPlayerLeftCallback: handlePlayerOut,
+  });
 
   const PlayersNumber = () => {
     return (
