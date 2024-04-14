@@ -41,9 +41,9 @@ export type PlayerDisconnectedResponse = { user: User };
 
 export type PlayerReconnectedResponse = { user: User };
 
-export type PlayerInResponse = { user: User; room: Room };
+export type PlayerInResponse = { socketId?: string; user: User; room: Room };
 
-export type PlayerOutResponse = { user: User; room: Room | null };
+export type PlayerOutResponse = { socketId?: string; user: User; room: Room | null };
 
 export type RoomEditedResponse = { room: Room };
 

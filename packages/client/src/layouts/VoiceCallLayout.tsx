@@ -9,10 +9,9 @@ import {
   useAuth,
   useRoom,
   useLocalMediaStream,
-  // usePeerConnections,
+  usePeerConnections,
   usePlayerConnectionStatus,
 } from '@/hooks';
-import usePeerConnections from '../hooks/usePeerConnections.js';
 import { outputServerError } from '@/utils';
 
 const VoiceCallLayout = () => {

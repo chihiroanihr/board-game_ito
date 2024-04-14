@@ -28,7 +28,7 @@ import {
   type LoginFormDataType,
   type JoinRoomFormDataType,
   type SendChatFormDataType,
-} from '../enum';
+} from '../../enum.js';
 
 export type BeforeSubmitCallbackParams = { action?: NamespaceEnum };
 export interface BeforeSubmitCallbackFunction {
