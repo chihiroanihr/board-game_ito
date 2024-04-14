@@ -24,7 +24,9 @@ export const usePlayerStatus = ({
 }: PlayerStatusCallback) => {
   const { socket } = useSocket();
 
-  // Incoming socket event handler: Player disconnected
+  /**
+   * Incoming socket event handler: Player disconnected
+   */
   useEffect(() => {
     const onPlayerDisconnected = ({ user }: PlayerDisconnectedResponse) => {
       onPlayerDisconnectedCallback?.({ user });
@@ -34,7 +36,9 @@ export const usePlayerStatus = ({
     return () => socket.off(NamespaceEnum.PLAYER_DISCONNECTED, onPlayerDisconnected);
   }, [onPlayerDisconnectedCallback, socket]);
 
-  // Incoming socket event handler: Player reconnected
+  /**
+   * Incoming socket event handler: Player reconnected
+   */
   useEffect(() => {
     const onPlayerReconnected = ({ user }: PlayerReconnectedResponse) => {
       onPlayerReconnectedCallback?.({ user });
@@ -44,7 +48,9 @@ export const usePlayerStatus = ({
     return () => socket.off(NamespaceEnum.PLAYER_RECONNECTED, onPlayerReconnected);
   }, [onPlayerReconnectedCallback, socket]);
 
-  // Incoming socket event handler: Player joined room
+  /**
+   * Incoming socket event handler: Player joined room
+   */
   useEffect(() => {
     const onPlayerJoined = ({ socketId, user, room }: PlayerInResponse) => {
       onPlayerJoinedCallback?.({ socketId, user, room });
@@ -54,7 +60,9 @@ export const usePlayerStatus = ({
     return () => socket.off(NamespaceEnum.PLAYER_IN, onPlayerJoined);
   }, [onPlayerJoinedCallback, socket]);
 
-  // Incoming socket event handler: Player left room
+  /**
+   * Incoming socket event handler: Player left room
+   */
   useEffect(() => {
     const onPlayerLeft = ({ socketId, user, room }: PlayerOutResponse) => {
       onPlayerLeftCallback?.({ socketId, user, room });
@@ -64,37 +72,3 @@ export const usePlayerStatus = ({
     return () => socket.off(NamespaceEnum.PLAYER_OUT, onPlayerLeft);
   }, [onPlayerLeftCallback, socket]);
 };
-
-// interface PlayerStatusCallback {
-//   (player: User): void;
-// }
-
-// export const usePlayerDisconnected = (
-//   onPlayerDisconnectedCallback: PlayerStatusCallback
-// ) => {
-//   const { socket } = useSocket();
-
-//   useEffect(() => {
-//     const onPlayerDisconnected = ({ user: player }: PlayerDisconnectedResponse) => {
-//       onPlayerDisconnectedCallback(player);
-//     };
-
-//     socket.on(NamespaceEnum.PLAYER_DISCONNECTED, onPlayerDisconnected);
-//     return () => socket.off(NamespaceEnum.PLAYER_DISCONNECTED, onPlayerDisconnected);
-//   }, [onPlayerDisconnectedCallback, socket]);
-// };
-
-// export const usePlayerReconnected = (
-//   onPlayerReconnectedCallback: PlayerStatusCallback
-// ) => {
-//   const { socket } = useSocket();
-
-//   useEffect(() => {
-//     const onPlayerReconnected = ({ user: player }: PlayerReconnectedResponse) => {
-//       onPlayerReconnectedCallback(player);
-//     };
-
-//     socket.on(NamespaceEnum.PLAYER_RECONNECTED, onPlayerReconnected);
-//     return () => socket.off(NamespaceEnum.PLAYER_RECONNECTED, onPlayerReconnected);
-//   }, [onPlayerReconnectedCallback, socket]);
-// };
