@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme, useMediaQuery } from '@mui/material';
 
-import {
-  NamespaceEnum,
-  CommunicationMethodEnum,
-  type RoomChatMessage,
-  type ReceiveChatResponse,
-} from '@bgi/shared';
+import { NamespaceEnum, type RoomChatMessage, type ReceiveChatResponse } from '@bgi/shared';
 
 import { ChatContent, ChatPopover, ChatPopper, VoiceButton } from '@/components';
 import {
-  useRoom,
   useSocket,
   useAction,
   usePageVisibility,
@@ -22,10 +16,9 @@ import {
   type SuccessCallbackFunction,
 } from '@/hooks';
 
-const CommunicationLayout = () => {
+const ChatLayout = () => {
   const theme = useTheme();
   const { socket } = useSocket();
-  const { room } = useRoom();
   const isVisible = usePageVisibility();
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
   const isSmViewport = useMediaQuery(theme.breakpoints.up('sm'));
@@ -35,8 +28,6 @@ const CommunicationLayout = () => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null); // or HTMLElement -> sets if popover / popper is opened or not
   const [isChatButtonLoading, setIsChatButtonLoading] = useState<boolean>(false); // Custom loading button only for chat
   const [triggerScroll, setTriggerScroll] = useState<RoomChatMessage[] | boolean>(allMessages);
-
-  const communicationMethod = room?.setting.communicationMethod;
 
   // Popper toggle (open / close) handler
   const handleTogglePopper = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -113,58 +104,49 @@ const CommunicationLayout = () => {
     }
   }, [allMessages, unreadMessages, anchorEl, isLgViewport, isVisible]);
 
-  return (
-    <>
-      {/* ------------------------- Chat ------------------------- */}
-      {communicationMethod === CommunicationMethodEnum.CHAT &&
-        (isLgViewport ? (
-          <ChatContent
-            allMessages={allMessages}
-            onSubmit={handleSendChat}
-            errorMessage={errorMessage}
-            isButtonLoading={isChatButtonLoading}
-            triggerScroll={triggerScroll}
-          />
-        ) : isSmViewport ? (
-          // Popper Button (Screen > sm)
-          <ChatPopper
-            numNotif={unreadMessages.length}
-            anchorEl={anchorEl}
-            isOpen={Boolean(anchorEl)}
-            handleToggle={handleTogglePopper}
-          >
-            <ChatContent
-              allMessages={allMessages}
-              onSubmit={handleSendChat}
-              errorMessage={errorMessage}
-              isButtonLoading={isChatButtonLoading}
-              triggerScroll={triggerScroll}
-              isInModal={true}
-            />
-          </ChatPopper>
-        ) : (
-          // Popover Button (Screen > 0)
-          <ChatPopover
-            numNotif={unreadMessages.length}
-            anchorEl={anchorEl}
-            isOpen={Boolean(anchorEl)}
-            handleToggle={handleTogglePopover}
-          >
-            <ChatContent
-              allMessages={allMessages}
-              onSubmit={handleSendChat}
-              errorMessage={errorMessage}
-              isButtonLoading={isChatButtonLoading}
-              triggerScroll={triggerScroll}
-              isInModal={true}
-            />
-          </ChatPopover>
-        ))}
-
-      {/* ------------------------- Mic ------------------------- */}
-      {communicationMethod === CommunicationMethodEnum.MIC && <VoiceButton />}
-    </>
+  return isLgViewport ? (
+    <ChatContent
+      allMessages={allMessages}
+      onSubmit={handleSendChat}
+      errorMessage={errorMessage}
+      isButtonLoading={isChatButtonLoading}
+      triggerScroll={triggerScroll}
+    />
+  ) : isSmViewport ? (
+    // Popper Button (Screen > sm)
+    <ChatPopper
+      numNotif={unreadMessages.length}
+      anchorEl={anchorEl}
+      isOpen={Boolean(anchorEl)}
+      handleToggle={handleTogglePopper}
+    >
+      <ChatContent
+        allMessages={allMessages}
+        onSubmit={handleSendChat}
+        errorMessage={errorMessage}
+        isButtonLoading={isChatButtonLoading}
+        triggerScroll={triggerScroll}
+        isInModal={true}
+      />
+    </ChatPopper>
+  ) : (
+    // Popover Button (Screen > 0)
+    <ChatPopover
+      numNotif={unreadMessages.length}
+      anchorEl={anchorEl}
+      isOpen={Boolean(anchorEl)}
+      handleToggle={handleTogglePopover}
+    >
+      <ChatContent
+        allMessages={allMessages}
+        onSubmit={handleSendChat}
+        errorMessage={errorMessage}
+        isButtonLoading={isChatButtonLoading}
+        triggerScroll={triggerScroll}
+        isInModal={true}
+      />
+    </ChatPopover>
   );
 };
 
-export default CommunicationLayout;
+export default ChatLayout;

@@ -4,7 +4,7 @@ import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 
 import { CommunicationMethodEnum } from '@bgi/shared';
 
-import { HeaderLayout, CommunicationLayout } from '@/layouts';
+import { HeaderLayout, ChatLayout, VoiceCallLayout } from '@/layouts';
 import { Loader, Copyright } from '@/components';
 import { useAuth, useRoom } from '@/hooks';
 
@@ -22,7 +22,6 @@ export default function CommonLayout() {
   const location = useLocation(); /** @/debug */
 
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
-
   const communicationMethod = room?.setting.communicationMethod;
 
   return (
@@ -81,7 +80,8 @@ export default function CommonLayout() {
                     }), // Otherwise, fixed position with chat / mic button on the bottom-left
               }}
             >
-              <CommunicationLayout />
+              {communicationMethod === CommunicationMethodEnum.CHAT && <ChatLayout />}
+              {communicationMethod === CommunicationMethodEnum.MIC && <VoiceCallLayout />}
             </Grid>
           )}
         </Grid>

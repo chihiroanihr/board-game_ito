@@ -11,7 +11,8 @@ const useLocalMediaStream = () => {
       // Start signaling
       .then((stream) => {
         // Initialize with muted state
-        stream.getTracks().forEach((track) => (track.enabled = false));
+        // stream.getTracks().forEach((track) => (track.enabled = false));
+        // stream.getAudioTracks()[0]!.enabled = false;
         // Save local media stream
         setLocalMediaStream(stream);
       })
@@ -26,17 +27,14 @@ const useLocalMediaStream = () => {
 
   const closeMediaStream = () => {
     if (localMediaStream) {
-      localMediaStream.getTracks().forEach((track) => track.stop());
+      // localMediaStream.getTracks().forEach((track) => track.stop());
+      localMediaStream.getAudioTracks()[0]!.stop();
       setLocalMediaStream(null);
     }
   };
 
   const toggleMic = () => {
     if (localMediaStream) {
-      localMediaStream.getTracks().forEach((track) => {
-        // or getAudioTracks()
-        track.enabled = isMuted;
-      });
       setIsMuted((prevMuted) => !prevMuted);
     }
   };

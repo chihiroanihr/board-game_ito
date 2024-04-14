@@ -123,12 +123,11 @@ const socketHandlers = (io: Server) => {
     handleSocketCreateRoom(socket);
     handleSocketEditRoom(socket);
     handleSocketJoinRoom(socket);
-    handleSocketWaitRoom(socket, io);
+    handleSocketWaitRoom(socket);
     handleSocketLeaveRoom(socket);
     handleSocketChatMessage(socket, io);
     handleSocketInitialize(socket, io);
 
-    handleSocketVoiceReady(socket);
     handleSocketVoiceOffer(socket);
     handleSocketVoiceAnswer(socket, io);
     handleSocketVoiceCandidate(socket, io);
@@ -472,6 +471,11 @@ const handleSocketJoinRoom = (socket: Socket) => {
         /** [5] @socket_emit - Send back result to client */
         callback({ user: user, room: room });
 
+        // Convert player IDs to string IDs
+        const strPlayerIds = room.players.map((player) => player.toString());
+        handleSocketVoiceReady(socket, { playerIds: strPlayerIds });
+        /** [3] @socket_emit - Send back result (players) and notify voice chat ready */
+
         log.logSocketEvent('Join Room', socket);
       }
       // * If user cannot join room  // else if (typeof response === "string")
@@ -498,7 +502,7 @@ const handleSocketJoinRoom = (socket: Socket) => {
 };
 
 /** @socket_handler - Wait Room */
-const handleSocketWaitRoom = (socket: Socket, io: Server) => {
+const handleSocketWaitRoom = (socket: Socket) => {
   socket.on(NamespaceEnum.WAIT_ROOM, async (room: Room, callback: WaitRoomCallback) => {
     try {
       // * If user is not connected
@@ -514,15 +518,12 @@ const handleSocketWaitRoom = (socket: Socket, io: Server) => {
       const players = await controller.convertPlayerIdsToPlayerObjs(room.players);
       /** [2] @socket_emit - Send back result (players) to client */
       callback({ players: players });
-      /** [3] @socket_emit - Send back result (players) and notify voice chat ready */
-      //io.to(socket.id).emit(NamespaceEnum.VOICE_READY, { players }); // Given socket ID is a user (myself) who just joined room
 
       log.logSocketEvent('Wait Room', socket);
     } catch (error) {
       /** @socket_emit - Send back error to client */
       const errorMsg = error instanceof Error ? error : new Error(String(error));
       callback({ error: errorMsg });
-      //io.to(socket.id).emit(NamespaceEnum.VOICE_READY, { error: errorMsg });
 
       log.handleServerError(error, 'handleSocketWaitRoom');
     }
@@ -612,35 +613,33 @@ const handleSocketChatMessage = (socket: Socket, io: Server) => {
   );
 };
 
-/** @socket_handler - Wait Room */
-const handleSocketVoiceReady = (socket: Socket) => {
-  socket.on(
-    NamespaceEnum.VOICE_READY,
-    async (callback: (response: { error?: Error; playerIds?: string[] }) => void) => {
-      try {
-        // * If user is not connected
-        if (!socket.user?._id) {
-          throw new Error('[Socket Error]: User is not connected.');
-        }
-        // * If user is not in room
-        if (!socket.room?._id) {
-          throw new Error('[Socket Error]: Room is not connected.');
-        }
-
-        // Convert object IDs into string IDs
-        const strPlayerIds = socket.room.players.map((player) => player.toString());
-        /** [2] @socket_emit - Send back result (players) to client */
-        callback({ playerIds: strPlayerIds });
-
-        log.logSocketEvent('Voice Ready', socket);
-      } catch (error) {
-        /** @socket_emit - Send back error to client */
-        callback({ error: error instanceof Error ? error : new Error(String(error)) });
-
-        log.handleServerError(error, 'handleSocketVoiceReady');
-      }
+const handleSocketVoiceReady = (
+  socket: Socket,
+  { playerIds, attempts = 0 }: { playerIds: string[]; attempts?: number }
+) => {
+  try {
+    // * If user is not connected
+    if (!socket.user?._id) {
+      throw new Error('[Socket Error]: User is not connected.');
     }
-  );
+    // * If user is not in room
+    if (!socket.room?._id) {
+      throw new Error('[Socket Error]: Room is not connected.');
+    }
+
+    socket.emit(NamespaceEnum.VOICE_READY, { playerIds }, async ({ error }: { error: unknown }) => {
+      if (error) {
+        if (attempts < 5) {
+          handleSocketVoiceReady(socket, { playerIds, attempts: attempts + 1 }); // If less than 5 attempts, recursively call with incremented attempts
+        } else {
+          throw new Error('Max attempts reached. Unable to emit VOICE_READY event.');
+        }
+      }
+    });
+  } catch (error) {
+    log.handleServerError(error, 'handleSocketVoiceCandidate');
+  }
+  handleSocketVoiceReady;
 };
 
 const handleSocketVoiceCandidate = (socket: Socket, io: Server) => {
