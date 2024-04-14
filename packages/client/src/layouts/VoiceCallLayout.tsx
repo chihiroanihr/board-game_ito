@@ -10,7 +10,7 @@ import {
   useRoom,
   useLocalMediaStream,
   usePeerConnections,
-  usePlayerConnectionStatus,
+  usePlayerStatus,
 } from '@/hooks';
 import { outputServerError } from '@/utils';
 
@@ -44,7 +44,7 @@ const VoiceCallLayout = () => {
   };
 
   // Player connection status hook
-  usePlayerConnectionStatus({
+  usePlayerStatus({
     onPlayerDisconnectedCallback: handlePlayerDisconnected,
     onPlayerReconnectedCallback: handlePlayerReconnected,
   });

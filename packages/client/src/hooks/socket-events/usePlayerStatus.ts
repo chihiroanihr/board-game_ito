@@ -8,15 +8,15 @@ import {
 } from '@bgi/shared';
 import { useSocket } from '@/hooks';
 
-interface PlayerConnectionStatusCallback {
-  onPlayerDisconnectedCallback: (player: User) => void;
-  onPlayerReconnectedCallback: (player: User) => void;
+interface PlayerStatusCallback {
+  onPlayerDisconnectedCallback?: (player: User) => void;
+  onPlayerReconnectedCallback?: (player: User) => void;
 }
 
-export const usePlayerConnectionStatus = ({
+export const usePlayerStatus = ({
   onPlayerDisconnectedCallback,
   onPlayerReconnectedCallback,
-}: PlayerConnectionStatusCallback) => {
+}: PlayerStatusCallback) => {
   const { socket } = useSocket();
 
   // Incoming socket event handler: Player Disconnected
@@ -40,12 +40,12 @@ export const usePlayerConnectionStatus = ({
   }, [onPlayerReconnectedCallback, socket]);
 };
 
-// interface PlayerConnectionStatusCallback {
+// interface PlayerStatusCallback {
 //   (player: User): void;
 // }
 
 // export const usePlayerDisconnected = (
-//   onPlayerDisconnectedCallback: PlayerConnectionStatusCallback
+//   onPlayerDisconnectedCallback: PlayerStatusCallback
 // ) => {
 //   const { socket } = useSocket();
 
@@ -60,7 +60,7 @@ export const usePlayerConnectionStatus = ({
 // };
 
 // export const usePlayerReconnected = (
-//   onPlayerReconnectedCallback: PlayerConnectionStatusCallback
+//   onPlayerReconnectedCallback: PlayerStatusCallback
 // ) => {
 //   const { socket } = useSocket();
 

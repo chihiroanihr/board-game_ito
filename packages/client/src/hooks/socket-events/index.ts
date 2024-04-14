@@ -1,2 +1,2 @@
 export * from './useAction';
-export * from './useConnectionStatus';
+export * from './usePlayerStatus';
