@@ -164,7 +164,6 @@ export default function Waiting() {
    * - Display message that new user has arrived
    */
   const handlePlayerIn = ({ user: player, room }: PlayerInResponse) => {
-    console.log('in');
     setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
 
     // Update room in the local storage first
@@ -205,7 +204,6 @@ export default function Waiting() {
    *    - Display message that new user has left
    */
   const handlePlayerOut = ({ user: player, room }: PlayerOutResponse) => {
-    console.log('out');
     setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
 
     // Update room in the local storage first

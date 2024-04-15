@@ -37,22 +37,29 @@ export type LeaveRoomCallback = {
   (response: LeaveRoomResponse): void;
 };
 
-export type PlayerDisconnectedResponse = { user: User };
-
-export type PlayerReconnectedResponse = { user: User };
-
-export type PlayerInResponse = { socketId?: string; user: User; room: Room };
-
-export type PlayerOutResponse = { socketId?: string; user: User; room: Room | null };
-
-export type RoomEditedResponse = { room: Room };
+export type MicReadyResponse = { error?: Error };
+export type MicReadyCallback = {
+  (response: MicReadyResponse): void;
+};
 
 export type SendChatResponse = { error?: Error };
 export type SendChatCallback = {
   (response: SendChatResponse): void;
 };
 
+export type PlayerDisconnectedResponse = { socketId: string; user: User };
+
+export type PlayerReconnectedResponse = { socketId: string; user: User };
+
+export type PlayerInResponse = { socketId: string; user: User; room: Room };
+
+export type PlayerOutResponse = { socketId: string; user: User; room: Room | null };
+
+export type PlayerMicReadyResponse = { socketId: string };
+
 export type ReceiveChatResponse = RoomChatMessage;
+
+export type RoomEditedResponse = { room: Room };
 
 export type InitializeResponse = {
   error?: Error;

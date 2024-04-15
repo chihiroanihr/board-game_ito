@@ -5,15 +5,17 @@ import {
   type PlayerOutResponse,
   type PlayerDisconnectedResponse,
   type PlayerReconnectedResponse,
+  type PlayerMicReadyResponse,
   NamespaceEnum,
 } from '@bgi/shared';
 import { useSocket } from '@/hooks';
 
 interface PlayerStatusCallback {
-  onPlayerDisconnectedCallback?: ({ user }: PlayerDisconnectedResponse) => void;
-  onPlayerReconnectedCallback?: ({ user }: PlayerReconnectedResponse) => void;
-  onPlayerJoinedCallback?: ({ socketId, user, room }: PlayerInResponse) => void;
-  onPlayerLeftCallback?: ({ socketId, user, room }: PlayerOutResponse) => void;
+  onPlayerDisconnectedCallback?: (data: PlayerDisconnectedResponse) => void;
+  onPlayerReconnectedCallback?: (data: PlayerReconnectedResponse) => void;
+  onPlayerJoinedCallback?: (data: PlayerInResponse) => void;
+  onPlayerLeftCallback?: (data: PlayerOutResponse) => void;
+  onPlayerMicReadyCallback?: (data: { socketId: string }) => void;
 }
 
 export const usePlayerStatus = ({
@@ -21,6 +23,7 @@ export const usePlayerStatus = ({
   onPlayerReconnectedCallback,
   onPlayerJoinedCallback,
   onPlayerLeftCallback,
+  onPlayerMicReadyCallback,
 }: PlayerStatusCallback) => {
   const { socket } = useSocket();
 
@@ -28,8 +31,8 @@ export const usePlayerStatus = ({
    * Incoming socket event handler: Player disconnected
    */
   useEffect(() => {
-    const onPlayerDisconnected = ({ user }: PlayerDisconnectedResponse) => {
-      onPlayerDisconnectedCallback?.({ user });
+    const onPlayerDisconnected = ({ socketId, user }: PlayerDisconnectedResponse) => {
+      onPlayerDisconnectedCallback?.({ socketId, user });
     };
 
     socket.on(NamespaceEnum.PLAYER_DISCONNECTED, onPlayerDisconnected);
@@ -40,8 +43,8 @@ export const usePlayerStatus = ({
    * Incoming socket event handler: Player reconnected
    */
   useEffect(() => {
-    const onPlayerReconnected = ({ user }: PlayerReconnectedResponse) => {
-      onPlayerReconnectedCallback?.({ user });
+    const onPlayerReconnected = ({ socketId, user }: PlayerReconnectedResponse) => {
+      onPlayerReconnectedCallback?.({ socketId, user });
     };
 
     socket.on(NamespaceEnum.PLAYER_RECONNECTED, onPlayerReconnected);
@@ -71,4 +74,16 @@ export const usePlayerStatus = ({
     socket.on(NamespaceEnum.PLAYER_OUT, onPlayerLeft);
     return () => socket.off(NamespaceEnum.PLAYER_OUT, onPlayerLeft);
   }, [onPlayerLeftCallback, socket]);
+
+  /**
+   * Incoming socket event handler: Player voice ready
+   */
+  useEffect(() => {
+    const onPlayerMicReady = ({ socketId }: PlayerMicReadyResponse) => {
+      onPlayerMicReadyCallback?.({ socketId });
+    };
+
+    socket.on(NamespaceEnum.PLAYER_MIC_READY, onPlayerMicReady);
+    return () => socket.off(NamespaceEnum.PLAYER_MIC_READY, onPlayerMicReady);
+  }, [onPlayerMicReadyCallback, socket]);
 };

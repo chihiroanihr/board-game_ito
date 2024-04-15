@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const useLocalMediaStream = () => {
   const [localMediaStream, setLocalMediaStream] = useState<MediaStream | null>(null);
-  const [isMuted, setIsMuted] = useState<boolean>(true);
 
   useEffect(() => {
     // Access media
@@ -10,9 +9,6 @@ const useLocalMediaStream = () => {
       .getUserMedia({ audio: true, video: false })
       // Start signaling
       .then((stream) => {
-        // Initialize with muted state
-        // stream.getTracks().forEach((track) => (track.enabled = false));
-        // stream.getAudioTracks()[0]!.enabled = false;
         // Save local media stream
         setLocalMediaStream(stream);
       })
@@ -25,21 +21,18 @@ const useLocalMediaStream = () => {
       );
   }, []);
 
-  const closeMediaStream = () => {
+  const closeMediaStream = useCallback(() => {
     if (localMediaStream) {
-      // localMediaStream.getTracks().forEach((track) => track.stop());
-      localMediaStream.getAudioTracks()[0]!.stop();
-      setLocalMediaStream(null);
-    }
-  };
+      localMediaStream.getTracks().forEach((track) => {
+        track.stop(); // Stop media track
+        localMediaStream.removeTrack(track); // Remove media track from the stream
+      });
 
-  const toggleMic = () => {
-    if (localMediaStream) {
-      setIsMuted((prevMuted) => !prevMuted);
+      // setLocalMediaStream(null); // Reset media
     }
-  };
+  }, [localMediaStream]);
 
-  return { localMediaStream, closeMediaStream, isMuted, toggleMic };
+  return { localMediaStream, closeMediaStream };
 };
 
 export default useLocalMediaStream;

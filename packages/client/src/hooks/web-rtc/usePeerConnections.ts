@@ -8,6 +8,7 @@ import { useSocket } from '@/hooks';
 const ICE_SERVER = {
   urls: 'stun:stun.l.google.com:19302', // Google's public STUN server // 'turn:your-turn-server-host:your-turn-server-port',
 };
+// "stun:stun2.l.google.com:19302"
 
 const usePeerConnections = () => {
   const { socket } = useSocket();
@@ -16,16 +17,13 @@ const usePeerConnections = () => {
     [key: string]: RTCPeerConnection | undefined;
   }>({});
 
-  const closePeerConnection = (playerId: string) => {
-    const peerConnection = peerConnections.current[playerId];
+  const closePeerConnection = (socketId: string) => {
+    const peerConnection = peerConnections.current[socketId];
     if (peerConnection) {
       // Close the existing peer connection
       peerConnection.close();
       // Remove from the peerConnections list
-      delete peerConnections.current[playerId];
-      //   const updatedPeerConnections = { ...peerConnections.current };
-      //   delete updatedPeerConnections[playerId];
-      //   peerConnections.current = updatedPeerConnections;
+      delete peerConnections.current[socketId];
     }
 
     console.log('Peer connection closed.');
@@ -38,8 +36,8 @@ const usePeerConnections = () => {
     console.log('All peer connections closed.');
   };
 
-  const restartPeerConnection = (playerId: string) => {
-    console.log(playerId);
+  const restartPeerConnection = (socketId: string) => {
+    console.log(socketId);
   };
 
   const createNewPeerConnection = useCallback((localMediaStream: MediaStream) => {
@@ -49,16 +47,23 @@ const usePeerConnections = () => {
     });
 
     // Add local stream to peer connection
-    peerConnection.addTrack(localMediaStream.getAudioTracks()[0]!, localMediaStream);
-    //   localMediaStream.getTracks().forEach((track: MediaStreamTrack) => {
-    //     peerConnection.addTrack(track, localMediaStream);
-    //   });
+    localMediaStream.getTracks().forEach((track: MediaStreamTrack) => {
+      peerConnection.addTrack(track, localMediaStream);
+    }); // peerConnection.addTrack(localMediaStream.getAudioTracks()[0]!, localMediaStream);
 
     return peerConnection;
   }, []);
 
   const createOfferAndSendSignal = useCallback(
-    async ({ peerConnection, userId }: { peerConnection: RTCPeerConnection; userId: string }) => {
+    async ({
+      peerConnection,
+      fromSocketId,
+      toSocketId,
+    }: {
+      peerConnection: RTCPeerConnection;
+      fromSocketId: string;
+      toSocketId: string;
+    }) => {
       try {
         // Create an offer
         const offer = await peerConnection.createOffer();
@@ -66,11 +71,14 @@ const usePeerConnections = () => {
         await peerConnection.setLocalDescription(offer);
         // Send an offer
         socket.emit(NamespaceEnum.VOICE_OFFER, {
-          userId: userId,
           signal: offer,
+          fromSocketId,
+          toSocketId,
         });
       } catch (error) {
-        console.error(`[!] Failed to process offer from user ${userId}: ${error}`);
+        console.error(
+          `[!] Failed to process offer from user ${fromSocketId} to user ${toSocketId}: ${error}`
+        );
       }
     },
     [socket]
@@ -80,13 +88,13 @@ const usePeerConnections = () => {
     async ({
       peerConnection,
       signal,
+      fromSocketId,
       toSocketId,
-      userId,
     }: {
       peerConnection: RTCPeerConnection;
       signal: RTCSessionDescriptionInit;
+      fromSocketId: string;
       toSocketId: string;
-      userId: string;
     }) => {
       try {
         // Set sender's signal to remote description
@@ -97,12 +105,14 @@ const usePeerConnections = () => {
         await peerConnection.setLocalDescription(answer);
         // Send an answer
         socket.emit(NamespaceEnum.VOICE_ANSWER, {
-          toSocketId,
-          userId,
           signal: answer,
+          fromSocketId,
+          toSocketId,
         }); // Send answer and my user ID to the *sender's socket*
       } catch (error) {
-        console.error(`[!] Failed to process answer from user ${userId}: ${error}`);
+        console.error(
+          `[!] Failed to process answer from user ${fromSocketId} to user ${toSocketId}: ${error}`
+        );
       }
     },
     [socket]

@@ -55,6 +55,7 @@ export default function HeaderLayout() {
   const handleDialogOpen = () => setDialogOpen(true);
   const handleDialogClose = () => setDialogOpen(false);
 
+  // Snackbar open / close handlers
   const handleSnackbarOpen = () => setSnackbarOpen(true);
   const handleSnackbarClose = () => setSnackbarOpen(false);
 

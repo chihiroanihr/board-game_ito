@@ -12,6 +12,7 @@ import {
   type PlayerOutResponse,
   type PlayerDisconnectedResponse,
   type PlayerReconnectedResponse,
+  type PlayerMicReadyResponse,
   type RoomEditedResponse,
   type LoginCallback,
   type LogoutCallback,
@@ -21,6 +22,7 @@ import {
   type WaitRoomCallback,
   type LeaveRoomCallback,
   type SendChatCallback,
+  type MicReadyCallback,
   type InitializeCallback,
   NamespaceEnum,
 } from '@bgi/shared';
@@ -116,6 +118,7 @@ const socketHandlers = (io: Server) => {
 
     // Socket handling logic (moved from the previous file)
     handleSocketConnection(socket, io);
+    handleSocketReconnection(socket);
     handleSocketSession(socket);
     handleSocketDisconnect(socket, io);
     handleSocketLogin(socket, io);
@@ -126,9 +129,10 @@ const socketHandlers = (io: Server) => {
     handleSocketWaitRoom(socket);
     handleSocketLeaveRoom(socket);
     handleSocketChatMessage(socket, io);
+    handleSocketMicReady(socket);
     handleSocketInitialize(socket, io);
 
-    handleSocketVoiceOffer(socket);
+    handleSocketVoiceOffer(socket, io);
     handleSocketVoiceAnswer(socket, io);
     handleSocketVoiceCandidate(socket, io);
 
@@ -148,18 +152,21 @@ const socketHandlers = (io: Server) => {
 
 /** @socket_handler - Connect */
 const handleSocketConnection = (socket: Socket, io: Server) => {
-  // If user already in room
-  if (socket.user?._id && socket.room?._id) {
-    /** @socket_emit - Notify other players in the room about reconnect status */
-    socket.to(socket.room._id).emit(NamespaceEnum.PLAYER_RECONNECTED, {
-      user: socket.user,
-    } as PlayerReconnectedResponse);
-  }
-
   debug.addConnectedSocket(socket.id);
   debug.notifyConnectedSocket(socket);
   debug.notifySocketsToAll(io);
   log.logSocketEvent('User Connected', socket);
+};
+
+const handleSocketReconnection = (socket: Socket) => {
+  // If user already in room
+  if (socket.user?._id && socket.room?._id) {
+    /** @socket_emit - Notify other players in the room about reconnect status */
+    socket.to(socket.room._id).emit(NamespaceEnum.PLAYER_RECONNECTED, {
+      socketId: socket.id,
+      user: socket.user,
+    } as PlayerReconnectedResponse);
+  }
 };
 
 /** @socket_handler - Session */
@@ -209,6 +216,7 @@ const handleSocketDisconnect = (socket: Socket, io: Server) => {
         if (socket.room?._id) {
           /** @socket_emit - Notify other players in the room about disconnect status */
           socket.to(socket.room._id).emit(NamespaceEnum.PLAYER_DISCONNECTED, {
+            socketId: socket.id,
             user: socket.user,
           } as PlayerDisconnectedResponse);
         }
@@ -471,11 +479,6 @@ const handleSocketJoinRoom = (socket: Socket) => {
         /** [5] @socket_emit - Send back result to client */
         callback({ user: user, room: room });
 
-        // Convert player IDs to string IDs
-        const strPlayerIds = room.players.map((player) => player.toString());
-        handleSocketVoiceReady(socket, { playerIds: strPlayerIds });
-        /** [3] @socket_emit - Send back result (players) and notify voice chat ready */
-
         log.logSocketEvent('Join Room', socket);
       }
       // * If user cannot join room  // else if (typeof response === "string")
@@ -613,46 +616,42 @@ const handleSocketChatMessage = (socket: Socket, io: Server) => {
   );
 };
 
-const handleSocketVoiceReady = (
-  socket: Socket,
-  { playerIds, attempts = 0 }: { playerIds: string[]; attempts?: number }
-) => {
-  try {
-    // * If user is not connected
-    if (!socket.user?._id) {
-      throw new Error('[Socket Error]: User is not connected.');
-    }
-    // * If user is not in room
-    if (!socket.room?._id) {
-      throw new Error('[Socket Error]: Room is not connected.');
-    }
-
-    socket.emit(NamespaceEnum.VOICE_READY, { playerIds }, async ({ error }: { error: unknown }) => {
-      if (error) {
-        if (attempts < 5) {
-          handleSocketVoiceReady(socket, { playerIds, attempts: attempts + 1 }); // If less than 5 attempts, recursively call with incremented attempts
-        } else {
-          throw new Error('Max attempts reached. Unable to emit VOICE_READY event.');
-        }
+const handleSocketMicReady = (socket: Socket) => {
+  socket.on(NamespaceEnum.MIC_READY, async (callback: MicReadyCallback) => {
+    try {
+      // * If user is not connected
+      if (!socket.user?._id) {
+        throw new Error('[Socket Error]: User is not connected.');
       }
-    });
-  } catch (error) {
-    log.handleServerError(error, 'handleSocketVoiceCandidate');
-  }
-  handleSocketVoiceReady;
+      // * If user is not in room
+      if (!socket.room?._id) {
+        throw new Error('[Socket Error]: Room is not connected.');
+      }
+      /** [1] @socket_emit - Broadcast to everyone in the room */
+      socket
+        .to(socket.room._id)
+        .emit(NamespaceEnum.PLAYER_MIC_READY, { socketId: socket.id } as PlayerMicReadyResponse); // send back own socket ID
+      callback({});
+    } catch (error) {
+      /** @socket_emit - Send back error to client */
+      callback({ error: error instanceof Error ? error : new Error(String(error)) });
+
+      log.handleServerError(error, 'handleSocketMicReady');
+    }
+  });
 };
 
 const handleSocketVoiceCandidate = (socket: Socket, io: Server) => {
   socket.on(
     NamespaceEnum.VOICE_CANDIDATE,
     async ({
-      toSocketId,
-      userId,
       candidate,
+      fromSocketId,
+      toSocketId,
     }: {
-      toSocketId?: string;
-      userId: string;
       candidate: RTCIceCandidate;
+      fromSocketId: string;
+      toSocketId: string;
     }) => {
       try {
         // * If user is not connected
@@ -663,13 +662,8 @@ const handleSocketVoiceCandidate = (socket: Socket, io: Server) => {
         if (!socket.room?._id) {
           throw new Error('[Socket Error]: Room is not connected.');
         }
-        if (toSocketId) {
-          // Send back own user ID and candidate to *specific* socket ID
-          io.to(toSocketId).emit(NamespaceEnum.VOICE_CANDIDATE, { userId, candidate });
-        } else {
-          // Send back own user ID and signal to all sockets in the room
-          socket.to(socket.room._id).emit(NamespaceEnum.VOICE_CANDIDATE, { userId, candidate });
-        }
+        // Send back own socket ID and candidate to *specific* socket ID
+        io.to(toSocketId).emit(NamespaceEnum.VOICE_CANDIDATE, { candidate, fromSocketId });
 
         log.logSocketEvent('Voice Candidate', socket);
       } catch (error) {
@@ -679,14 +673,19 @@ const handleSocketVoiceCandidate = (socket: Socket, io: Server) => {
   );
 };
 
-const handleSocketVoiceOffer = (socket: Socket) => {
+const handleSocketVoiceOffer = (socket: Socket, io: Server) => {
   socket.on(
     NamespaceEnum.VOICE_OFFER,
-    async ({ userId, signal }: { userId: string; signal: RTCSessionDescriptionInit }) => {
+    async ({
+      signal,
+      fromSocketId,
+      toSocketId,
+    }: {
+      signal: RTCSessionDescriptionInit;
+      fromSocketId: string;
+      toSocketId: string;
+    }) => {
       try {
-        // Prepare my socket ID
-        const socketId = socket.id;
-
         // * If user is not connected
         if (!socket.user?._id) {
           throw new Error('[Socket Error]: User is not connected.');
@@ -695,8 +694,8 @@ const handleSocketVoiceOffer = (socket: Socket) => {
         if (!socket.room?._id) {
           throw new Error('[Socket Error]: Room is not connected.');
         }
-        // Send back the sender's (my) socketId, userId, and signal to all sockets in the room
-        socket.to(socket.room._id).emit(NamespaceEnum.VOICE_OFFER, { socketId, userId, signal });
+        // Send back own socket ID and signal to *specific* socket ID
+        io.to(toSocketId).emit(NamespaceEnum.VOICE_OFFER, { signal, fromSocketId });
 
         log.logSocketEvent('Voice Offer', socket);
       } catch (error) {
@@ -710,13 +709,13 @@ const handleSocketVoiceAnswer = (socket: Socket, io: Server) => {
   socket.on(
     NamespaceEnum.VOICE_ANSWER,
     async ({
-      toSocketId,
-      userId,
       signal,
+      fromSocketId,
+      toSocketId,
     }: {
-      toSocketId: string;
-      userId: string;
       signal: RTCSessionDescriptionInit;
+      fromSocketId: string;
+      toSocketId: string;
     }) => {
       try {
         // * If user is not connected
@@ -728,7 +727,7 @@ const handleSocketVoiceAnswer = (socket: Socket, io: Server) => {
           throw new Error('[Socket Error]: Room is not connected.');
         }
         // Send back own user ID and signal to *specific* socket ID
-        io.to(toSocketId).emit(NamespaceEnum.VOICE_ANSWER, { userId, signal });
+        io.to(toSocketId).emit(NamespaceEnum.VOICE_ANSWER, { signal, fromSocketId });
 
         log.logSocketEvent('Voice Answer', socket);
       } catch (error) {
@@ -800,7 +799,9 @@ const socketJoinRoom = (socket: Socket, user: User, room: Room): void => {
   /** [2] @socket_update - Join the user to a socket room */
   socket.join(room._id);
   /** [3] @socket_emit - Notify others in the room */
-  socket.to(room._id).emit(NamespaceEnum.PLAYER_IN, { user, room } as PlayerInResponse);
+  socket
+    .to(room._id)
+    .emit(NamespaceEnum.PLAYER_IN, { socketId: socket.id, user, room } as PlayerInResponse);
 };
 
 const socketLeaveRoom = (socket: Socket, user: User, room: Room | null): void => {
@@ -812,7 +813,7 @@ const socketLeaveRoom = (socket: Socket, user: User, room: Room | null): void =>
     room &&
       socket
         .to(socket.room._id)
-        .emit(NamespaceEnum.PLAYER_OUT, { user, room } as PlayerOutResponse);
+        .emit(NamespaceEnum.PLAYER_OUT, { socketId: socket.id, user, room } as PlayerOutResponse);
     /** [3] @socket_update - Update socket info */
     socket.room = null;
   }

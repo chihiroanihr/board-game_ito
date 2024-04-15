@@ -24,6 +24,9 @@ app.use(
 app.use(express.json()); // Using express.json() instead of bodyParser.json() due to deprecation.
 app.use(router); // Mount the routes
 
+/** @todo: When deploying, ensure your server is configured to serve static files correctly. */
+// app.use(express.static('public')); // Tells Express to serve the files in the public folder as static files, making them accessible to clients.
+
 // HTTP server initialization
 const options = {
   key: fs.readFileSync('../../bgi-privateKey.key'),
