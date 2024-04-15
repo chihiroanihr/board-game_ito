@@ -98,7 +98,7 @@ export default function HeaderLayout() {
   if (!user) return null;
   return (
     <>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
+      <Stack direction="row" flexGrow={1} alignItems="center" justifyContent="space-between">
         <Stack direction="row" alignItems="center" spacing={{ xs: '0.75rem', md: '1rem' }}>
           {/* Leave Game Button */}
           <IconButton

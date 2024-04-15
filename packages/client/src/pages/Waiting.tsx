@@ -403,6 +403,7 @@ export default function Waiting() {
               id="waiting_player-list_wrapper"
               width="100%"
               height="100%"
+              minHeight="30vh"
               border="2px solid"
               borderColor="grey.300"
               sx={{ overflowY: 'auto' }}

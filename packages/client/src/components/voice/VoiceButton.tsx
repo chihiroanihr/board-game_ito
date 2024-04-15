@@ -60,13 +60,10 @@ const VoiceButton = ({ audioStream, peerConnections }: VoiceButtonProps) => {
       disabled={!audioStream}
       onClick={toggleMute}
     >
-      {isMuted ? (
-        <MicOffIcon sx={{ width: 'unset', height: 'unset', p: '0.6rem' }} />
-      ) : (
-        <MicOnIcon sx={{ width: 'unset', height: 'unset', p: '0.6rem' }} color="error" />
-      )}
+      {isMuted ? <MicOffIcon fontSize="large" /> : <MicOnIcon fontSize="large" color="error" />}
     </Fab>
   );
 };
 
+// sx={{ width: 'unset', height: 'unset', p: '0.6rem' }}
 export default VoiceButton;

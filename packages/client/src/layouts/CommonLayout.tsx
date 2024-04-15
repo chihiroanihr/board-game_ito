@@ -1,12 +1,13 @@
 import React, { Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { AppBar, Toolbar, Box, Grid, useMediaQuery, useTheme, styled } from '@mui/material';
 
 import { CommunicationMethodEnum } from '@bgi/shared';
 
 import { HeaderLayout, ChatLayout, VoiceCallLayout } from '@/layouts';
 import { Loader, Copyright } from '@/components';
 import { useAuth, useRoom } from '@/hooks';
+import { appBarStyle } from '../theme';
 
 /** @/debug - Display amount of sockets connected: Only for development environment */
 const SocketsConnected = React.lazy(() => import('../components/debug/SocketsConnected'));
@@ -14,6 +15,8 @@ const SocketsConnected = React.lazy(() => import('../components/debug/SocketsCon
 const SocketsLoggedIn = React.lazy(() => import('../components/debug/SocketsLoggedIn'));
 /** @/debug - Initialize DB button: Only for development environment */
 const Initialize = React.lazy(() => import('../components/debug/Initialize'));
+
+const OffsetAppBar = styled('div')(({ theme }) => theme.mixins.toolbar);
 
 export default function CommonLayout() {
   const theme = useTheme();
@@ -26,18 +29,26 @@ export default function CommonLayout() {
 
   return (
     <Box>
+      {/** @todo: Fix mobile browser 100vh problem */}
       <Box height="100vh" display="flex" flexDirection="column" pb="0.5rem">
         {/* -------------- Header -------------- */}
         {user && (
-          <Box
-            component="header"
-            px={{ xs: '1.4rem', lg: '2%' }}
-            py="0.8rem"
-            borderBottom="2px solid"
-            borderColor="grey.300"
-          >
-            <HeaderLayout />
-          </Box>
+          <>
+            <AppBar
+              component="header"
+              sx={appBarStyle}
+              // px={{ xs: '1.4rem', lg: '2%' }}
+              // py="0.8rem"
+              // borderBottom="2px solid"
+              // borderColor="grey.300"
+            >
+              <Toolbar>
+                <HeaderLayout />
+              </Toolbar>
+            </AppBar>
+
+            <OffsetAppBar />
+          </>
         )}
 
         {/* -------------- Main -------------- */}
