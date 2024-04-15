@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import {
   type User,
@@ -17,13 +16,7 @@ import {
 } from '@bgi/shared';
 
 import { useAuth, useRoom, useSocket, useSubmissionStatus } from '@/hooks';
-import {
-  outputServerError,
-  outputResponseTimeoutError,
-  navigateHome,
-  navigateDashboard,
-  navigateWaiting,
-} from '@/utils';
+import { outputServerError, outputResponseTimeoutError } from '@/utils';
 import {
   type LoginFormDataType,
   type JoinRoomFormDataType,
@@ -52,10 +45,9 @@ interface UseActionCallback {
 }
 
 export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallback) => {
-  const navigate = useNavigate();
   const { socket } = useSocket();
-  const { user, updateUser, discardUser } = useAuth();
-  const { room, updateRoom, discardRoom } = useRoom();
+  const { user } = useAuth();
+  const { room } = useRoom();
   const { setIsSubmitting } = useSubmissionStatus();
 
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -95,26 +87,26 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit(NamespaceEnum.LOGIN, userName, async ({ error, user }: LoginResponse) => {
-      clearTimeout(timeoutId); // Clear the timeout as response is received before timeout
+    socket.emit(
+      NamespaceEnum.LOGIN,
+      userName,
+      async ({ error, user: updatedUser }: LoginResponse) => {
+        clearTimeout(timeoutId); // Clear the timeout as response is received before timeout
 
-      // [*] ERROR
-      if (error) {
-        outputServerError({ error });
-        onError?.({
-          action: NamespaceEnum.LOGIN,
-          message: 'Internal Server Error: Please try again.',
-        });
-      }
-      // [*] SUCCESS
-      else {
-        updateUser(user ? user : null); // Login and save user info to local storage
-        navigateDashboard(navigate); // Navigate
-        onSuccess?.({ action: NamespaceEnum.LOGIN, user: user }); // Success callback
-      }
+        // [*] ERROR
+        if (error) {
+          outputServerError({ error });
+          onError?.({
+            action: NamespaceEnum.LOGIN,
+            message: 'Internal Server Error: Please try again.',
+          });
+        }
+        // [*] SUCCESS
+        else onSuccess?.({ action: NamespaceEnum.LOGIN, user: updatedUser }); // Success callback
 
-      processButtonStatus(false); // Set submitting to false when the response is received
-    });
+        processButtonStatus(false); // Set submitting to false when the response is received
+      }
+    );
   };
 
   /**
@@ -144,12 +136,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
         });
       }
       // [*] SUCCESS
-      else {
-        room && discardRoom();
-        user && discardUser();
-        navigateHome(navigate); // navigate
-        onSuccess?.({ action: NamespaceEnum.LOGOUT }); // Success callback
-      }
+      else onSuccess?.({ action: NamespaceEnum.LOGOUT }); // Success callback
 
       processButtonStatus(false);
     });
@@ -175,7 +162,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     socket.emit(
       NamespaceEnum.CREATE_ROOM,
       formData,
-      async ({ error, user, room }: CreateRoomResponse) => {
+      async ({ error, user: updatedUser, room: updatedRoom }: CreateRoomResponse) => {
         clearTimeout(timeoutId);
 
         // [*] ERROR
@@ -188,12 +175,8 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
           });
         }
         // [*] SUCCESS
-        else {
-          updateUser(user ? user : null); // Store updated user info to local storage
-          updateRoom(room ? room : null); // Store room info to local storage and redirect
-          navigateWaiting(navigate); // Navigate
-          onSuccess?.({ action: NamespaceEnum.CREATE_ROOM, user, room }); // Success callback
-        }
+        else
+          onSuccess?.({ action: NamespaceEnum.CREATE_ROOM, user: updatedUser, room: updatedRoom }); // Success callback
 
         processButtonStatus(false);
       }
@@ -230,7 +213,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     socket.emit(
       NamespaceEnum.JOIN_ROOM,
       roomId,
-      async ({ error, user, room }: JoinRoomResponse) => {
+      async ({ error, user: updatedUser, room: updatedRoom }: JoinRoomResponse) => {
         clearTimeout(timeoutId);
 
         // [*] ERROR
@@ -243,15 +226,12 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
           });
         } else {
           // [*] SUCCESS: User can join room
-          if (typeof room === 'object') {
-            updateUser(user ? user : null); // Store updated user info to local storage
-            updateRoom(room ? room : null); // Save room info to local storage and navigate
-            navigateWaiting(navigate); // Navigate
-            onSuccess?.({ action: NamespaceEnum.JOIN_ROOM, user, room }); // Success callback
+          if (typeof updatedRoom === 'object') {
+            onSuccess?.({ action: NamespaceEnum.JOIN_ROOM, user: updatedUser, room: updatedRoom }); // Success callback
           }
           // [*] ERROR: User cannot join room
           else {
-            const unavailableMsg = room; // room is now string message
+            const unavailableMsg = updatedRoom; // room is now string message
             setErrorMessage(unavailableMsg || 'You cannot join this room for unknown reason.');
             onError?.({
               action: NamespaceEnum.JOIN_ROOM,
@@ -282,25 +262,26 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
     }, 5000);
 
     /** @socket_send - Send to socket & receive response */
-    socket.emit(NamespaceEnum.EDIT_ROOM, formData, async ({ error, room }: EditRoomResponse) => {
-      clearTimeout(timeoutId);
+    socket.emit(
+      NamespaceEnum.EDIT_ROOM,
+      formData,
+      async ({ error, room: updatedRoom }: EditRoomResponse) => {
+        clearTimeout(timeoutId);
 
-      // [*] ERROR
-      if (error) {
-        outputServerError({ error });
-        onError?.({
-          action: NamespaceEnum.EDIT_ROOM,
-          message: 'Internal Server Error: Please try again.',
-        });
-      }
-      // [*] SUCCESS
-      else {
-        updateRoom(room ? room : null); // Update room info to local storage
-        onSuccess?.({ action: NamespaceEnum.EDIT_ROOM }); // Success callback
-      }
+        // [*] ERROR
+        if (error) {
+          outputServerError({ error });
+          onError?.({
+            action: NamespaceEnum.EDIT_ROOM,
+            message: 'Internal Server Error: Please try again.',
+          });
+        }
+        // [*] SUCCESS
+        else onSuccess?.({ action: NamespaceEnum.EDIT_ROOM, room: updatedRoom }); // Success callback
 
-      processButtonStatus(false);
-    });
+        processButtonStatus(false);
+      }
+    );
   };
 
   /**
@@ -328,11 +309,7 @@ export const useAction = ({ beforeSubmit, onError, onSuccess }: UseActionCallbac
           action: NamespaceEnum.LEAVE_ROOM,
           message: 'Internal Server Error: Please try again.',
         });
-      } else {
-        discardRoom();
-        navigateDashboard(navigate);
-        onSuccess?.({ action: NamespaceEnum.LEAVE_ROOM }); // Success callback
-      }
+      } else onSuccess?.({ action: NamespaceEnum.LEAVE_ROOM }); // Success callback
 
       processButtonStatus(false);
     });

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Box,
@@ -11,7 +12,7 @@ import {
   useTheme,
 } from '@mui/material';
 
-import { userNameConfig } from '@bgi/shared';
+import { userNameConfig, NamespaceEnum } from '@bgi/shared';
 
 import { TextButton } from '@/components';
 import {
@@ -24,6 +25,7 @@ import {
   type SuccessCallbackParams,
   type SuccessCallbackFunction,
 } from '@/hooks';
+import { navigateDashboard } from '@/utils';
 import { type LoginFormDataType } from '../enum';
 
 /**
@@ -31,7 +33,8 @@ import { type LoginFormDataType } from '../enum';
  * @returns
  */
 function Home() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const theme = useTheme();
   const isSmViewport = useMediaQuery(theme.breakpoints.up('sm'));
 
@@ -47,7 +50,19 @@ function Home() {
   // Callback for button click handlers
   const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {};
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
+  const onSuccess: SuccessCallbackFunction = ({
+    action,
+    user: updatedUser,
+  }: SuccessCallbackParams) => {
+    switch (action) {
+      case NamespaceEnum.LOGIN:
+        updateUser(updatedUser ? updatedUser : null); // Login and save user info to local storage
+        navigateDashboard(navigate); // Navigate
+        break;
+      default:
+        console.error('[!] Unknown action: ', action);
+    }
+  };
 
   // Button click handlers
   const { handleLogin, loadingButton, errorMessage, setErrorMessage } = useAction({

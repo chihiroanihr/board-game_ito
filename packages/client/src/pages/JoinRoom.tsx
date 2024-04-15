@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Typography,
@@ -12,17 +13,20 @@ import {
   Snackbar,
 } from '@mui/material';
 
-import { roomIdConfig } from '@bgi/shared';
+import { roomIdConfig, NamespaceEnum } from '@bgi/shared';
 
 import { TextButton } from '@/components';
 import {
   useAction,
+  useAuth,
+  useRoom,
   type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
   type SuccessCallbackFunction,
 } from '@/hooks';
+import { navigateWaiting } from '@/utils';
 import { type JoinRoomFormDataType } from '../enum.js';
 
 /**
@@ -30,6 +34,10 @@ import { type JoinRoomFormDataType } from '../enum.js';
  * @returns
  */
 function JoinRoom() {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  const { updateRoom } = useRoom();
+
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
 
   // Prepare react-hook-form
@@ -50,7 +58,17 @@ function JoinRoom() {
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
     handleSnackbarOpen();
   };
-  const onSuccess: SuccessCallbackFunction = ({ action }) => {};
+  const onSuccess: SuccessCallbackFunction = ({ action, user: updatedUser, room: updatedRoom }) => {
+    switch (action) {
+      case NamespaceEnum.JOIN_ROOM:
+        updateUser(updatedUser ? updatedUser : null); // Store updated user info to local storage
+        updateRoom(updatedRoom ? updatedRoom : null); // Save room info to local storage and navigate
+        navigateWaiting(navigate); // Navigate
+        break;
+      default:
+        console.error('[!] Unknown action: ', action);
+    }
+  };
 
   // Button click handlers
   const { handleJoinRoom, loadingButton, errorMessage } = useAction({

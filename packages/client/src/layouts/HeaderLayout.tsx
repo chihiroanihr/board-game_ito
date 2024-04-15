@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Typography,
   Stack,
@@ -31,6 +32,7 @@ import {
   type SuccessCallbackFunction,
   useSubmissionStatus,
 } from '@/hooks';
+import { navigateHome, navigateDashboard } from '@/utils';
 import { commonIconButtonStyle } from '../theme';
 
 /**
@@ -38,9 +40,10 @@ import { commonIconButtonStyle } from '../theme';
  * @returns
  */
 export default function HeaderLayout() {
+  const navigate = useNavigate();
   const { socket } = useSocket();
-  const { user } = useAuth();
-  const { room, updateRoom } = useRoom();
+  const { user, discardUser } = useAuth();
+  const { room, updateRoom, discardRoom } = useRoom();
   const { isSubmitting } = useSubmissionStatus();
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -64,13 +67,29 @@ export default function HeaderLayout() {
     snackbarOpen && handleSnackbarClose(); // Make sure to close all snackbars that are opened
   };
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
+  const onSuccess: SuccessCallbackFunction = ({
+    action,
+    room: updatedRoom,
+  }: SuccessCallbackParams) => {
     setTriggeredButton(action); // Set which button was triggered
 
-    // If triggered button is "edit-room" then close dialog
-    if (action && action === NamespaceEnum.EDIT_ROOM) {
-      handleDialogClose();
-      handleSnackbarOpen();
+    switch (action) {
+      case NamespaceEnum.LOGOUT:
+        room && discardRoom();
+        user && discardUser();
+        navigateHome(navigate); // navigate
+        break;
+      case NamespaceEnum.LEAVE_ROOM:
+        room && discardRoom();
+        navigateDashboard(navigate);
+        break;
+      case NamespaceEnum.EDIT_ROOM:
+        updateRoom(updatedRoom ? updatedRoom : null); // Update room info to local storage
+        handleDialogClose(); // close dialog
+        handleSnackbarOpen();
+        break;
+      default:
+        console.error('[!] Unknown action: ', action);
     }
   };
 

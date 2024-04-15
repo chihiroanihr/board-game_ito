@@ -1,9 +1,14 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Alert, Stack } from '@mui/material';
+
+import { NamespaceEnum } from '@bgi/shared';
 
 import { RoomSettingForm } from '@/components';
 import {
   useAction,
+  useAuth,
+  useRoom,
   type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
@@ -11,16 +16,35 @@ import {
   type SuccessCallbackParams,
   type SuccessCallbackFunction,
 } from '@/hooks';
+import { navigateWaiting } from '@/utils';
 
 /**
  * Subpage for Dashboard
  * @returns
  */
 function CreateRoom() {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  const { updateRoom } = useRoom();
+
   // Callback for button click handlers
   const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {};
   const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
+  const onSuccess: SuccessCallbackFunction = ({
+    action,
+    user: updatedUser,
+    room: updatedRoom,
+  }: SuccessCallbackParams) => {
+    switch (action) {
+      case NamespaceEnum.CREATE_ROOM:
+        updateUser(updatedUser ? updatedUser : null); // Store updated user info to local storage
+        updateRoom(updatedRoom ? updatedRoom : null); // Store room info to local storage and redirect
+        navigateWaiting(navigate); // Navigate
+        break;
+      default:
+        console.error('[!] Unknown action: ', action);
+    }
+  };
 
   // Button click handlers
   const { handleCreateRoom, loadingButton, errorMessage, setErrorMessage } = useAction({
