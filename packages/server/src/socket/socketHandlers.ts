@@ -636,7 +636,10 @@ const handleSocketMicReady = (socket: Socket) => {
       socket
         .to(socket.room._id)
         .emit(NamespaceEnum.PLAYER_MIC_READY, { socketId: socket.id } as PlayerMicReadyResponse); // send back own socket ID
+      /** [2] @socket_emit - Send back result to client */
       callback({});
+
+      log.logSocketEvent('Mic Ready', socket);
     } catch (error) {
       /** @socket_emit - Send back error to client */
       callback({ error: error instanceof Error ? error : new Error(String(error)) });

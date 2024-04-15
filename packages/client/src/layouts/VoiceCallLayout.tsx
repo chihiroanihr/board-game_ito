@@ -15,7 +15,6 @@ import { VoiceButton } from '@/components';
 import {
   useSocket,
   useAuth,
-  useRoom,
   useLocalMediaStream,
   usePeerConnections,
   usePlayerStatus,
@@ -258,108 +257,6 @@ const VoiceCallLayout = () => {
     onVoiceOfferCallback: handleVoiceOffer,
     onVoiceAnswerCallback: handleVoiceAnswer,
   });
-
-  //   /**
-  //    * Handle incoming ice candidate
-  //    */
-  //   useEffect(() => {
-  //     async function onIceCandidate({
-  //       candidate,
-  //       fromSocketId,
-  //     }: {
-  //       candidate: RTCIceCandidate;
-  //       fromSocketId: string;
-  //     }) {
-  //       console.log('[RECEIVER] ice candidate received.');
-
-  //       if (peerConnections.current[fromSocketId]) {
-  //         peerConnections.current[fromSocketId]!.addIceCandidate(candidate); // Add sender's candidate to remote description
-  //       } else {
-  //         console.error(`[!] Incoming ice candidate error for ${fromSocketId}.`);
-  //       }
-  //     }
-
-  //     socket.on(NamespaceEnum.RECEIVE_ICE_CANDIDATE, onIceCandidate);
-  //     return () => socket.off(NamespaceEnum.RECEIVE_ICE_CANDIDATE, onIceCandidate);
-  //   }, [peerConnections, socket]);
-
-  //   /**
-  //    * Handle incoming offer
-  //    */
-  //   useEffect(() => {
-  //     async function onVoiceOffer({
-  //       signal,
-  //       fromSocketId,
-  //     }: {
-  //       signal: RTCSessionDescriptionInit;
-  //       fromSocketId: string;
-  //     }) {
-  //       console.log('[RECEIVER] offer received.');
-
-  //       // Search sender's ID in peer connection
-  //       let peerConnection = peerConnections.current[fromSocketId];
-
-  //       // If sender does not exist: new sender's info arrived
-  //       if (!peerConnection) {
-  //         // Create new peer connection for the offer
-  //         peerConnection = createNewPeerConnection(localMediaStream)!;
-  //         // Create and send ICE candidate
-  //         setupPeerConnection({
-  //           peerConnection,
-  //           fromSocketId: mySocketId,
-  //           toSocketId: fromSocketId,
-  //         });
-  //         // Add sender to the list of peers
-  //         peerConnections.current[fromSocketId] = peerConnection!;
-  //       }
-
-  //       // Proceed with creating and sending answer
-  //       await createAnswerAndSendSignal({
-  //         peerConnection,
-  //         signal,
-  //         fromSocketId: mySocketId,
-  //         toSocketId: fromSocketId,
-  //       });
-  //     }
-
-  //     socket.on(NamespaceEnum.RECEIVE_VOICE_OFFER, onVoiceOffer);
-  //     return () => socket.off(NamespaceEnum.RECEIVE_VOICE_OFFER, onVoiceOffer);
-  //   }, [
-  //     createAnswerAndSendSignal,
-  //     createNewPeerConnection,
-  //     localMediaStream,
-  //     mySocketId,
-  //     peerConnections,
-  //     setupPeerConnection,
-  //     socket,
-  //   ]);
-
-  //   /**
-  //    * Handle incoming answer
-  //    */
-  //   useEffect(() => {
-  //     async function onVoiceAnswer({
-  //       signal,
-  //       fromSocketId,
-  //     }: {
-  //       signal: RTCSessionDescriptionInit;
-  //       fromSocketId: string;
-  //     }) {
-  //       console.log('[SENDER] answer received.');
-
-  //       // If answer is back from the ID stored
-  //       if (peerConnections.current[fromSocketId]) {
-  //         peerConnections.current[fromSocketId]!.setRemoteDescription(signal); // Set sender's signal to remote description
-  //       }
-  //       // Answer came from nowhere (user ID never stored)
-  //       else {
-  //         console.error(`[!] Incoming answer error from ${fromSocketId}. Who is this?`);
-  //       }
-  //     }
-
-  //     socket.on(NamespaceEnum.RECEIVE_VOICE_ANSWER, onVoiceAnswer);
-  //     return () => socket.off(NamespaceEnum.RECEIVE_VOICE_ANSWER, onVoiceAnswer);
-  //   }, [peerConnections, socket]);
 
   /** @LOG */
   //   if (!peerConnections.current) {
