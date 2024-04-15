@@ -7,12 +7,17 @@ import {
   type Room,
   type RoomSetting,
   type RoomChatMessage,
+  type RTCIceCandidateData,
+  type RTCSessionDescriptionData,
   type SessionResponse,
   type PlayerInResponse,
   type PlayerOutResponse,
   type PlayerDisconnectedResponse,
   type PlayerReconnectedResponse,
   type PlayerMicReadyResponse,
+  type ReceiveIceCandidateResponse,
+  type ReceiveVoiceOfferResponse,
+  type ReceiveVoiceAnswerResponse,
   type RoomEditedResponse,
   type LoginCallback,
   type LogoutCallback,
@@ -134,7 +139,7 @@ const socketHandlers = (io: Server) => {
 
     handleSocketVoiceOffer(socket, io);
     handleSocketVoiceAnswer(socket, io);
-    handleSocketVoiceCandidate(socket, io);
+    handleSocketIceCandidate(socket, io);
 
     /** @/debug */
     console.log(`\n[*] ${io.engine.clientsCount} sockets connected.`);
@@ -641,18 +646,10 @@ const handleSocketMicReady = (socket: Socket) => {
   });
 };
 
-const handleSocketVoiceCandidate = (socket: Socket, io: Server) => {
+const handleSocketIceCandidate = (socket: Socket, io: Server) => {
   socket.on(
-    NamespaceEnum.VOICE_CANDIDATE,
-    async ({
-      candidate,
-      fromSocketId,
-      toSocketId,
-    }: {
-      candidate: RTCIceCandidate;
-      fromSocketId: string;
-      toSocketId: string;
-    }) => {
+    NamespaceEnum.SEND_ICE_CANDIDATE,
+    async ({ candidate, fromSocketId, toSocketId }: RTCIceCandidateData) => {
       try {
         // * If user is not connected
         if (!socket.user?._id) {
@@ -663,11 +660,14 @@ const handleSocketVoiceCandidate = (socket: Socket, io: Server) => {
           throw new Error('[Socket Error]: Room is not connected.');
         }
         // Send back own socket ID and candidate to *specific* socket ID
-        io.to(toSocketId).emit(NamespaceEnum.VOICE_CANDIDATE, { candidate, fromSocketId });
+        io.to(toSocketId).emit(NamespaceEnum.RECEIVE_ICE_CANDIDATE, {
+          candidate,
+          fromSocketId,
+        } as ReceiveIceCandidateResponse);
 
-        log.logSocketEvent('Voice Candidate', socket);
+        log.logSocketEvent('ICE Candidate', socket);
       } catch (error) {
-        log.handleServerError(error, 'handleSocketVoiceCandidate');
+        log.handleServerError(error, 'handleSocketIceCandidate');
       }
     }
   );
@@ -675,16 +675,8 @@ const handleSocketVoiceCandidate = (socket: Socket, io: Server) => {
 
 const handleSocketVoiceOffer = (socket: Socket, io: Server) => {
   socket.on(
-    NamespaceEnum.VOICE_OFFER,
-    async ({
-      signal,
-      fromSocketId,
-      toSocketId,
-    }: {
-      signal: RTCSessionDescriptionInit;
-      fromSocketId: string;
-      toSocketId: string;
-    }) => {
+    NamespaceEnum.SEND_VOICE_OFFER,
+    async ({ signal, fromSocketId, toSocketId }: RTCSessionDescriptionData) => {
       try {
         // * If user is not connected
         if (!socket.user?._id) {
@@ -695,7 +687,10 @@ const handleSocketVoiceOffer = (socket: Socket, io: Server) => {
           throw new Error('[Socket Error]: Room is not connected.');
         }
         // Send back own socket ID and signal to *specific* socket ID
-        io.to(toSocketId).emit(NamespaceEnum.VOICE_OFFER, { signal, fromSocketId });
+        io.to(toSocketId).emit(NamespaceEnum.RECEIVE_VOICE_OFFER, {
+          signal,
+          fromSocketId,
+        } as ReceiveVoiceOfferResponse);
 
         log.logSocketEvent('Voice Offer', socket);
       } catch (error) {
@@ -707,16 +702,8 @@ const handleSocketVoiceOffer = (socket: Socket, io: Server) => {
 
 const handleSocketVoiceAnswer = (socket: Socket, io: Server) => {
   socket.on(
-    NamespaceEnum.VOICE_ANSWER,
-    async ({
-      signal,
-      fromSocketId,
-      toSocketId,
-    }: {
-      signal: RTCSessionDescriptionInit;
-      fromSocketId: string;
-      toSocketId: string;
-    }) => {
+    NamespaceEnum.SEND_VOICE_ANSWER,
+    async ({ signal, fromSocketId, toSocketId }: RTCSessionDescriptionData) => {
       try {
         // * If user is not connected
         if (!socket.user?._id) {
@@ -727,7 +714,10 @@ const handleSocketVoiceAnswer = (socket: Socket, io: Server) => {
           throw new Error('[Socket Error]: Room is not connected.');
         }
         // Send back own user ID and signal to *specific* socket ID
-        io.to(toSocketId).emit(NamespaceEnum.VOICE_ANSWER, { signal, fromSocketId });
+        io.to(toSocketId).emit(NamespaceEnum.RECEIVE_VOICE_ANSWER, {
+          signal,
+          fromSocketId,
+        } as ReceiveVoiceAnswerResponse);
 
         log.logSocketEvent('Voice Answer', socket);
       } catch (error) {

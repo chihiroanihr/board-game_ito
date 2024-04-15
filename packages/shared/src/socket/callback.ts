@@ -1,4 +1,5 @@
-import type { User, Room, RoomChatMessage } from '../model/data';
+import type { User, Room } from '../model/data';
+import type { RoomChatMessage } from './data';
 
 export type SessionResponse = { sessionId: string; user: User | null; room: Room | null };
 
@@ -47,6 +48,15 @@ export type SendChatCallback = {
   (response: SendChatResponse): void;
 };
 
+export type SendIceCandidate = {};
+export type SendIceCandidateCallback = {};
+
+export type SendVoiceOffer = {};
+export type SendVoiceOfferCallback = {};
+
+export type SendVoiceAnswer = {};
+export type SendVoiceAnswerCallback = {};
+
 export type PlayerDisconnectedResponse = { socketId: string; user: User };
 
 export type PlayerReconnectedResponse = { socketId: string; user: User };
@@ -58,6 +68,15 @@ export type PlayerOutResponse = { socketId: string; user: User; room: Room | nul
 export type PlayerMicReadyResponse = { socketId: string };
 
 export type ReceiveChatResponse = RoomChatMessage;
+
+export type ReceiveIceCandidateResponse = { candidate: RTCIceCandidate; fromSocketId: string };
+
+export type ReceiveVoiceOfferResponse = { signal: RTCSessionDescriptionInit; fromSocketId: string };
+
+export type ReceiveVoiceAnswerResponse = {
+  signal: RTCSessionDescriptionInit;
+  fromSocketId: string;
+};
 
 export type RoomEditedResponse = { room: Room };
 

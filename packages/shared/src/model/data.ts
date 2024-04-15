@@ -34,9 +34,3 @@ export interface RoomSetting {
   dupNumCard: boolean;
   communicationMethod: CommunicationMethodEnum;
 }
-
-export interface RoomChatMessage {
-  fromUser: User;
-  message: string;
-  timestamp: number;
-}

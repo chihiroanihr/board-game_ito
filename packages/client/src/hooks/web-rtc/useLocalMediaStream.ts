@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const useLocalMediaStream = () => {
+  const [isMuted, setIsMuted] = useState<boolean>(true);
   const [localMediaStream, setLocalMediaStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
@@ -32,7 +33,14 @@ const useLocalMediaStream = () => {
     }
   }, [localMediaStream]);
 
-  return { localMediaStream, closeMediaStream };
+  /**
+   * Toggle mute button handler
+   */
+  const toggleMuteMediaStream = () => {
+    setIsMuted((prevMuted) => !prevMuted);
+  };
+
+  return { localMediaStream, closeMediaStream, toggleMuteMediaStream, isMuted };
 };
 
 export default useLocalMediaStream;

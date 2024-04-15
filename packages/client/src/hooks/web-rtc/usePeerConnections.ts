@@ -10,14 +10,40 @@ const ICE_SERVER = {
 };
 // "stun:stun2.l.google.com:19302"
 
+interface PeerConnectionsData {
+  [key: string]: RTCPeerConnection | undefined;
+}
+
 const usePeerConnections = () => {
   const { socket } = useSocket();
 
-  const peerConnections = useRef<{
-    [key: string]: RTCPeerConnection | undefined;
-  }>({});
+  const peerConnections = useRef<PeerConnectionsData>({});
 
-  const closePeerConnection = (socketId: string) => {
+  const muteFromAllPeerConnections = useCallback(
+    (peerConnections: PeerConnectionsData, audioStream: MediaStream, isMuted: boolean) => {
+      if (audioStream && peerConnections) {
+        // Iterate and toggle mute state of each peer connection
+        Object.keys(peerConnections).forEach((socketId: string) => {
+          const peerConnection = peerConnections[socketId];
+          if (peerConnection) {
+            // Access senders
+            const senders = peerConnection.getSenders();
+            // Change parameters in all senders
+            senders.forEach(async (sender: RTCRtpSender) => {
+              const params = sender.getParameters();
+              if (params.encodings[0]) {
+                params.encodings[0].active = !isMuted;
+                await sender.setParameters(params);
+              }
+            });
+          }
+        });
+      }
+    },
+    []
+  );
+
+  const closePeerConnection = useCallback((socketId: string) => {
     const peerConnection = peerConnections.current[socketId];
     if (peerConnection) {
       // Close the existing peer connection
@@ -27,14 +53,14 @@ const usePeerConnections = () => {
     }
 
     console.log('Peer connection closed.');
-  };
+  }, []);
 
-  const closeAllPeerConnections = () => {
-    Object.values(peerConnections.current).forEach((peerConnection) => peerConnection?.close());
-    peerConnections.current = {};
+  const closeAllPeerConnections = useCallback((peerConnections: PeerConnectionsData) => {
+    Object.values(peerConnections).forEach((peerConnection) => peerConnection?.close());
+    peerConnections = {};
 
     console.log('All peer connections closed.');
-  };
+  }, []);
 
   const restartPeerConnection = (socketId: string) => {
     console.log(socketId);
@@ -70,7 +96,7 @@ const usePeerConnections = () => {
         // Set own local description
         await peerConnection.setLocalDescription(offer);
         // Send an offer
-        socket.emit(NamespaceEnum.VOICE_OFFER, {
+        socket.emit(NamespaceEnum.SEND_VOICE_OFFER, {
           signal: offer,
           fromSocketId,
           toSocketId,
@@ -104,7 +130,7 @@ const usePeerConnections = () => {
         // Set own local description
         await peerConnection.setLocalDescription(answer);
         // Send an answer
-        socket.emit(NamespaceEnum.VOICE_ANSWER, {
+        socket.emit(NamespaceEnum.SEND_VOICE_ANSWER, {
           signal: answer,
           fromSocketId,
           toSocketId,
@@ -120,6 +146,7 @@ const usePeerConnections = () => {
 
   return {
     peerConnections,
+    muteFromAllPeerConnections,
     closePeerConnection,
     closeAllPeerConnections,
     restartPeerConnection,
