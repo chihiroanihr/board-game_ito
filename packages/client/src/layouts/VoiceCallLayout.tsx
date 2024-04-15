@@ -24,9 +24,8 @@ import { outputServerError } from '@/utils';
 const VoiceCallLayout = () => {
   const { socket } = useSocket();
   const { user } = useAuth();
-  const { room } = useRoom();
 
-  const { localMediaStream, closeMediaStream } = useLocalMediaStream();
+  const { localMediaStream } = useLocalMediaStream();
   const {
     peerConnections,
     closePeerConnection,
@@ -173,11 +172,11 @@ const VoiceCallLayout = () => {
         console.log(`Remote stream id:`, remoteStream.id);
         console.log(`Remote stream active tracks:`, remoteStream.getAudioTracks());
 
-        // const audio = new Audio();
-        // audio.srcObject = remoteStream;
-        // audio.play();
+        const remoteAudio = new Audio();
+        remoteAudio.srcObject = remoteStream;
+        remoteAudio.play();
 
-        if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream;
+        // if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream;
       }
     },
     [localMediaStream]
@@ -351,12 +350,8 @@ const VoiceCallLayout = () => {
   return (
     <>
       <VoiceButton audioStream={localMediaStream} peerConnections={peerConnections.current} />
-      {localMediaStream && <audio ref={localAudioRef} autoPlay controls muted />}
-      {<audio ref={remoteAudioRef} autoPlay controls />}
-
-      {/* {Object.entries(audioRefs.remotes.current).map(([userId, stream]) => (
-    <audio key={userId} ref={audioRefs.remotes.current[userId]} autoPlay />
-  ))} */}
+      {localMediaStream && <audio ref={localAudioRef} autoPlay muted />}
+      {/* {<audio ref={remoteAudioRef} autoPlay controls />} */}
     </>
   );
 };
