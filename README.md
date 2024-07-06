@@ -22,34 +22,17 @@
 
 ## Mongo DB & Docker Setup
 
-1. Make sure the shell script in `/.docker` is executable.
+1. Make sure `start.sh` and the other shell scripts in `/.docker` is executable.
 
    ```bash
-   # From .docker folder:
-   cd .docker
+   chmod +x .docker/keyfile.sh .docker/entrypoint.sh start.sh
    chmod +x keyfile.sh entrypoint.sh start.sh
-   ```
-
-   OR
-
-   ```bash
-   # From root folder:
-   chmod +x .docker/keyfile.sh .docker/entrypoint.sh .docker/start.sh
    ```
 
 2. Run the script.
 
    ```bash
-   # From .docker folder:
-   cd .docker
    start.sh
-   ```
-
-   OR
-
-   ```bash
-   # From root folder:
-   .docker/start.sh
    ```
 
 3. (Optional): Open the Mongo DB shell (`mongosh`) in your bash terminal
