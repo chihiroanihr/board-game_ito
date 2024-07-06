@@ -15,7 +15,7 @@ const { serverPort } = loadConfig();
 const app: Express = express();
 // Middlewares
 app.use(
-  // CORS allows HTTP requests sent by the frontent (specified in origin) to reach the server.
+  // CORS allows HTTP requests sent by the frontend (specified in origin) to reach the server.
   cors({
     origin: '*' /** @todo - Later change to board-game_ito domain */,
   })

@@ -9,29 +9,24 @@ services:
       dockerfile: ./.docker/Dockerfile # ./packages/client/Dockerfile
       target: build-dev-client
     # restart: always
-    command: sh -c "npm run start-dev:client" # Override the default command in Dockerfile if preferred.
+    # Override the default command in Dockerfile if preferred.
+    command: sh -c "npm run build:shared && npm run start-dev:client"
     ports:
       - '5173:5173'
-    volumes:
-      # Override and sync necessary files from host to docker
+    volumes: # MOUNT THE FILES
+      # Use bind mounts to override and sync necessary files from host to docker and vice versa.
+      # - ../:/board-game_ito
       - ../package.json:/board-game_ito/package.json
       - ../package-lock.json:/board-game_ito/package-lock.json
       - ../tsconfig.base.json:/board-game_ito/tsconfig.base.json
       - ../tsconfig.json:/board-game_ito/tsconfig.json
-      - ../env/.env:/board-game_ito/env/.env # env file
       - ../packages/shared:/board-game_ito/packages/shared # /shared: shared source code
-
-      # Use named volumes to override ans sync necessary files from host to docker and vice versa.
-      # - package-json:/board-game_ito/package.json
-      # - package-lock-json:/board-game_ito/package-lock.json
-      # - tsconfig-base-json:/board-game_ito/tsconfig.base.json
-      # - tsconfig-json:/board-game_ito/tsconfig.json
-      # - env:/board-game_ito/env/.env
-      # - shared:/board-game_ito/packages/shared
-      # Use bind mounts to override and sync necessary files from host to docker and vice versa.
       - ../packages/client:/board-game_ito/packages/client # client source code
-      # Except here, mount node_modules to prevent conflicts.
+      - ../env/.env:/board-game_ito/env/.env # Map host env file to container path
+      # Except here, use anonymous mounts to mount node_modules to prevent conflicts.
       - /board-game_ito/node_modules
+    env_file: # LOAD ENV VARIABLES (make them available to the container's environment)
+      - ../env/.env
     networks:
       - bgi-network
     depends_on:
@@ -45,29 +40,24 @@ services:
       dockerfile: ./.docker/Dockerfile # ./packages/server/Dockerfile
       target: build-dev-server
     # restart: always
-    command: sh -c "npm run start-dev:server" # Override the default command in Dockerfile if preferred.
+    # Override the default command in Dockerfile if preferred. 
+    command: sh -c "npm run build:shared && sleep 5 && npm run start-dev:server" # -> sleep to avoid error: "Error connecting to MongoDB MongoServerError: Authentication failed."
     ports:
       - '3000:3000'
     volumes:
-      # Override and sync necessary files from host to docker
+      # Use bind mounts to override and sync necessary files from host to docker and vice versa.
+      # - ../:/board-game_ito
       - ../package.json:/board-game_ito/package.json
       - ../package-lock.json:/board-game_ito/package-lock.json
       - ../tsconfig.base.json:/board-game_ito/tsconfig.base.json
       - ../tsconfig.json:/board-game_ito/tsconfig.json
-      - ../env/.env:/board-game_ito/env/.env # env file
+      - ../env/.env:/board-game_ito/env/.env # Map host env file to container path
       - ../packages/shared:/board-game_ito/packages/shared # /shared: shared source code
-
-      # Use named volumes to override ans sync necessary files from host to docker and vice versa.
-      # - package-json:/board-game_ito/package.json
-      # - package-lock-json:/board-game_ito/package-lock.json
-      # - tsconfig-base-json:/board-game_ito/tsconfig.base.json
-      # - tsconfig-json:/board-game_ito/tsconfig.json
-      # - env:/board-game_ito/env/.env
-      # - shared:/board-game_ito/packages/shared
-      # Use bind mounts to override and sync necessary files from host to docker and vice versa.
       - ../packages/server:/board-game_ito/packages/server # server source code
-      # Except here, mount node_modules to prevent conflicts
+      # Except here, use anonymous mounts to mount node_modules to prevent conflicts
       - /board-game_ito/node_modules
+    env_file: # LOAD ENV VARIABLES (make them available to the container's environment)
+      - ../env/.env
     networks:
       - bgi-network
     depends_on:

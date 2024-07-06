@@ -1,6 +1,6 @@
 {
   "ignore": ["**/*.test.ts", "**/*.spec.ts", "public/*", ".git", "node_modules/*"],
-  "exec": "node -r ts-node/register --env-file ../../.env/.env ./src/server.ts",
+  "exec": "node -r ts-node/register --env-file ../../env/.env ./src/server.ts",
   "watch": ["src", "../shared/src"],
   "ext": "ts"
 }
