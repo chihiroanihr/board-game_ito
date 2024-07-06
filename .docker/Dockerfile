@@ -59,7 +59,7 @@ RUN echo "[*] Entered \"build-prod\" stage."
 # Copy other necessary files or folders into the image
 COPY ../tsconfig.base.json ./
 COPY ../tsconfig.json ./
-COPY ../.env/.env ./.env/
+COPY ../env/.env ./env/
 
 # ---------- client production ---------- #
 FROM build-prod AS build-prod-client

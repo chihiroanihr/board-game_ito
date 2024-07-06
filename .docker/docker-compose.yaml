@@ -18,7 +18,7 @@ services:
       - ../package-lock.json:/board-game_ito/package-lock.json
       - ../tsconfig.base.json:/board-game_ito/tsconfig.base.json
       - ../tsconfig.json:/board-game_ito/tsconfig.json
-      - ../.env/.env:/board-game_ito/.env/.env # env file
+      - ../env/.env:/board-game_ito/env/.env # env file
       - ../packages/shared:/board-game_ito/packages/shared # /shared: shared source code
 
       # Use named volumes to override ans sync necessary files from host to docker and vice versa.
@@ -26,7 +26,7 @@ services:
       # - package-lock-json:/board-game_ito/package-lock.json
       # - tsconfig-base-json:/board-game_ito/tsconfig.base.json
       # - tsconfig-json:/board-game_ito/tsconfig.json
-      # - env:/board-game_ito/.env/.env
+      # - env:/board-game_ito/env/.env
       # - shared:/board-game_ito/packages/shared
       # Use bind mounts to override and sync necessary files from host to docker and vice versa.
       - ../packages/client:/board-game_ito/packages/client # client source code
@@ -54,7 +54,7 @@ services:
       - ../package-lock.json:/board-game_ito/package-lock.json
       - ../tsconfig.base.json:/board-game_ito/tsconfig.base.json
       - ../tsconfig.json:/board-game_ito/tsconfig.json
-      - ../.env/.env:/board-game_ito/.env/.env # env file
+      - ../env/.env:/board-game_ito/env/.env # env file
       - ../packages/shared:/board-game_ito/packages/shared # /shared: shared source code
 
       # Use named volumes to override ans sync necessary files from host to docker and vice versa.
@@ -62,7 +62,7 @@ services:
       # - package-lock-json:/board-game_ito/package-lock.json
       # - tsconfig-base-json:/board-game_ito/tsconfig.base.json
       # - tsconfig-json:/board-game_ito/tsconfig.json
-      # - env:/board-game_ito/.env/.env
+      # - env:/board-game_ito/env/.env
       # - shared:/board-game_ito/packages/shared
       # Use bind mounts to override and sync necessary files from host to docker and vice versa.
       - ../packages/server:/board-game_ito/packages/server # server source code
@@ -112,7 +112,7 @@ services:
     # restart: always
     entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
     env_file:
-      - ../.env/.env
+      - ../env/.env
     ports:
       - 27017:27017
     volumes:
@@ -132,7 +132,7 @@ services:
     # restart: always
     entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
     env_file:
-      - ../.env/.env
+      - ../env/.env
     ports:
       - 27018:27017
     volumes:
@@ -152,7 +152,7 @@ services:
     # restart: always
     entrypoint: ['/bin/bash', '/etc/entrypoint.sh']
     env_file:
-      - ../.env/.env
+      - ../env/.env
     ports:
       - 27019:27017
     volumes:
