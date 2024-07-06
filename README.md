@@ -1,5 +1,25 @@
 # board-game_ito
 
+## Connect to project env vault
+
+1. Connect to your project env vault (visit dotenv website and login to your account first).
+
+   ```bash
+   npx dotenv-vault@latest new vlt_your-project-vault
+   ```
+
+2. Pull the existing env vault.
+
+   ```bash
+   npx dotenv-vault@latest pull
+   ```
+
+3. Open the env vault in your local workspace.
+
+   ```bash
+   npx dotenv-vault@latest open
+   ```
+
 ## Mongo DB & Docker Setup
 
 1. Make sure the shell script in `/.docker` is executable.
