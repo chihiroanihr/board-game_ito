@@ -11,11 +11,7 @@ import { roomIdConfig, userIdConfig } from '@bgi/shared';
 export function generateRandomRoomId(): string {
   // Make sure to have more than 6 letters and less than 64 letters
   let numLetters: number = roomIdConfig.numLetters;
-  if (numLetters <= 6) {
-    numLetters = 6;
-  } else if (numLetters >= 64) {
-    numLetters = 64;
-  }
+  numLetters = Math.max(6, Math.min(64, numLetters));
 
   // Generate random string of length given
   const randomBytes: Buffer = crypto.randomBytes(numLetters / 2); // Divide by 2 since the resulting string length will be twice the number of bytes generated

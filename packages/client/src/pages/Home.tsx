@@ -80,7 +80,6 @@ function Home() {
         component="form"
         onSubmit={handleSubmit(handleLogin)}
         noValidate
-        sx={{ width: isSmViewport ? 'auto' : 'calc(100vw - 30%)' }}
       >
         <Stack direction="row">
           {/* Input Field */}
@@ -89,6 +88,7 @@ function Home() {
             type="text"
             variant="outlined"
             label="Name"
+            sx={{ width: isSmViewport ? '20rem' : 'auto' }}
             InputProps={{
               sx: {
                 borderTopRightRadius: 0,
