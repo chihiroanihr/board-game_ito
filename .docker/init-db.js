@@ -9,7 +9,7 @@ function createDbUser(username, password, roles) {
       pwd: password,
       roles: roles,
     });
-    console.log(`User ${username} creation successful.`);
+    console.log(`Creation of user "${username}" successful.`);
   } catch (error) {
     // Already created error
     if (error.code === 51003 || error.codeName === 'Location51003') {

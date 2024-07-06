@@ -36,13 +36,15 @@
 
    ```bash
    chmod +x .docker/keyfile.sh .docker/entrypoint.sh start.sh
-   chmod +x keyfile.sh entrypoint.sh start.sh
+   chmod +x start.sh
    ```
 
 2. Run the script.
 
    ```bash
-   start.sh
+   ./start.sh
+   # OR bash start.sh
+   # OR zsh start.sh
    ```
 
 3. (Optional): Open the Mongo DB shell (`mongosh`) in your bash terminal

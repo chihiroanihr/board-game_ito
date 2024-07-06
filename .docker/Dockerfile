@@ -11,7 +11,7 @@ COPY ../package.json ./
 COPY ../package-lock.json ./
 
 # Copy /shared folder
-COPY ../packages/shared ./packages/
+COPY ../packages/shared ./packages/shared/
 
 # ---------- client development ---------- #
 FROM build-init AS build-dev-client
@@ -25,12 +25,15 @@ COPY ../packages/client/package.json ./packages/client/
 RUN npm install
 
 # Clean build folder (dist)
-# RUN npm clean-dist:all
+# RUN npm run clean-dist:all
+
+# Build /shared folder
+# RUN npm run build:shared
 
 EXPOSE 5173
 
 # Specify default command to run app
-CMD npm run start-dev:client
+CMD npm run build:shared && npm run start-dev:client
 
 # ---------- server development ---------- #
 FROM build-init AS build-dev-server
@@ -44,12 +47,16 @@ COPY ../packages/server/package.json ./packages/server/
 RUN npm install
 
 # Clean build folder (dist)
-# RUN npm clean-dist:all
+# RUN npm run clean-dist:all
+
+# Build /shared folder
+# RUN npm run build:shared
 
 EXPOSE 3000
 
 # Specify default command to run app
-CMD npm run start-dev:server
+CMD npm run build:shared && sleep 5 && npm run start-dev:server
+# -> sleep to avoid error: "Error connecting to MongoDB MongoServerError: Authentication failed."
 
 # ---------- production ---------- #
 FROM build-init AS build-prod
@@ -67,13 +74,10 @@ FROM build-prod AS build-prod-client
 RUN echo "[*] Entered \"build-prod-client\" stage."
 
 # Copy source codes of the particular app into the image
-COPY ../packages/client ./packages/
+COPY ../packages/client ./packages/client/
 
 # Install packages
 RUN npm install --production
-
-# Clean build folder (dist)
-# RUN npm run clean-dist:all
 
 # Build app
 RUN npm run build:client
@@ -101,13 +105,10 @@ FROM build-prod AS build-prod-server
 RUN echo "[*] Entered \"build-prod-server\" stage."
 
 # Copy source codes of the particular app into the image
-COPY ../packages/server ./packages/
+COPY ../packages/server ./packages/server/
 
 # Install packages
 RUN npm install --production
-
-# Clean build folder (dist)
-# RUN npm run clean-dist:all
 
 EXPOSE 3001
 
