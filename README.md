@@ -20,6 +20,16 @@
    npx dotenv-vault@latest open
    ```
 
+4. Make folder for env files (if you haven't created any)
+
+   ```bash
+   # From the root project, create "env/" folder.
+   mkdir .env
+
+   # Move all the .env related files into the "env/" folder.
+   mv .env .env.me .env.vault env/
+   ```
+
 ## Mongo DB & Docker Setup
 
 1. Make sure `start.sh` and the other shell scripts in `/.docker` is executable.

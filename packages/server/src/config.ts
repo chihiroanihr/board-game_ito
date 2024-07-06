@@ -3,7 +3,7 @@ import { createConnString } from './utils';
 const loadConfig = () => {
   // try {
   //     // Adjust the path as necessary based on your project structure
-  //     const envPath = path.resolve(__dirname, '../../../.env/.env')
+  //     const envPath = path.resolve(__dirname, '../../../env/.env')
   //     const result = dotenv.config({ path: envPath })
   //     // Error
   //     if (result.error) {

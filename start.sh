@@ -12,7 +12,7 @@ if [ ! -f "./replica.key" ]; then
 fi
 
 # Source the .env file from the root directory
-source ../.env/.env
+source ../env/.env
 
 # Start the MongoDB containers
 if [ "$START_APPS_IN_DOCKER" != true ]; then
