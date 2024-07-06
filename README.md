@@ -24,7 +24,7 @@
 
    ```bash
    # From the root project, create "env/" folder.
-   mkdir .env
+   mkdir env
 
    # Move all the .env related files into the "env/" folder.
    mv .env .env.me .env.vault env/
