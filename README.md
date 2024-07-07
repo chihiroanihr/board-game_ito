@@ -120,8 +120,9 @@ docker-compose -f .docker/docker-compose.yaml down -v
 
 #### HTTP to HTTPS
 
-- [Https on Localhost for Vite and React , Vue , Vanila , Svelte](https://www.youtube.com/watch?v=s2YxcPR_yhw)
+- [Https on Localhost for Vite and React, Vue, Vanilla, Svelte](https://www.youtube.com/watch?v=s2YxcPR_yhw)
 - [How to Secure Your NodeJS App with HTTPS and SSL Certificates](https://medium.com/@anandam00/how-to-secure-your-nodejs-app-with-https-and-ssl-certificates-e3afcd4533e9)
+- [How to configure docker container with https](https://www.devopsschool.com/blog/how-to-configure-docker-container-with-https/)
 
 ### Unique ID
 

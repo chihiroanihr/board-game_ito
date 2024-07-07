@@ -11,8 +11,8 @@ export default defineConfig({
     host: true,
     port: 5173,
     https: {
-      key: '../../bgi-privateKey.key',
-      cert: '../../bgi.crt',
+      key: '../../ssl/localhost.key',
+      cert: '../../ssl/localhost.crt',
     },
   },
   preview: {

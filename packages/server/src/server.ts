@@ -29,8 +29,8 @@ app.use(router); // Mount the routes
 
 // HTTP server initialization
 const options = {
-  key: fs.readFileSync('../../bgi-privateKey.key'),
-  cert: fs.readFileSync('../../bgi.crt'),
+  key: fs.readFileSync('../../ssl/localhost.key'),
+  cert: fs.readFileSync('../../ssl/localhost.crt'),
 };
 const server: HTTPServer = createServer(options, app);
 
