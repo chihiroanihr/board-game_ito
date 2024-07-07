@@ -2,7 +2,6 @@
 
 # Navigate to the root directory
 cd "$(dirname "$0")"
-echo "$(dirname "$0")"/
 
 # If ssl keyfolder does not exist then generate the keyfolder
 if [ ! -d "./ssl" ]; then
@@ -19,7 +18,7 @@ cd "$(dirname "$0")"/.docker
 
 # If keyfile does not exist then generate the keyfile and set permissions
 if [ ! -f "./replica.key" ]; then
-    echo "[*] Creating keyfile."
+    echo "[*] Creating Mongo DB replica keyfile."
     bash keyfile.sh
 fi
 
