@@ -91,11 +91,7 @@ function Home() {
         Welcome to ITO Game
       </Typography>
 
-      <Box
-        component="form"
-        onSubmit={handleSubmit(handleLogin)}
-        noValidate
-      >
+      <Box component="form" onSubmit={handleSubmit(handleLogin)} noValidate>
         <Stack direction="row">
           {/* Input Field */}
           <TextField

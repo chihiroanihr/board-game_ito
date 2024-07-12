@@ -159,7 +159,7 @@ export default function Waiting() {
    * ---------------------------------------------------
    * - Receive new room info (Room obj), list of players (Array<User>), and user (participated) info (User obj) from the response
    * - Update room info in the local storage
-   * - Append new user to the list of players (just replace oroginal list of players with new list of players received)
+   * - Append new user to the list of players (just replace original list of players with new list of players received)
    * - If list of players reaches more than MIN_NUM_PLAYERS, enable "allowStart"
    * - Display message that new user has arrived
    */

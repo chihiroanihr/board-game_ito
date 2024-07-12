@@ -4,6 +4,25 @@ const useLocalMediaStream = () => {
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [localMediaStream, setLocalMediaStream] = useState<MediaStream | null>(null);
 
+  /**
+   * Handler to stop and remove tracks from the local media stream
+   */
+  const closeLocalMediaStream = useCallback(() => {
+    if (localMediaStream) {
+      localMediaStream.getTracks().forEach((track) => {
+        track.stop(); // Stop media track
+        localMediaStream.removeTrack(track); // Remove media track from the stream
+      });
+    }
+  }, [localMediaStream]);
+
+  /**
+   * Toggle mute button handler
+   */
+  const toggleMuteMediaStream = () => {
+    setIsMuted((prevMuted) => !prevMuted);
+  };
+
   useEffect(() => {
     // Access media
     navigator.mediaDevices
@@ -22,25 +41,12 @@ const useLocalMediaStream = () => {
       );
   }, []);
 
-  const closeMediaStream = useCallback(() => {
-    if (localMediaStream) {
-      localMediaStream.getTracks().forEach((track) => {
-        track.stop(); // Stop media track
-        localMediaStream.removeTrack(track); // Remove media track from the stream
-      });
+  useEffect(() => {
+    // Close media when unmounted
+    return () => closeLocalMediaStream();
+  }, [closeLocalMediaStream]);
 
-      // setLocalMediaStream(null); // Reset media
-    }
-  }, [localMediaStream]);
-
-  /**
-   * Toggle mute button handler
-   */
-  const toggleMuteMediaStream = () => {
-    setIsMuted((prevMuted) => !prevMuted);
-  };
-
-  return { localMediaStream, closeMediaStream, toggleMuteMediaStream, isMuted };
+  return { localMediaStream, closeLocalMediaStream, toggleMuteMediaStream, isMuted };
 };
 
 export default useLocalMediaStream;

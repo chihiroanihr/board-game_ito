@@ -24,13 +24,13 @@ import {
   useAuth,
   useRoom,
   useAction,
+  useSubmissionStatus,
   type BeforeSubmitCallbackParams,
   type BeforeSubmitCallbackFunction,
   type ErrorCallbackParams,
   type ErrorCallbackFunction,
   type SuccessCallbackParams,
   type SuccessCallbackFunction,
-  useSubmissionStatus,
 } from '@/hooks';
 import { navigateHome, navigateDashboard } from '@/utils';
 import { commonIconButtonStyle } from '../theme';
@@ -107,7 +107,7 @@ export default function HeaderLayout() {
       handleSnackbarOpen(); // Open snackbar to give notification that room has changed
     }
 
-    // Executes whenever a socket event is recieved from the server
+    // Executes whenever a socket event is received from the server
     socket.on(NamespaceEnum.ROOM_EDITED, onRoomEditedEvent);
     return () => {
       socket.off(NamespaceEnum.ROOM_EDITED, onRoomEditedEvent);
