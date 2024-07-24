@@ -26,7 +26,13 @@ import {
   MAX_NUM_PLAYERS,
 } from '@bgi/shared';
 
-import { TextButton, AnimateTextThreeDots, PlayerListItem, SnackbarPlayer } from '@/components';
+import {
+  TextButton,
+  AnimateTextThreeDots,
+  PlayerListItem,
+  SnackbarPlayer,
+  TooltipStyled,
+} from '@/components';
 import {
   useAuth,
   useRoom,
@@ -278,6 +284,17 @@ export default function Waiting() {
   };
 
   const RoomIdDisplay = () => {
+    const handleRoomIdCopy = () => {
+      navigator.clipboard.writeText(room._id).then(
+        () => {
+          alert('Room ID copied to clipboard!');
+        },
+        (err) => {
+          console.error('Could not copy Room ID to your clipboard: ', err);
+        }
+      );
+    };
+
     return (
       <Stack
         id="waiting_id-display_wrapper"
@@ -289,9 +306,17 @@ export default function Waiting() {
       >
         <Typography variant="h4" component="h2">
           Room ID:{' '}
-          <Typography variant="inherit" fontWeight="bold" component="span">
-            {room._id}
-          </Typography>
+          <TooltipStyled title="Click to copy" placement="right">
+            <Typography
+              variant="inherit"
+              fontWeight="bold"
+              component="span"
+              sx={{ cursor: 'pointer' }}
+              onClick={handleRoomIdCopy}
+            >
+              {room._id}
+            </Typography>
+          </TooltipStyled>
         </Typography>
         <Typography variant="body1" component="div">
           Invite other players with this room ID.
