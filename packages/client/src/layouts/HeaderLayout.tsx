@@ -187,10 +187,20 @@ export default function HeaderLayout() {
 
               {isAdmin && (
                 <DialogActions>
-                  <Button onClick={handleDialogClose} disabled={isSubmitting}>
+                  <Button
+                    sx={{ fontWeight: 600 }}
+                    onClick={handleDialogClose}
+                    disabled={isSubmitting}
+                  >
                     Cancel
                   </Button>
-                  <Button onClick={() => submitBtnRef.current?.click()} disabled={isSubmitting}>
+                  <Button
+                    sx={{ fontWeight: 600 }}
+                    variant="contained"
+                    disableElevation
+                    onClick={() => submitBtnRef.current?.click()}
+                    disabled={isSubmitting}
+                  >
                     Save
                   </Button>
                 </DialogActions>

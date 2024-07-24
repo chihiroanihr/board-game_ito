@@ -275,9 +275,14 @@ export default function Waiting() {
 
   const PlayersList = () => {
     return (
-      <List id="waiting_player-list" dense={true} sx={{ overflowY: 'auto' }}>
+      <List id="waiting_player-list" dense={true} sx={{ overflowY: 'auto' }} disablePadding>
         {players.map((player) => (
-          <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
+          <PlayerListItem
+            key={player._id.toString()}
+            player={player}
+            adminId={adminId}
+            myselfId={myself?._id}
+          />
         ))}
       </List>
     );
@@ -298,7 +303,7 @@ export default function Waiting() {
     return (
       <Stack
         id="waiting_id-display_wrapper"
-        spacing="0.25rem"
+        spacing="0.4rem"
         bgcolor="grey.200"
         p={{ xs: '1.4rem', lg: '2rem' }}
         border={2}
@@ -309,8 +314,12 @@ export default function Waiting() {
           <TooltipStyled title="Click to copy" placement="right">
             <Typography
               variant="inherit"
-              fontWeight="bold"
               component="span"
+              fontWeight="bold"
+              color="primary.contrastText"
+              bgcolor="grey.600"
+              paddingY="0.2rem"
+              paddingX="0.5rem"
               sx={{ cursor: 'pointer' }}
               onClick={handleRoomIdCopy}
             >
