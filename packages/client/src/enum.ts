@@ -20,7 +20,7 @@ export enum PlayerInQueueActionEnum {
   BAN = 'ban-player',
 }
 
-export type SnackbarPlayerInfoType =
+export type SnackbarPlayerInQueueInfoType =
   | {
       key: number;
       player: User;

@@ -30,7 +30,7 @@ import {
   TextButton,
   AnimateTextThreeDots,
   PlayerListItem,
-  SnackbarPlayer,
+  SnackbarPlayerInQueue,
   TooltipStyled,
 } from '@/components';
 import {
@@ -48,7 +48,7 @@ import {
   useSocket,
 } from '@/hooks';
 import { outputServerError } from '@/utils';
-import { PlayerInQueueActionEnum, type SnackbarPlayerInfoType } from '../enum';
+import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
 export default function Waiting() {
   const { socket } = useSocket();
@@ -66,8 +66,8 @@ export default function Waiting() {
 
   const [backdropOpen, setBackdropOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarPlayerInfo, setSnackbarPlayerInfo] = useState<SnackbarPlayerInfoType>(undefined);
-  const [playerSnackbars, setPlayerSnackbars] = React.useState<readonly SnackbarPlayerInfoType[]>(
+  const [SnackbarPlayerInQueueInfo, setSnackbarPlayerInQueueInfo] = useState<SnackbarPlayerInQueueInfoType>(undefined);
+  const [playerSnackbars, setPlayerSnackbars] = React.useState<readonly SnackbarPlayerInQueueInfoType[]>(
     []
   );
 
@@ -103,7 +103,7 @@ export default function Waiting() {
   // Snackbar handlers
   const handleSnackbarOpen = () => setSnackbarOpen(true);
   const handleSnackbarClose = () => setSnackbarOpen(false);
-  const handleSnackbarExited = () => setSnackbarPlayerInfo(undefined);
+  const handleSnackbarExited = () => setSnackbarPlayerInQueueInfo(undefined);
 
   // Enabling start game depending on player number
   useEffect(() => {
@@ -118,16 +118,16 @@ export default function Waiting() {
   // Consecutive snackbars (multiple snackbars without stacking them): (https://mui.com/material-ui/react-snackbar/#consecutive-snackbars)
   useEffect(() => {
     // Set a new snack when we don't have an active one
-    if (playerSnackbars.length && !snackbarPlayerInfo) {
-      setSnackbarPlayerInfo(playerSnackbars[0]);
+    if (playerSnackbars.length && !SnackbarPlayerInQueueInfo) {
+      setSnackbarPlayerInQueueInfo(playerSnackbars[0]);
       setPlayerSnackbars((prev) => prev.slice(1));
       handleSnackbarOpen();
     }
     // Close an active snack when a new one is added
-    else if (playerSnackbars.length && snackbarPlayerInfo && snackbarOpen) {
+    else if (playerSnackbars.length && SnackbarPlayerInQueueInfo && snackbarOpen) {
       handleSnackbarClose();
     }
-  }, [playerSnackbars, snackbarOpen, snackbarPlayerInfo]);
+  }, [playerSnackbars, snackbarOpen, SnackbarPlayerInQueueInfo]);
 
   /**
    * [1] Myself arrives
@@ -457,9 +457,9 @@ export default function Waiting() {
       )}
 
       {/* Snackbar player in / out notification */}
-      <SnackbarPlayer
+      <SnackbarPlayerInQueue
         open={snackbarOpen}
-        snackbarInfo={snackbarPlayerInfo}
+        snackbarInfo={SnackbarPlayerInQueueInfo}
         onClose={handleSnackbarClose}
         onExited={handleSnackbarExited}
       />

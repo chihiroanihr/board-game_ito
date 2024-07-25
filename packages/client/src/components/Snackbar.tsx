@@ -1,4 +1,3 @@
-// SnackbarPlayerOut.js
 import React from 'react';
 import { Stack, Slide, Avatar, useTheme, type SlideProps } from '@mui/material';
 import {
@@ -12,7 +11,7 @@ import {
 } from '@mui/icons-material';
 
 import { SnackbarStyled } from './styled';
-import { PlayerInQueueActionEnum, type SnackbarPlayerInfoType } from '../enum';
+import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
 const SNACKBAR_DURATION = 5000;
 
@@ -24,14 +23,14 @@ function SlideFromDown(props: React.JSX.IntrinsicAttributes & SlideProps) {
   return <Slide {...props} direction="down" />;
 }
 
-interface SnackbarPlayerProps {
+interface SnackbarPlayerInQueueProps {
   open: boolean;
-  snackbarInfo: SnackbarPlayerInfoType;
+  snackbarInfo: SnackbarPlayerInQueueInfoType;
   onClose: () => void;
   onExited: () => void;
 }
 
-export const SnackbarPlayer: React.FC<SnackbarPlayerProps> = ({
+export const SnackbarPlayerInQueue: React.FC<SnackbarPlayerInQueueProps> = ({
   open,
   snackbarInfo,
   onClose,

@@ -19,7 +19,7 @@ import { type User } from '@bgi/shared';
 
 import { OnlineBadgeStyled } from './styled';
 import { avatarBgColor } from '@/utils';
-import { PlayerInQueueActionEnum, type SnackbarPlayerInfoType } from '../enum';
+import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
 interface ManagePlayerButtonData {
   action: PlayerInQueueActionEnum;
@@ -54,7 +54,7 @@ interface PlayerListItemProps {
   player: User;
   adminId: ObjectId | undefined;
   myselfId: ObjectId | undefined;
-  setPlayerSnackbars: React.Dispatch<React.SetStateAction<readonly SnackbarPlayerInfoType[]>>;
+  setPlayerSnackbars: React.Dispatch<React.SetStateAction<readonly SnackbarPlayerInQueueInfoType[]>>;
 }
 
 const PlayerListItem: React.FC<PlayerListItemProps> = ({
