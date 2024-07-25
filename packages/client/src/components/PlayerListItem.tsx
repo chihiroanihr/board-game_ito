@@ -14,12 +14,40 @@ import {
   DialogActions,
   Button,
 } from '@mui/material';
-import { Block as BlockIcon } from '@mui/icons-material';
 
 import { type User } from '@bgi/shared';
 
 import { OnlineBadgeStyled } from './styled';
 import { avatarBgColor } from '@/utils';
+
+interface ManagePlayerButtonData {
+  action: string;
+  color: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+  text: string;
+  confirmMessage: string;
+}
+
+// Define the button data array
+const managePlayerButtonData: ManagePlayerButtonData[] = [
+  {
+    action: 'admin',
+    color: 'warning',
+    text: 'Make this player an admin',
+    confirmMessage: 'Are you sure you want to make this player an admin?',
+  },
+  {
+    action: 'kick',
+    color: 'error',
+    text: 'Kick this player',
+    confirmMessage: 'Are you sure you want to kick this player?',
+  },
+  {
+    action: 'ban',
+    color: 'error',
+    text: 'Ban this player',
+    confirmMessage: 'Are you sure you want to ban this player?',
+  },
+];
 
 interface PlayerListItemProps {
   player: User;
@@ -31,6 +59,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId, myself
   const [playerDialogOpen, setPlayerDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState('');
+  const [confirmMessage, setConfirmMessage] = useState('');
 
   const handleOpenPlayerDialog = () => {
     setPlayerDialogOpen(true);
@@ -40,8 +69,9 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId, myself
     setPlayerDialogOpen(false);
   };
 
-  const handleConfirmDialogOpen = (action: string) => {
+  const handleConfirmDialogOpen = (action: string, message: string) => {
     setActionType(action);
+    setConfirmMessage(message);
     setConfirmDialogOpen(true);
   };
 
@@ -67,6 +97,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId, myself
         // Handle other actions if needed
         console.log(`Unknown action: ${actionType}`);
     }
+
     setConfirmDialogOpen(false);
     setPlayerDialogOpen(false);
   };
@@ -117,10 +148,6 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId, myself
               myself
             </Typography>
           )}
-          {/* {myselfId?.toString() === adminId?.toString() &&
-            myselfId?.toString() !== player._id.toString() && (
-              <BlockIcon sx={{ color: 'primary.light' }} />
-            )} */}
         </ListItemButton>
       </ListItem>
 
@@ -146,33 +173,18 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId, myself
 
           {/* Action Buttons */}
           <Stack spacing="0.4rem">
-            <Button
-              onClick={() => handleConfirmDialogOpen('admin')}
-              variant="contained"
-              color="warning"
-              disableElevation
-              sx={{ fontWeight: 600 }}
-            >
-              Make this player an admin
-            </Button>
-            <Button
-              onClick={() => handleConfirmDialogOpen('kick')}
-              variant="contained"
-              color="error"
-              disableElevation
-              sx={{ fontWeight: 600 }}
-            >
-              Kick this player
-            </Button>
-            <Button
-              onClick={() => handleConfirmDialogOpen('ban')}
-              variant="contained"
-              color="error"
-              disableElevation
-              sx={{ fontWeight: 600 }}
-            >
-              Ban this player
-            </Button>
+            {managePlayerButtonData.map((button, index) => (
+              <Button
+                key={index}
+                onClick={() => handleConfirmDialogOpen(button.action, button.confirmMessage)}
+                variant="contained"
+                color={button.color}
+                disableElevation
+                sx={{ fontWeight: 600 }}
+              >
+                {button.text}
+              </Button>
+            ))}
           </Stack>
         </DialogContent>
 
@@ -189,15 +201,33 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId, myself
         {/* Dialog title and content */}
         <DialogTitle>Confirmation</DialogTitle>
         <DialogContent>
-          <Typography variant="body1">Are you sure you want to kick {player.name}?</Typography>
+          <Typography component="div" fontWeight={600}>
+            Selected Player:{' '}
+            <Typography component="span" fontWeight="inherit" color="primary">
+              {player.name}
+            </Typography>
+          </Typography>
+          <Typography component="div">{confirmMessage}</Typography>
         </DialogContent>
 
         {/* Dialog action buttons */}
         <DialogActions>
-          <Button onClick={handleManagePlayerAction} color="secondary">
+          <Button
+            onClick={handleManagePlayerAction}
+            variant="contained"
+            color="primary"
+            disableElevation
+            sx={{ fontWeight: 600 }}
+          >
             Yes
           </Button>
-          <Button onClick={handleConfirmDialogClose} color="primary">
+          <Button
+            onClick={handleConfirmDialogClose}
+            variant="contained"
+            color="inherit"
+            disableElevation
+            sx={{ fontWeight: 600 }}
+          >
             No
           </Button>
         </DialogActions>
