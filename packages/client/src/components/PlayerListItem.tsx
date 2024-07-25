@@ -19,9 +19,10 @@ import { type User } from '@bgi/shared';
 
 import { OnlineBadgeStyled } from './styled';
 import { avatarBgColor } from '@/utils';
+import { PlayerInQueueActionEnum, type SnackbarPlayerInfoType } from '../enum';
 
 interface ManagePlayerButtonData {
-  action: string;
+  action: PlayerInQueueActionEnum;
   color: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
   text: string;
   confirmMessage: string;
@@ -30,19 +31,19 @@ interface ManagePlayerButtonData {
 // Define the button data array
 const managePlayerButtonData: ManagePlayerButtonData[] = [
   {
-    action: 'admin',
+    action: PlayerInQueueActionEnum.ADMIN,
     color: 'warning',
     text: 'Make this player an admin',
     confirmMessage: 'Are you sure you want to make this player an admin?',
   },
   {
-    action: 'kick',
+    action: PlayerInQueueActionEnum.KICK,
     color: 'error',
     text: 'Kick this player',
     confirmMessage: 'Are you sure you want to kick this player?',
   },
   {
-    action: 'ban',
+    action: PlayerInQueueActionEnum.BAN,
     color: 'error',
     text: 'Ban this player',
     confirmMessage: 'Are you sure you want to ban this player?',
@@ -53,9 +54,15 @@ interface PlayerListItemProps {
   player: User;
   adminId: ObjectId | undefined;
   myselfId: ObjectId | undefined;
+  setPlayerSnackbars: React.Dispatch<React.SetStateAction<readonly SnackbarPlayerInfoType[]>>;
 }
 
-const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId, myselfId }) => {
+const PlayerListItem: React.FC<PlayerListItemProps> = ({
+  player,
+  adminId,
+  myselfId,
+  setPlayerSnackbars,
+}) => {
   const [playerDialogOpen, setPlayerDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState('');
@@ -81,17 +88,38 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({ player, adminId, myself
 
   const handleManagePlayerAction = () => {
     switch (actionType) {
-      case 'kick':
-        // Kick player logic
-        console.log(`Kicked player ${player.name}`);
+      case PlayerInQueueActionEnum.KICK:
+        // Store player and snackbar info for snackbar notification + Add to snackbar queue
+        setPlayerSnackbars((prev) => [
+          ...prev,
+          {
+            key: new Date().getTime(),
+            player: player,
+            status: PlayerInQueueActionEnum.KICK,
+          },
+        ]);
         break;
-      case 'ban':
-        // Ban player logic
-        console.log(`Banned player ${player.name}`);
+      case PlayerInQueueActionEnum.BAN:
+        // Store player and snackbar info for snackbar notification + Add to snackbar queue
+        setPlayerSnackbars((prev) => [
+          ...prev,
+          {
+            key: new Date().getTime(),
+            player: player,
+            status: PlayerInQueueActionEnum.BAN,
+          },
+        ]);
         break;
-      case 'admin':
-        // Change admin logic
-        console.log(`Changed admin to ${player.name}`);
+      case PlayerInQueueActionEnum.ADMIN:
+        // Store player and snackbar info for snackbar notification + Add to snackbar queue
+        setPlayerSnackbars((prev) => [
+          ...prev,
+          {
+            key: new Date().getTime(),
+            player: player,
+            status: PlayerInQueueActionEnum.ADMIN,
+          },
+        ]);
         break;
       default:
         // Handle other actions if needed

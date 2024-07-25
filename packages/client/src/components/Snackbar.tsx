@@ -1,10 +1,18 @@
 // SnackbarPlayerOut.js
 import React from 'react';
 import { Stack, Slide, Avatar, useTheme, type SlideProps } from '@mui/material';
-import { Login, Logout, ManageHistory, CheckCircleOutline } from '@mui/icons-material';
+import {
+  Login,
+  Logout,
+  AdminPanelSettings,
+  NoMeetingRoom,
+  Block,
+  ManageHistory,
+  CheckCircleOutline,
+} from '@mui/icons-material';
 
 import { SnackbarStyled } from './styled';
-import { SnackbarPlayerInfoType } from '../enum';
+import { PlayerInQueueActionEnum, type SnackbarPlayerInfoType } from '../enum';
 
 const SNACKBAR_DURATION = 5000;
 
@@ -42,7 +50,7 @@ export const SnackbarPlayer: React.FC<SnackbarPlayerProps> = ({
       sx={{ bottom: { xs: '1.4rem', lg: undefined } }}
       message={
         <Stack direction="row" alignItems="center" spacing={1}>
-          {snackbarInfo?.status === 'in' && (
+          {snackbarInfo?.status === PlayerInQueueActionEnum.IN && (
             <>
               <Avatar sx={{ bgcolor: theme.palette.success.main }}>
                 <Login />
@@ -50,12 +58,36 @@ export const SnackbarPlayer: React.FC<SnackbarPlayerProps> = ({
               <span>{`${snackbarInfo?.player.name} just joined.`}</span>
             </>
           )}
-          {snackbarInfo?.status === 'out' && (
+          {snackbarInfo?.status === PlayerInQueueActionEnum.OUT && (
             <>
               <Avatar sx={{ bgcolor: theme.palette.error.main }}>
                 <Logout />
               </Avatar>
               <span>{`${snackbarInfo?.player.name} just left.`}</span>
+            </>
+          )}
+          {snackbarInfo?.status === PlayerInQueueActionEnum.ADMIN && (
+            <>
+              <Avatar sx={{ bgcolor: theme.palette.info.main }}>
+                <AdminPanelSettings />
+              </Avatar>
+              <span>{`${snackbarInfo?.player.name} became a new admin.`}</span>
+            </>
+          )}
+          {snackbarInfo?.status === PlayerInQueueActionEnum.KICK && (
+            <>
+              <Avatar sx={{ bgcolor: theme.palette.error.main }}>
+                <NoMeetingRoom />
+              </Avatar>
+              <span>{`${snackbarInfo?.player.name} got kicked by an admin.`}</span>
+            </>
+          )}
+          {snackbarInfo?.status === PlayerInQueueActionEnum.BAN && (
+            <>
+              <Avatar sx={{ bgcolor: theme.palette.error.main }}>
+                <Block />
+              </Avatar>
+              <span>{`${snackbarInfo?.player.name} got banned by an admin.`}</span>
             </>
           )}
         </Stack>

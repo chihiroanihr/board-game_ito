@@ -48,7 +48,7 @@ import {
   useSocket,
 } from '@/hooks';
 import { outputServerError } from '@/utils';
-import { type SnackbarPlayerInfoType } from '../enum';
+import { PlayerInQueueActionEnum, type SnackbarPlayerInfoType } from '../enum';
 
 export default function Waiting() {
   const { socket } = useSocket();
@@ -182,7 +182,7 @@ export default function Waiting() {
       {
         key: new Date().getTime(),
         player: player,
-        status: 'in',
+        status: PlayerInQueueActionEnum.IN,
       },
     ]);
 
@@ -228,7 +228,7 @@ export default function Waiting() {
       {
         key: new Date().getTime(),
         player: player,
-        status: 'out',
+        status: PlayerInQueueActionEnum.OUT,
       },
     ]);
 
@@ -282,6 +282,7 @@ export default function Waiting() {
             player={player}
             adminId={adminId}
             myselfId={myself?._id}
+            setPlayerSnackbars={setPlayerSnackbars}
           />
         ))}
       </List>

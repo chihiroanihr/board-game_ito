@@ -12,10 +12,18 @@ export type SendChatFormDataType = {
   message: string;
 };
 
+export enum PlayerInQueueActionEnum {
+  IN = 'player-in',
+  OUT = 'player-out',
+  ADMIN = 'change-admin',
+  KICK = 'kick-player',
+  BAN = 'ban-player',
+}
+
 export type SnackbarPlayerInfoType =
   | {
       key: number;
       player: User;
-      status: 'in' | 'out';
+      status: PlayerInQueueActionEnum;
     }
   | undefined;
