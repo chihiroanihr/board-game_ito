@@ -14,12 +14,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { setIsSubmitting } = useSubmissionStatus();
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const processPreFormSubmission = (status: boolean) => {
     setIsLoading(status);
     setIsSubmitting(status);
   };
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const joinRoomHandler = () => {
     processPreFormSubmission(true);

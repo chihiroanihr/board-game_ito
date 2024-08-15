@@ -48,7 +48,7 @@ import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../
 
 export default function Waiting() {
   const { socket } = useSocket();
-  const { user: myself } = useAuth();
+  const { user: currentUser } = useAuth();
   const { room, updateRoom, discardRoom } = useRoom();
   const { isSubmitting } = useSubmissionStatus();
   const { loadingButton, processPreFormSubmission } = usePreFormSubmission();
@@ -63,13 +63,13 @@ export default function Waiting() {
   const [backdropOpen, setBackdropOpen] = useState(false);
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [SnackbarPlayerInQueueInfo, setSnackbarPlayerInQueueInfo] =
+  const [snackbarPlayerInQueueInfo, setSnackbarPlayerInQueueInfo] =
     useState<SnackbarPlayerInQueueInfoType>(undefined);
   const [playerSnackbars, setPlayerSnackbars] = React.useState<
     readonly SnackbarPlayerInQueueInfoType[]
   >([]);
 
-  const isAdmin = !!(adminId?.toString() === myself?._id.toString());
+  const isAdmin = !!(adminId?.toString() === currentUser?._id.toString());
 
   // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
   const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
@@ -182,27 +182,27 @@ export default function Waiting() {
   // Consecutive snackbars (multiple snackbars without stacking them): (https://mui.com/material-ui/react-snackbar/#consecutive-snackbars)
   useEffect(() => {
     // Set a new snack when we don't have an active one
-    if (playerSnackbars.length && !SnackbarPlayerInQueueInfo) {
+    if (playerSnackbars.length && !snackbarPlayerInQueueInfo) {
       setSnackbarPlayerInQueueInfo(playerSnackbars[0]);
       setPlayerSnackbars((prev) => prev.slice(1));
       handleSnackbarOpen();
     }
     // Close an active snack when a new one is added
-    else if (playerSnackbars.length && SnackbarPlayerInQueueInfo && snackbarOpen) {
+    else if (playerSnackbars.length && snackbarPlayerInQueueInfo && snackbarOpen) {
       handleSnackbarClose();
     }
-  }, [playerSnackbars, snackbarOpen, SnackbarPlayerInQueueInfo]);
+  }, [playerSnackbars, snackbarOpen, snackbarPlayerInQueueInfo]);
 
   /**
-   * [1] Myself arrives
+   * [1] currentUser arrives
    * ---------------------------------------------------
    * Assume room info and user info in the local storage are already updated previously.
    * 1. If you are a room admin:
-   *    - Receive new room info (Room obj), list of players (Array<User>), and user (myself) info (User obj) from the response
+   *    - Receive new room info (Room obj), list of players (Array<User>), and user (currentUser) info (User obj) from the response
    *    - Set admin ID (your user ID)
    *    - Include yourself (User obj) in the list of players (Array<User>)
    * 2. If you are a participant:
-   *    - Receive new room info (Room obj), list of players (Array<User>), and user (myself) info (User obj) from the response
+   *    - Receive new room info (Room obj), list of players (Array<User>), and user (currentUser) info (User obj) from the response
    *    - Set admin ID (room.roomAdmin)
    *    - Set list of participating players (Array<User>)
    *    - (Set other room config info, etc.)
@@ -254,7 +254,7 @@ export default function Waiting() {
   };
 
   /**
-   * [3] Myself leaves
+   * [3] currentUser leaves
    * ---------------------------------------------------
    * Nothing specific to do.
    */
@@ -287,6 +287,7 @@ export default function Waiting() {
       prevPlayers.filter((prevPlayer: User) => prevPlayer._id.toString() !== player._id.toString())
     );
     // Store player and snackbar info for snackbar notification + Add to snackbar queue
+    //
     setPlayerSnackbars((prev) => [
       ...prev,
       {
@@ -371,7 +372,7 @@ export default function Waiting() {
             key={player._id.toString()}
             player={player}
             adminId={adminId}
-            myselfId={myself?._id}
+            currentUserId={currentUser?._id}
             handleChangeAdmin={handleChangeAdmin}
           />
         ))}
@@ -549,7 +550,7 @@ export default function Waiting() {
       {/* Snackbar player in / out notification */}
       <SnackbarPlayerInQueue
         open={snackbarOpen}
-        snackbarInfo={SnackbarPlayerInQueueInfo}
+        snackbarInfo={snackbarPlayerInQueueInfo}
         onClose={handleSnackbarClose}
         onExited={handleSnackbarExited}
       />

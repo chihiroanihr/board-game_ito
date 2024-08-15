@@ -8,7 +8,7 @@ const useWindowDimensions = () => {
   });
 
   useEffect(() => {
-    // Funtion to re-calculate window dimensions
+    // Function to re-calculate window dimensions
     const handleResize = () => {
       setWindowDimensions({
         width: window.innerWidth,
