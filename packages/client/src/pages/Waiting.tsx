@@ -17,13 +17,15 @@ import {
 import { People as PeopleIcon } from '@mui/icons-material';
 
 import {
+  MIN_NUM_PLAYERS,
+  MAX_NUM_PLAYERS,
   type User,
   type WaitRoomResponse,
   type PlayerInResponse,
   type PlayerOutResponse,
+  type LeaveRoomResponse,
+  type ChangeAdminResponse,
   NamespaceEnum,
-  MIN_NUM_PLAYERS,
-  MAX_NUM_PLAYERS,
 } from '@bgi/shared';
 
 import {
@@ -36,25 +38,20 @@ import {
 import {
   useAuth,
   useRoom,
-  useAction,
+  usePreFormSubmission,
   usePlayerStatus,
   useSubmissionStatus,
-  type BeforeSubmitCallbackParams,
-  type BeforeSubmitCallbackFunction,
-  type ErrorCallbackParams,
-  type ErrorCallbackFunction,
-  type SuccessCallbackParams,
-  type SuccessCallbackFunction,
   useSocket,
 } from '@/hooks';
-import { outputServerError } from '@/utils';
+import { outputServerError, outputResponseTimeoutError } from '@/utils';
 import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
 export default function Waiting() {
   const { socket } = useSocket();
   const { user: myself } = useAuth();
-  const { room, updateRoom } = useRoom();
+  const { room, updateRoom, discardRoom } = useRoom();
   const { isSubmitting } = useSubmissionStatus();
+  const { loadingButton, processPreFormSubmission } = usePreFormSubmission();
 
   const theme = useTheme();
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
@@ -62,48 +59,115 @@ export default function Waiting() {
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
   const [allowStart, setAllowStart] = useState<boolean>(false);
-  const [synchronousBlock, setSynchronousBlock] = useState<boolean>(false); // Block other execution synchronously until state sets back to true (loading state just for consistent execution
-
+  const [synchronousBlock, setSynchronousBlock] = useState<boolean>(false); // Block other execution synchronously until state sets back to true (loading state just for consistent execution)
   const [backdropOpen, setBackdropOpen] = useState(false);
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [SnackbarPlayerInQueueInfo, setSnackbarPlayerInQueueInfo] = useState<SnackbarPlayerInQueueInfoType>(undefined);
-  const [playerSnackbars, setPlayerSnackbars] = React.useState<readonly SnackbarPlayerInQueueInfoType[]>(
-    []
-  );
+  const [SnackbarPlayerInQueueInfo, setSnackbarPlayerInQueueInfo] =
+    useState<SnackbarPlayerInQueueInfoType>(undefined);
+  const [playerSnackbars, setPlayerSnackbars] = React.useState<
+    readonly SnackbarPlayerInQueueInfoType[]
+  >([]);
 
   const isAdmin = !!(adminId?.toString() === myself?._id.toString());
 
   // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
   const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
 
-  // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {
-    if (action && action === NamespaceEnum.START_GAME) {
-      setBackdropOpen(true);
-    }
-  };
-  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
-    if (action && action === NamespaceEnum.START_GAME) {
-      setBackdropOpen(false);
-    }
-  };
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
-    if (action && action === NamespaceEnum.START_GAME) {
-      setBackdropOpen(false);
-    }
-  };
-
-  // Button click handlers
-  const { handleLeaveRoom, handleStartGame, loadingButton } = useAction({
-    beforeSubmit,
-    onError,
-    onSuccess,
-  });
-
   // Snackbar handlers
   const handleSnackbarOpen = () => setSnackbarOpen(true);
   const handleSnackbarClose = () => setSnackbarOpen(false);
   const handleSnackbarExited = () => setSnackbarPlayerInQueueInfo(undefined);
+
+  /**
+   * Handler for leaving gamer room.
+   */
+  const handleLeaveRoom = () => {
+    processPreFormSubmission(true);
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      processPreFormSubmission(false);
+      // ERROR
+      outputResponseTimeoutError();
+    }, 5000);
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(NamespaceEnum.LEAVE_ROOM, async ({ error }: LeaveRoomResponse) => {
+      clearTimeout(timeoutId);
+
+      // ERROR
+      if (error) {
+        outputServerError({ error });
+      }
+      // SUCCESS
+      else {
+        room && discardRoom();
+      }
+
+      processPreFormSubmission(false);
+    });
+  };
+
+  /**
+   * Handler for changing admin.
+   * @returns
+   */
+  const handleChangeAdmin = (newAdmin: User) => {
+    processPreFormSubmission(true);
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      processPreFormSubmission(false);
+      // ERROR
+      outputResponseTimeoutError();
+    }, 5000);
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(NamespaceEnum.CHANGE_ADMIN, newAdmin, async ({ error }: ChangeAdminResponse) => {
+      clearTimeout(timeoutId);
+
+      // ERROR
+      if (error) {
+        outputServerError({ error });
+      }
+
+      processPreFormSubmission(false);
+    });
+  };
+
+  /**
+   * Handler for starting game.
+   */
+  const handleStartGame = () => {
+    processPreFormSubmission(true);
+    setBackdropOpen(true);
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      processPreFormSubmission(false);
+      // ERROR
+      outputResponseTimeoutError();
+      setBackdropOpen(false);
+    }, 5000);
+
+    // Send to socket
+    socket.emit(NamespaceEnum.START_GAME, room, async ({ error }: { error: Error }) => {
+      clearTimeout(timeoutId);
+
+      // ERROR
+      if (error) {
+        outputServerError({ error });
+        setBackdropOpen(false);
+      }
+      // SUCCESS
+      else {
+        setBackdropOpen(false);
+      }
+
+      processPreFormSubmission(false);
+    });
+  };
 
   // Enabling start game depending on player number
   useEffect(() => {
@@ -241,6 +305,32 @@ export default function Waiting() {
     onPlayerLeftCallback: handlePlayerOut,
   });
 
+  // useEffect(() => {
+  //   async function onAdminChangedEvent({ user, room }: AdminChangedResponse) {
+  //     setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
+
+  //     updateRoom(room); // Update room in the local storage first
+  //     handleSnackbarOpen(); // Open snackbar to give notification that room has changed
+  //     // Store player and snackbar info for snackbar notification + Add to snackbar queue
+  //     setPlayerSnackbars((prev) => [
+  //       ...prev,
+  //       {
+  //         key: new Date().getTime(),
+  //         player: user,
+  //         status: PlayerInQueueActionEnum.ADMIN,
+  //       },
+  //     ]);
+
+  //     setSynchronousBlock(false); // Unblock
+  //   }
+
+  //   // Executes whenever a socket event is received from the server
+  //   socket.on(NamespaceEnum.ADMIN_CHANGED, onAdminChangedEvent);
+  //   return () => {
+  //     socket.off(NamespaceEnum.ADMIN_CHANGED, onAdminChangedEvent);
+  //   };
+  // }, [socket, updateRoom]);
+
   const PlayersNumber = () => {
     return (
       <Stack
@@ -282,7 +372,7 @@ export default function Waiting() {
             player={player}
             adminId={adminId}
             myselfId={myself?._id}
-            setPlayerSnackbars={setPlayerSnackbars}
+            handleChangeAdmin={handleChangeAdmin}
           />
         ))}
       </List>
@@ -465,6 +555,7 @@ export default function Waiting() {
       />
 
       {/* Dialog before leaving (press back button) */}
+      {/** @todo: Consider if this can be moved to HeaderLayout.tsx */}
       <Dialog id="waiting_before-leave_dialog" open={blocker.state === 'blocked'}>
         <DialogTitle>Are you sure you want to leave?</DialogTitle>
         <DialogActions>

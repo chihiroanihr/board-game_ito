@@ -244,3 +244,22 @@ export const handleLeaveRoom = async (
     throw log.handleDBError(error, 'handleLeaveRoom');
   }
 };
+
+export const handleChangeAdmin = async (
+  roomId: string,
+  newAdminId: ObjectId,
+  dbSession: ClientSession | null = null
+): Promise<Room> => {
+  try {
+    /** @api_call - Update room admin (PUT) */
+    const updatedRoom = await controller.updateRoomAdmin(newAdminId, roomId, dbSession);
+    if (!updatedRoom) {
+      throw new Error('Failed to update room admin (given room might not exist).');
+    }
+
+    // All success
+    return updatedRoom;
+  } catch (error) {
+    throw log.handleDBError(error, 'handleChangeAdmin');
+  }
+};

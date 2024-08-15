@@ -1,4 +1,4 @@
-import { ClientSession, ReturnDocument } from 'mongodb';
+import { ClientSession, ReturnDocument, ObjectId } from 'mongodb';
 
 import type { Room, RoomStatusEnum, RoomSetting } from '@bgi/shared';
 
@@ -40,6 +40,34 @@ export const updateRoom = async (
     matched: result.matchedCount > 0,
     modified: result.modifiedCount > 0,
   }; // true or false
+};
+
+export const updateRoomAdmin = async (
+  newAdminId: ObjectId,
+  roomId: string,
+  dbSession: ClientSession | null = null
+): Promise<Room | null> => {
+  logQueryEvent('Updating only the room admin in Room.');
+
+  // Options object
+  const options = dbSession
+    ? {
+        returnDocument: ReturnDocument.AFTER,
+        session: dbSession,
+        includeResultMetadata: false,
+      }
+    : {
+        returnDocument: ReturnDocument.AFTER,
+        includeResultMetadata: false,
+      }; // return the updated document
+
+  // Result will contain the updated or original (if no modification) document,
+  // or null if no document was found.
+  return await getDB().rooms.findOneAndUpdate(
+    { _id: roomId }, // Query part: find a room with roomId
+    { $set: { roomAdmin: newAdminId } }, // Update part: set the new admin
+    options
+  );
 };
 
 export const updateRoomStatus = async (

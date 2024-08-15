@@ -12,13 +12,14 @@ import {
   type SessionResponse,
   type PlayerInResponse,
   type PlayerOutResponse,
+  type RoomEditedResponse,
+  type AdminChangedResponse,
   type PlayerDisconnectedResponse,
   type PlayerReconnectedResponse,
   type PlayerMicReadyResponse,
   type ReceiveIceCandidateResponse,
   type ReceiveVoiceOfferResponse,
   type ReceiveVoiceAnswerResponse,
-  type RoomEditedResponse,
   type LoginCallback,
   type LogoutCallback,
   type CreateRoomCallback,
@@ -26,6 +27,7 @@ import {
   type JoinRoomCallback,
   type WaitRoomCallback,
   type LeaveRoomCallback,
+  type ChangeAdminCallback,
   type SendChatCallback,
   type MicReadyCallback,
   type InitializeCallback,
@@ -133,6 +135,7 @@ const socketHandlers = (io: Server) => {
     handleSocketJoinRoom(socket);
     handleSocketWaitRoom(socket);
     handleSocketLeaveRoom(socket);
+    handleSocketChangeAdmin(socket, io);
     handleSocketChatMessage(socket, io);
     handleSocketMicReady(socket);
     handleSocketInitialize(socket, io);
@@ -433,10 +436,9 @@ const handleSocketEditRoom = (socket: Socket) => {
         /** [2] @socket_update - Update socket info */
         socket.room = room;
         /** [3] @socket_emit - Notify others in the room */
-        const roomEditedInfo: RoomEditedResponse = { room };
-        socket.to(room._id).emit(NamespaceEnum.ROOM_EDITED, roomEditedInfo);
+        socket.to(room._id).emit(NamespaceEnum.ROOM_EDITED, { room } as RoomEditedResponse);
         /** [4] @socket_emit - Send back result to client */
-        callback({ room: room });
+        callback({ room });
 
         log.logSocketEvent('Edit Room', socket);
       } catch (error) {
@@ -588,6 +590,40 @@ const handleSocketLeaveRoom = (socket: Socket) => {
     } finally {
       // End the session whether success or failure
       await dbSession.endSession();
+    }
+  });
+};
+
+const handleSocketChangeAdmin = (socket: Socket, io: Server) => {
+  socket.on(NamespaceEnum.CHANGE_ADMIN, async (newAdmin: User, callback: ChangeAdminCallback) => {
+    try {
+      // * If user is not connected
+      if (!socket.user?._id) {
+        throw new Error('[Socket Error]: User is not connected.');
+      }
+      // * If user is not in room
+      if (!socket.room?._id) {
+        throw new Error('[Socket Error]: Room is not connected.');
+      }
+      // [1] Edit room
+      const room = await handler.handleChangeAdmin(socket.room._id, newAdmin._id);
+      // No need to save session
+      /** [2] @socket_update - Update socket info */
+      socket.room = room;
+      /** [3] @socket_emit - Broadcast to everyone in the room INCLUDING YOURSELF */
+      io.to(socket.room._id).emit(NamespaceEnum.ADMIN_CHANGED, {
+        user: newAdmin,
+        room,
+      } as AdminChangedResponse);
+      /** [4] @socket_emit - Send back result to client */
+      callback({});
+
+      log.logSocketEvent('Change Admin', socket);
+    } catch (error) {
+      /** @socket_emit - Send back error to client */
+      callback({ error: error instanceof Error ? error : new Error(String(error)) });
+
+      log.handleServerError(error, 'handleSocketChangeAdmin');
     }
   });
 };

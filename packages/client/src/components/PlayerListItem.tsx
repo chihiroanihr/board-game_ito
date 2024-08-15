@@ -18,8 +18,8 @@ import {
 import { type User } from '@bgi/shared';
 
 import { OnlineBadgeStyled } from './styled';
-import { avatarBgColor } from '@/utils';
-import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
+import { getAvatarProps } from '@/utils';
+import { PlayerInQueueActionEnum } from '../enum';
 
 interface ManagePlayerButtonData {
   action: PlayerInQueueActionEnum;
@@ -54,19 +54,20 @@ interface PlayerListItemProps {
   player: User;
   adminId: ObjectId | undefined;
   myselfId: ObjectId | undefined;
-  setPlayerSnackbars: React.Dispatch<React.SetStateAction<readonly SnackbarPlayerInQueueInfoType[]>>;
+  handleChangeAdmin: (user: User) => void;
 }
 
 const PlayerListItem: React.FC<PlayerListItemProps> = ({
   player,
   adminId,
   myselfId,
-  setPlayerSnackbars,
+  handleChangeAdmin,
 }) => {
   const [playerDialogOpen, setPlayerDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState('');
   const [confirmMessage, setConfirmMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleOpenPlayerDialog = () => {
     setPlayerDialogOpen(true);
@@ -87,45 +88,23 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
   };
 
   const handleManagePlayerAction = () => {
+    setLoading(true);
+
     switch (actionType) {
       case PlayerInQueueActionEnum.KICK:
-        // Store player and snackbar info for snackbar notification + Add to snackbar queue
-        setPlayerSnackbars((prev) => [
-          ...prev,
-          {
-            key: new Date().getTime(),
-            player: player,
-            status: PlayerInQueueActionEnum.KICK,
-          },
-        ]);
         break;
       case PlayerInQueueActionEnum.BAN:
-        // Store player and snackbar info for snackbar notification + Add to snackbar queue
-        setPlayerSnackbars((prev) => [
-          ...prev,
-          {
-            key: new Date().getTime(),
-            player: player,
-            status: PlayerInQueueActionEnum.BAN,
-          },
-        ]);
         break;
       case PlayerInQueueActionEnum.ADMIN:
-        // Store player and snackbar info for snackbar notification + Add to snackbar queue
-        setPlayerSnackbars((prev) => [
-          ...prev,
-          {
-            key: new Date().getTime(),
-            player: player,
-            status: PlayerInQueueActionEnum.ADMIN,
-          },
-        ]);
+        handleChangeAdmin(player);
         break;
       default:
         // Handle other actions if needed
         console.log(`Unknown action: ${actionType}`);
+        return;
     }
 
+    setLoading(false);
     setConfirmDialogOpen(false);
     setPlayerDialogOpen(false);
   };
@@ -147,7 +126,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
               overlap="circular"
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             >
-              <Avatar {...avatarBgColor(player.name)} />
+              <Avatar {...getAvatarProps(player.name)} />
             </OnlineBadgeStyled>
           </ListItemAvatar>
           <ListItemText
@@ -195,7 +174,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
             bgcolor="grey.200"
             marginBottom="1rem"
           >
-            <Avatar {...avatarBgColor(player.name)} />
+            <Avatar {...getAvatarProps(player.name)} />
             <Typography component="div">{player.name}</Typography>
           </Stack>
 
@@ -246,6 +225,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
             color="primary"
             disableElevation
             sx={{ fontWeight: 600 }}
+            disabled={loading}
           >
             Yes
           </Button>
@@ -255,6 +235,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
             color="inherit"
             disableElevation
             sx={{ fontWeight: 600 }}
+            disabled={loading}
           >
             No
           </Button>

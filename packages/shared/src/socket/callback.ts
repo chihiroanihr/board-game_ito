@@ -38,6 +38,11 @@ export type LeaveRoomCallback = {
   (response: LeaveRoomResponse): void;
 };
 
+export type ChangeAdminResponse = { error?: Error };
+export type ChangeAdminCallback = {
+  (response: ChangeAdminResponse): void;
+};
+
 export type MicReadyResponse = { error?: Error };
 export type MicReadyCallback = {
   (response: MicReadyResponse): void;
@@ -79,6 +84,8 @@ export type ReceiveVoiceAnswerResponse = {
 };
 
 export type RoomEditedResponse = { room: Room };
+
+export type AdminChangedResponse = { user: User; room: Room };
 
 export type InitializeResponse = {
   error?: Error;

@@ -49,7 +49,7 @@ const VoiceCallLayout = () => {
     if (localAudioRef.current && localMediaStream) {
       localAudioRef.current.srcObject = localMediaStream;
 
-      /** @todo: Move to useAction */
+      /** @todo: Move to usePreFormSubmission */
       socket.emit(NamespaceEnum.MIC_READY, async ({ error }: MicReadyResponse) => {
         if (error) console.error(error);
       });

@@ -3,17 +3,19 @@ import { ListItem, ListItemAvatar, Avatar, Stack, ListItemText, Typography } fro
 
 import { type RoomChatMessage } from '@bgi/shared';
 
-import { useAuth } from '@/hooks';
-import { avatarBgColor, avatarTextColor, computeRelativeTime } from '@/utils';
+import { MessageSpeechBubble } from '@/components';
+import { useAuth, useRoom } from '@/hooks';
+import { getAvatarProps, getUserTextColor, userNameToColor, computeRelativeTime } from '@/utils';
 
 const MessageItem: React.FC<RoomChatMessage> = ({ fromUser, message, timestamp }) => {
   const { user } = useAuth();
+  const { room } = useRoom();
 
   return (
-    <ListItem sx={{ px: 0, py: '2.5%' }}>
+    <ListItem alignItems="flex-start" sx={{ px: 0, py: '1.8%' }}>
       {/* Avatar */}
-      <ListItemAvatar sx={{ alignSelf: 'flex-start', pr: '0.8rem' }}>
-        <Avatar {...avatarBgColor(fromUser.name)} sizes="small" />
+      <ListItemAvatar sx={{ mt: 0, pr: '0.625rem', zIndex: 1 }}>
+        <Avatar {...getAvatarProps(fromUser.name)} sizes="small" />
       </ListItemAvatar>
 
       {/* Message content */}
@@ -33,14 +35,17 @@ const MessageItem: React.FC<RoomChatMessage> = ({ fromUser, message, timestamp }
           primary={
             <Typography
               id="message-item_user-name"
-              {...avatarTextColor(fromUser.name)}
+              {...getUserTextColor(fromUser.name)}
               variant="body2"
               component="div"
-              fontWeight={500}
+              fontWeight={600}
             >
               {fromUser._id.toString() === user._id.toString() // If your message
                 ? 'You'
                 : fromUser.name}
+              {
+                fromUser._id.toString() === room.roomAdmin.toString() && ' (admin)' // If admin
+              }
             </Typography>
           }
           secondary={
@@ -57,9 +62,17 @@ const MessageItem: React.FC<RoomChatMessage> = ({ fromUser, message, timestamp }
         />
 
         {/* Message */}
-        <Typography id="message-item_sent-message" variant="body2" component="p">
+        <MessageSpeechBubble
+          id="message-item_sent-message"
+          variant="body2"
+          component="p"
+          bgcolor={
+            fromUser._id.toString() === user._id.toString() && // If your message
+            userNameToColor(fromUser.name, 0.1)
+          }
+        >
           {message}
-        </Typography>
+        </MessageSpeechBubble>
       </Stack>
     </ListItem>
   );

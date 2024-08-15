@@ -12,20 +12,11 @@ import {
   useTheme,
 } from '@mui/material';
 
-import { userNameConfig, NamespaceEnum } from '@bgi/shared';
+import { userNameConfig, type LoginResponse, NamespaceEnum } from '@bgi/shared';
 
 import { TextButton } from '@/components';
-import {
-  useAuth,
-  useAction,
-  type BeforeSubmitCallbackParams,
-  type BeforeSubmitCallbackFunction,
-  type ErrorCallbackParams,
-  type ErrorCallbackFunction,
-  type SuccessCallbackParams,
-  type SuccessCallbackFunction,
-} from '@/hooks';
-import { navigateDashboard } from '@/utils';
+import { useSocket, useAuth, usePreFormSubmission } from '@/hooks';
+import { navigateDashboard, outputServerError, outputResponseTimeoutError } from '@/utils';
 import { type LoginFormDataType } from '../enum';
 
 /**
@@ -33,6 +24,7 @@ import { type LoginFormDataType } from '../enum';
  * @returns
  */
 function Home() {
+  const { socket } = useSocket();
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -47,42 +39,68 @@ function Home() {
     defaultValues: { name: '' },
   });
 
-  // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {};
-  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
-  const onSuccess: SuccessCallbackFunction = ({
-    action,
-    user: updatedUser,
-  }: SuccessCallbackParams) => {
-    switch (action) {
-      case NamespaceEnum.LOGIN:
-        updateUser(updatedUser ? updatedUser : null); // Login and save user info to local storage
-        navigateDashboard(navigate); // Navigate
-        break;
-      default:
-        console.error('[!] Unknown action: ', action);
-    }
-  };
-
   // Button click handlers
-  const { handleLogin, loadingButton, errorMessage, setErrorMessage } = useAction({
-    beforeSubmit,
-    onError,
-    onSuccess,
-  });
+  const { loadingButton, formErrorMessage, setFormErrorMessage, processPreFormSubmission } =
+    usePreFormSubmission();
+
+  /**
+   * Handler for user logging into the game.
+   * @param data
+   * @returns
+   */
+  const handleLogin = (data: LoginFormDataType) => {
+    processPreFormSubmission(true); // Set submitting to true when the request is initiated
+    setFormErrorMessage(''); // Reset error message
+
+    const userName = data.name.trim(); // Trim any start/end spaces
+    // ERROR
+    if (!userName) {
+      setFormErrorMessage('Please enter a valid name.');
+      processPreFormSubmission(false);
+      return;
+    }
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      processPreFormSubmission(false); // Set submitting to false when the input error happens
+      // ERROR
+      outputResponseTimeoutError();
+    }, 5000);
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(
+      NamespaceEnum.LOGIN,
+      userName,
+      async ({ error, user: updatedUser }: LoginResponse) => {
+        clearTimeout(timeoutId); // Clear the timeout as response is received before timeout
+
+        // ERROR
+        if (error) {
+          outputServerError({ error });
+        }
+        // SUCCESS
+        else {
+          updateUser(updatedUser ? updatedUser : null); // Login and save user info to local storage
+          navigateDashboard(navigate); // Navigate
+        }
+
+        processPreFormSubmission(false); // Set submitting to false when the response is received
+      }
+    );
+  };
 
   // Disappear error message after 5 seconds
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
-    if (errorMessage) {
+    if (formErrorMessage) {
       timer = setTimeout(() => {
-        setErrorMessage('');
+        setFormErrorMessage('');
       }, 5000);
     }
     return () => {
       clearTimeout(timer);
     };
-  }, [errorMessage, setErrorMessage]);
+  }, [formErrorMessage, setFormErrorMessage]);
 
   if (user) return null;
   return (
@@ -149,7 +167,7 @@ function Home() {
         )}
 
         {/* Form Request Error */}
-        {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+        {formErrorMessage && <Alert severity="error">{formErrorMessage}</Alert>}
       </Box>
     </Stack>
   );

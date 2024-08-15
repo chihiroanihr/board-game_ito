@@ -106,30 +106,3 @@ export const deletePlayerFromRoom = async (
     options
   );
 };
-
-export const updateRoomAdmin = async (
-  userId: ObjectId,
-  roomId: string,
-  dbSession: ClientSession | null = null
-): Promise<Room | null> => {
-  logQueryEvent('Updating only the room admin in Room.');
-
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
-  return await getDB().rooms.findOneAndUpdate(
-    { _id: roomId },
-    { $set: { roomAdmin: userId } },
-    options
-  );
-};

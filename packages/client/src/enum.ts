@@ -15,9 +15,13 @@ export type SendChatFormDataType = {
 export enum PlayerInQueueActionEnum {
   IN = 'player-in',
   OUT = 'player-out',
-  ADMIN = 'change-admin',
   KICK = 'kick-player',
   BAN = 'ban-player',
+}
+
+export enum RoomEditedActionEnum {
+  EDIT = 'edit-room',
+  ADMIN = 'change-admin',
 }
 
 export type SnackbarPlayerInQueueInfoType =
@@ -25,5 +29,13 @@ export type SnackbarPlayerInQueueInfoType =
       key: number;
       player: User;
       status: PlayerInQueueActionEnum;
+    }
+  | undefined;
+
+export type SnackbarRoomEditedInfoType =
+  | {
+      key: number;
+      player: User | undefined;
+      status: RoomEditedActionEnum;
     }
   | undefined;

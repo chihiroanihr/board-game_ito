@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme, useMediaQuery } from '@mui/material';
 
-import { NamespaceEnum, type RoomChatMessage, type ReceiveChatResponse } from '@bgi/shared';
+import {
+  type RoomChatMessage,
+  type SendChatResponse,
+  type ReceiveChatResponse,
+  NamespaceEnum,
+} from '@bgi/shared';
 
 import { ChatContent, ChatPopover, ChatPopper, VoiceButton } from '@/components';
-import {
-  useSocket,
-  useAction,
-  usePageVisibility,
-  type BeforeSubmitCallbackParams,
-  type BeforeSubmitCallbackFunction,
-  type ErrorCallbackParams,
-  type ErrorCallbackFunction,
-  type SuccessCallbackParams,
-  type SuccessCallbackFunction,
-} from '@/hooks';
+import { useSocket, useAuth, usePreFormSubmission, usePageVisibility } from '@/hooks';
+import { outputServerError, outputResponseTimeoutError } from '@/utils';
+import { type SendChatFormDataType } from '../enum.js';
 
 const ChatLayout = () => {
   const theme = useTheme();
   const { socket } = useSocket();
+  const { user } = useAuth();
   const isVisible = usePageVisibility();
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
   const isSmViewport = useMediaQuery(theme.breakpoints.up('sm'));
@@ -39,23 +37,58 @@ const ChatLayout = () => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
-  // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {
-    setIsChatButtonLoading(true);
-  };
-  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
-    setIsChatButtonLoading(false);
-  };
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
-    setIsChatButtonLoading(false);
-  };
-
   // Button click handlers
-  const { handleSendChat, errorMessage } = useAction({
-    beforeSubmit,
-    onError,
-    onSuccess,
-  });
+  const { formErrorMessage, setFormErrorMessage, processPreFormSubmission } =
+    usePreFormSubmission();
+
+  /**
+   * Handler for sending chat message.
+   * (NO SHARED LOADING BUTTON)
+   * @param data
+   * @returns
+   */
+  const handleSendChat = (data: SendChatFormDataType) => {
+    setFormErrorMessage(''); // Reset error message
+    setIsChatButtonLoading(true);
+
+    const message = data.message.trim(); // Trim any start/end spaces
+    // ERROR
+    if (!message) {
+      setFormErrorMessage('Please enter a message.');
+      setIsChatButtonLoading(false);
+      return;
+    }
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      outputResponseTimeoutError();
+      // ERROR
+      setIsChatButtonLoading(false);
+    }, 5000);
+
+    const chatData: RoomChatMessage = {
+      fromUser: user,
+      message: message,
+      timestamp: Date.now(),
+    };
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(NamespaceEnum.SEND_CHAT, chatData, async ({ error }: SendChatResponse) => {
+      clearTimeout(timeoutId);
+
+      // ERROR
+      if (error) {
+        outputServerError({ error });
+        setIsChatButtonLoading(false);
+      }
+      // SUCCESS
+      else {
+        setIsChatButtonLoading(false);
+      }
+
+      processPreFormSubmission(false);
+    });
+  };
 
   // Close popper and popover when viewport changes
   useEffect(() => {
@@ -78,7 +111,7 @@ const ChatLayout = () => {
       }
     }
 
-    // Executes whenever a socket event is recieved from the server
+    // Executes whenever a socket event is received from the server
     socket.on(NamespaceEnum.RECEIVE_CHAT, onReceiveChatEvent);
     return () => {
       socket.off(NamespaceEnum.RECEIVE_CHAT, onReceiveChatEvent);
@@ -108,7 +141,7 @@ const ChatLayout = () => {
     <ChatContent
       allMessages={allMessages}
       onSubmit={handleSendChat}
-      errorMessage={errorMessage}
+      errorMessage={formErrorMessage}
       isButtonLoading={isChatButtonLoading}
       triggerScroll={triggerScroll}
     />
@@ -123,7 +156,7 @@ const ChatLayout = () => {
       <ChatContent
         allMessages={allMessages}
         onSubmit={handleSendChat}
-        errorMessage={errorMessage}
+        errorMessage={formErrorMessage}
         isButtonLoading={isChatButtonLoading}
         triggerScroll={triggerScroll}
         isInModal={true}
@@ -140,7 +173,7 @@ const ChatLayout = () => {
       <ChatContent
         allMessages={allMessages}
         onSubmit={handleSendChat}
-        errorMessage={errorMessage}
+        errorMessage={formErrorMessage}
         isButtonLoading={isChatButtonLoading}
         triggerScroll={triggerScroll}
         isInModal={true}
