@@ -73,11 +73,13 @@ export const handleCreateRoom = async (
       throw new Error('Failed to insert new room (there might be duplicates in the database).');
     }
 
-    /** @api_call - Update only the room ID in session (PUT) */
+    /*
+    // @api_call - Update only the room ID in session (PUT)
     const updatedSession = await controller.saveSessionRoomId(sessionId, newRoomObj._id, dbSession);
     if (!updatedSession) {
       throw new Error('Failed to update room ID in the session (given session might not exist).');
     }
+    */
 
     // All success
     return { user: updatedUser, room: newRoomObj };
