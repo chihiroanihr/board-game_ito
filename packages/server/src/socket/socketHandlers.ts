@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 
-import { type InitializeCallback, NamespaceEnum } from '@bgi/shared';
+import { type User, type Room, type InitializeCallback, NamespaceEnum } from '@bgi/shared';
 
 import * as connectionHandlers from './connectionHandlers';
 import * as sessionHandlers from './sessionHandlers';
@@ -13,6 +13,15 @@ import * as debug from '../debug';
 import * as log from '../log';
 
 import { getDB } from '../database/dbConnect';
+
+declare module 'socket.io' {
+  interface Socket {
+    sessionId: string;
+    connected: boolean;
+    user: User | null;
+    room: Room | null;
+  }
+}
 
 /**
  * @function socketHandlers - Socket.IO event handlers
@@ -84,7 +93,7 @@ const socketHandlers = (io: Server) => {
     voiceHandlers.handleSocketIceCandidate(socket, io);
 
     /** @debug */
-    handleSocketInitialize(socket, io);
+    // handleSocketInitialize(socket, io);
     console.log(`\n[*] ${io.engine.clientsCount} sockets connected.`);
     console.log(socket.rooms);
     // const rooms = io.sockets.adapter.rooms;

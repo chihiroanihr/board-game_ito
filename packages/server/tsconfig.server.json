@@ -8,14 +8,9 @@
     "outDir": "./dist" /* Specify an output folder for all emitted files. */,
     "paths": {
       "@bgi/shared": ["../shared/src"]
-    } /* Specify a set of entries that re-map imports to additional lookup locations. */,
-
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ] /* List of folders to include type definitions from. */
+    } /* Specify a set of entries that re-map imports to additional lookup locations. */
   },
-  "include": ["src"],
+  "include": ["src/**/*"¸],
   "exclude": ["node_modules", "dist"],
   "extends": "../../tsconfig.base.json"
 }
