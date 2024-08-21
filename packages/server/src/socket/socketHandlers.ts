@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 
-import { type User, type Room, type InitializeCallback, NamespaceEnum } from '@bgi/shared';
+import { type InitializeCallback, NamespaceEnum } from '@bgi/shared';
 
 import * as connectionHandlers from './connectionHandlers';
 import * as sessionHandlers from './sessionHandlers';
@@ -14,15 +14,11 @@ import * as log from '../log';
 
 import { getDB } from '../database/dbConnect';
 
-declare module 'socket.io' {
-  interface Socket {
-    sessionId: string;
-    connected: boolean;
-    user: User | null;
-    room: Room | null;
-  }
-}
-
+/**
+ * @function socketHandlers - Socket.IO event handlers
+ * @description This function is used to initialize all the socket.io event handlers.
+ * @param io - Socket.IO server instance
+ */
 const socketHandlers = (io: Server) => {
   // Socket.IO middleware
   // Prevent from current session to change every time the low-level connection between the client and the server is severed.
@@ -30,36 +26,45 @@ const socketHandlers = (io: Server) => {
     try {
       // [1] Extract session ID (private) sent from client which will be used to authenticate the user upon reconnection
       const sessionId = socket.handshake.auth.sessionId;
-      // * Session ID not found from the client
+
+      // [~1] Session ID not found from the client
       if (!sessionId) {
         // [2] Create a new session
         sessionHandlers.initializeSocketSession(socket);
+        // [3] Log user session creation event
         log.logSocketEvent('User Session Created', socket);
       }
-      // * Session ID found from the client
+
+      // [~1] Session ID found from the client
       else {
         // [2] Assign session info to socket
         const sessionRestored = await sessionHandlers.checkAndRestoreSession(socket, sessionId);
-        // * No matching session ID found from the server
+
+        // [3] If no matching session ID found from the server
         if (!sessionRestored) {
-          // [3] Create a new session
+          // [4] Create a new session
           sessionHandlers.initializeSocketSession(socket);
+          // [5] Log user session creation event
           log.logSocketEvent('User Session Created (no matching session)', socket);
         }
       }
+
       next(undefined);
     } catch (error) {
       log.handleServerError(error, 'io.use()');
+
+      /** @socket_emit */
       socket.emit('error');
+
       next(new Error('Internal server error'));
     }
   });
 
   // The io variable can be used to do all the necessary things regarding Socket
   io.on('connection', (socket: Socket) => {
+    /** @socket_emit */
     socket.emit('connected');
 
-    // Socket handling logic (moved from the previous file)
     connectionHandlers.handleSocketConnection(socket, io);
     connectionHandlers.handleSocketReconnection(socket);
     sessionHandlers.handleSocketSession(socket);
@@ -78,13 +83,10 @@ const socketHandlers = (io: Server) => {
     voiceHandlers.handleSocketVoiceAnswer(socket, io);
     voiceHandlers.handleSocketIceCandidate(socket, io);
 
+    /** @debug */
     handleSocketInitialize(socket, io);
-
-    /** @/debug */
     console.log(`\n[*] ${io.engine.clientsCount} sockets connected.`);
     console.log(socket.rooms);
-    // const rooms = io.sockets.adapter.rooms;
-
     // const rooms = io.sockets.adapter.rooms;
     // if (rooms.get('6F0ADF17')) {
     //   rooms.get('6F0ADF17')?.forEach((socketId) => {
