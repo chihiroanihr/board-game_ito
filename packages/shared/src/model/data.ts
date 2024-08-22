@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 
-import { RoomStatusEnum, UserStatusEnum, CommunicationMethodEnum } from './enum';
+import { RoomStatusEnum, UserStatusEnum, CommunicationMethodEnum, LanguageEnum } from './enum';
 
 export interface Session {
   _id: string;
@@ -33,4 +33,21 @@ export interface RoomSetting {
   heartEnabled: boolean;
   dupNumCard: boolean;
   communicationMethod: CommunicationMethodEnum;
+}
+
+/** @todo - unused */
+export interface ChatMessageInfo {
+  _id: ObjectId;
+  sender: ObjectId; // User._id
+  content: string;
+  creationTime: Date;
+}
+
+export interface Theme {
+  _id: ObjectId;
+  language: LanguageEnum;
+  title: string;
+  captionLow: string;
+  captionHigh: string;
+  reference: string | null;
 }

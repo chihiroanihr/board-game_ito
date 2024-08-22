@@ -151,7 +151,7 @@ export default function Waiting() {
       setBackdropOpen(false);
     }, 5000);
 
-    // Send to socket
+    /** @socket_send - Send to socket & receive response */
     socket.emit(NamespaceEnum.START_GAME, room, async ({ error }: { error: Error }) => {
       clearTimeout(timeoutId);
 
@@ -305,32 +305,6 @@ export default function Waiting() {
     onPlayerJoinedCallback: handlePlayerIn,
     onPlayerLeftCallback: handlePlayerOut,
   });
-
-  // useEffect(() => {
-  //   async function onAdminChangedEvent({ user, room }: AdminChangedResponse) {
-  //     setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
-
-  //     updateRoom(room); // Update room in the local storage first
-  //     handleSnackbarOpen(); // Open snackbar to give notification that room has changed
-  //     // Store player and snackbar info for snackbar notification + Add to snackbar queue
-  //     setPlayerSnackbars((prev) => [
-  //       ...prev,
-  //       {
-  //         key: new Date().getTime(),
-  //         player: user,
-  //         status: PlayerInQueueActionEnum.ADMIN,
-  //       },
-  //     ]);
-
-  //     setSynchronousBlock(false); // Unblock
-  //   }
-
-  //   // Executes whenever a socket event is received from the server
-  //   socket.on(NamespaceEnum.ADMIN_CHANGED, onAdminChangedEvent);
-  //   return () => {
-  //     socket.off(NamespaceEnum.ADMIN_CHANGED, onAdminChangedEvent);
-  //   };
-  // }, [socket, updateRoom]);
 
   const PlayersNumber = () => {
     return (

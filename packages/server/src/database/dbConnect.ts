@@ -1,6 +1,6 @@
 import { MongoClient, Collection, Db } from 'mongodb';
 
-import type { Session, User, Room } from '@bgi/shared';
+import type { Session, User, Room, Theme } from '@bgi/shared';
 
 import loadConfig from '../config';
 
@@ -8,6 +8,7 @@ interface DatabaseCollections {
   sessions: Collection<Session>;
   users: Collection<User>;
   rooms: Collection<Room>;
+  themes: Collection<Theme>;
 }
 
 // Load env config first
@@ -16,7 +17,7 @@ const { connectionString, dbName } = loadConfig();
 const DB_CONN_URI: string = connectionString; // process.env.MONGODB_CONNECTION_URL || '';
 const DB_NAME: string = dbName || '';
 
-const COLLECTION_NAMES = ['sessions', 'users', 'rooms'];
+const COLLECTION_NAMES = ['sessions', 'users', 'rooms', 'themes'];
 
 let mongoDB: MongoClient | null = null;
 
@@ -39,6 +40,7 @@ const getAllCollections = (db: Db): DatabaseCollections => ({
   sessions: db.collection<Session>('sessions'),
   users: db.collection<User>('users'),
   rooms: db.collection<Room>('rooms'),
+  themes: db.collection<Theme>('themes'),
 });
 
 export const getDB = () => {

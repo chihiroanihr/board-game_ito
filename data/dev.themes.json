@@ -1,0 +1,702 @@
+[
+  {
+    "language": "Japanese",
+    "title": "ケンカが強そうな言葉",
+    "captionLow": "弱そう",
+    "captionHigh": "強そう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "美人そうな四字熟語",
+    "captionLow": "平凡",
+    "captionHigh": "美人",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "お金持ちそうな名字",
+    "captionLow": "貧乏そう",
+    "captionHigh": "お金持ちそう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "トークがうまそうな名前",
+    "captionLow": "下手そう",
+    "captionHigh": "上手そう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "カッコいい国の名前",
+    "captionLow": "カッコよくない",
+    "captionHigh": "カッコいい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "カッコいい駅の名前",
+    "captionLow": "カッコよくない",
+    "captionHigh": "カッコいい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "おしゃれそうな星座",
+    "captionLow": "ダサい",
+    "captionHigh": "おしゃれ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人間だったらお金持ちになりそうな動物",
+    "captionLow": "お金無さそう",
+    "captionHigh": "お金持ちそう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "面白い映画",
+    "captionLow": "面白くない",
+    "captionHigh": "面白い",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "面白いバラエティー番組",
+    "captionLow": "面白くない",
+    "captionHigh": "面白い",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "出会いたくないお化け",
+    "captionLow": "構わない（怖くない）",
+    "captionHigh": "出会いたくない（怖い）",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "最強の魔法",
+    "captionLow": "最弱",
+    "captionHigh": "最強",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気なYouTuber",
+    "captionLow": "不人気",
+    "captionHigh": "人気",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気な小説家",
+    "captionLow": "不人気",
+    "captionHigh": "人気",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気なアーティスト",
+    "captionLow": "不人気",
+    "captionHigh": "人気",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "メイクの中で欠かせないアイテム・工程",
+    "captionLow": "省いてOK",
+    "captionHigh": "絶対に必要",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "バンドの中でよりモテそうなパート",
+    "captionLow": "モテない",
+    "captionHigh": "モテる",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "隣に引っ越して来てほしくないタイプの人",
+    "captionLow": "全然気にならない",
+    "captionHigh": "絶対に嫌",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "一年のうち、最も楽しみなイベント",
+    "captionLow": "楽しみではない",
+    "captionHigh": "楽しみ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "魅力的だと思う男性芸能人",
+    "captionLow": "魅力なし",
+    "captionHigh": "魅力的",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "魅力的だと思う女性芸能人",
+    "captionLow": "魅力なし",
+    "captionHigh": "魅力的",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "理想のクリスマスの過ごし方",
+    "captionLow": "不満足",
+    "captionHigh": "理想的",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "これをしたら浮気だと思うこと",
+    "captionLow": "浮気ではない",
+    "captionHigh": "絶対浮気",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "好きな人でもこれをされたら冷めること",
+    "captionLow": "冷めない",
+    "captionHigh": "冷める",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "脈アリだと感じること",
+    "captionLow": "脈ナシ",
+    "captionHigh": "脈アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "デートで行きたい場所",
+    "captionLow": "行きたくない",
+    "captionHigh": "行きたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "デートで食べたいもの",
+    "captionLow": "食べたくない",
+    "captionHigh": "食べたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "恋人と海外旅行で行きたい国",
+    "captionLow": "行きたくない",
+    "captionHigh": "行きたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "恋人に言われたらうれしい一言",
+    "captionLow": "うれしくない",
+    "captionHigh": "うれしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "恋人に見られたくないもの",
+    "captionLow": "気にならない",
+    "captionHigh": "見られたくない",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "結婚したい歴史上の人物",
+    "captionLow": "結婚したくない",
+    "captionHigh": "結婚したい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "今までデートした中で一番楽しかった場所",
+    "captionLow": "楽しくない",
+    "captionHigh": "楽しい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "2人でまた行きたい旅行先",
+    "captionLow": "行きたくない",
+    "captionHigh": "行きたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "2人でまた見たい映画",
+    "captionLow": "見たくない",
+    "captionHigh": "見たい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "強い動物",
+    "captionLow": "弱い",
+    "captionHigh": "強い",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気なヒーロー",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "やりたいお手伝い",
+    "captionLow": "やりたくない",
+    "captionHigh": "やりたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "クレヨンで最初に使い切る色",
+    "captionLow": "全く使わない色",
+    "captionHigh": "よく使う色",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "サンタさんにお願いしたいプレゼント",
+    "captionLow": "欲しくない",
+    "captionHigh": "欲しい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "誕生日に食べたいもの",
+    "captionLow": "食べたくない",
+    "captionHigh": "食べたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "遊びに行きたい場所",
+    "captionLow": "行きたくない",
+    "captionHigh": "行きたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "絶対に必要な文房具",
+    "captionLow": "必要ない",
+    "captionHigh": "必要",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気な昔あそび",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気な科目",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "モテそうな部活",
+    "captionLow": "モテない",
+    "captionHigh": "モテる",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "担任になってほしい有名人",
+    "captionLow": "担任にしたくない",
+    "captionHigh": "担任にしたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "図書室にあったらうれしい本",
+    "captionLow": "うれしくない",
+    "captionHigh": "うれしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "もうやりたくない学校行事",
+    "captionLow": "再度やっても大丈夫",
+    "captionHigh": "絶対にやりたくない",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "合唱コンクールで歌いたい曲",
+    "captionLow": "歌いたくない",
+    "captionHigh": "歌いたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "面白い先生は誰か",
+    "captionLow": "面白くない",
+    "captionHigh": "面白い",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "お金持ちになりそうな先生は誰か",
+    "captionLow": "貧乏になりそう",
+    "captionHigh": "お金持ちになりそう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "SNSのフォロワーが多そうな先生は誰か",
+    "captionLow": "多くなさそう",
+    "captionHigh": "多そう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "国語の教科書に載っていて好きだったお話",
+    "captionLow": "好きではない",
+    "captionHigh": "大好き",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "AIにお願いしたい仕事",
+    "captionLow": "頼みたくない",
+    "captionHigh": "頼みたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "もらったらうれしい備品",
+    "captionLow": "うれしくない",
+    "captionHigh": "うれしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "出張で行きたい場所",
+    "captionLow": "行きたくない",
+    "captionHigh": "行きたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "仕事ができそうなスポーツ選手",
+    "captionLow": "無能そう",
+    "captionHigh": "優秀そう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "入社してほしい有名人",
+    "captionLow": "入社してほしくない",
+    "captionHigh": "入社してほしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "上司にしたい歴史上の人物",
+    "captionLow": "上司にしたくない",
+    "captionHigh": "上司にしたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "部下にしたいミュージシャン",
+    "captionLow": "部下にしたくない",
+    "captionHigh": "部下にしたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "絶対に嫌な社内ルール",
+    "captionLow": "気にならない",
+    "captionHigh": "絶対に嫌",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "あったらうれしい福利厚生",
+    "captionLow": "うれしくない",
+    "captionHigh": "うれしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "YouTuberとしても成功しそうな有名社長",
+    "captionLow": "成功しなさそう",
+    "captionHigh": "成功しそう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "絶対にリンクをクリックしてはいけない迷惑メールのタイトル",
+    "captionLow": "安全",
+    "captionHigh": "絶対にダメ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "優れた上司に必要な能力",
+    "captionLow": "必要ではない",
+    "captionHigh": "必要",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "上司にかわいがられるために必要な能力",
+    "captionLow": "必要ではない",
+    "captionHigh": "必要",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "自分が新卒の採用担当なら重視すること",
+    "captionLow": "重視しない",
+    "captionHigh": "重視する",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "自分が中途の採用担当なら重視すること",
+    "captionLow": "重視しない",
+    "captionHigh": "重視する",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "就職(転職)する際に会社選びで重視すること",
+    "captionLow": "重視しない",
+    "captionHigh": "重視する",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "自分へのご褒美に食べたいもの",
+    "captionLow": "欲しくない",
+    "captionHigh": "欲しい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "ファミレスで人気なメニュー",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "ドリンクバーにあったらうれしい飲み物",
+    "captionLow": "うれしくない",
+    "captionHigh": "うれしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "甘い食べ物",
+    "captionLow": "甘くない",
+    "captionHigh": "甘い",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "しょっぱい食べ物",
+    "captionLow": "しょっぱくない",
+    "captionHigh": "しょっぱい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "鍋に入れたい食材",
+    "captionLow": "入れたくない",
+    "captionHigh": "入れたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "サンドイッチにはさみたい食材",
+    "captionLow": "はさみたくない",
+    "captionHigh": "はさみたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "たこ焼きでたこの代わりに入れたらおいしいもの",
+    "captionLow": "おいしくない",
+    "captionHigh": "おいしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "チーズを乗せたらおいしくなるもの",
+    "captionLow": "合わない",
+    "captionHigh": "合う",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "居酒屋のお通しで出てきたらうれしいもの",
+    "captionLow": "うれしくない",
+    "captionHigh": "うれしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気なみそ汁の具",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気な麺類",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "王道のパスタの味",
+    "captionLow": "おいしくない",
+    "captionHigh": "おいしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気なお茶の種類",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "最後の晩餐にふさわしいもの",
+    "captionLow": "ふさわしくない",
+    "captionHigh": "ふさわしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "憎めないアニメ・漫画の悪役",
+    "captionLow": "憎めない",
+    "captionHigh": "憎らしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気な漫画家",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "今、読み返したい漫画",
+    "captionLow": "読み返したくない",
+    "captionHigh": "読み返したい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "アニメ化してほしい漫画",
+    "captionLow": "してほしくない",
+    "captionHigh": "してほしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "映画化してほしい漫画",
+    "captionLow": "してほしくない",
+    "captionHigh": "してほしい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "一人で見ると泣いてしまうアニメ・漫画",
+    "captionLow": "泣かない",
+    "captionHigh": "泣く",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "ポジティブになるアニメ・漫画の名言",
+    "captionLow": "ネガティブ",
+    "captionHigh": "ポジティブ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "友人の子どもにプレゼントしたい漫画",
+    "captionLow": "したくない",
+    "captionHigh": "したい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "友達になりたいアニメ・漫画のキャラクター",
+    "captionLow": "なりたくない",
+    "captionHigh": "なりたい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "実在したらモテそうなアニメ・漫画のキャラクター",
+    "captionLow": "モテない",
+    "captionHigh": "モテる",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "実在したら出世しそうなアニメ・漫画のキャラクター",
+    "captionLow": "降格しそう",
+    "captionHigh": "出世しそう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "実在したらSNSのフォロワーが多そうなアニメ・漫画の名言",
+    "captionLow": "少なそう",
+    "captionHigh": "多そう",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "面白いドラマ",
+    "captionLow": "面白くない",
+    "captionHigh": "面白い",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "テンションが上がる曲",
+    "captionLow": "上がらない",
+    "captionHigh": "上がる",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "人気な運動会の競技",
+    "captionLow": "人気ナシ",
+    "captionHigh": "人気アリ",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  },
+  {
+    "language": "Japanese",
+    "title": "夏フェスで見たいアーティスト",
+    "captionLow": "見たくない",
+    "captionHigh": "見たい",
+    "reference": "https://news.mynavi.jp/article/20240229-2853646/"
+  }
+]
