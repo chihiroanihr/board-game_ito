@@ -18,6 +18,12 @@ export enum CommunicationMethodEnum {
   CHAT = 'chat',
 }
 
+export enum RoundStatusEnum {
+  SUCCESS = 'success',
+  FAIL = 'fail',
+  PLAYING = 'playing',
+}
+
 export enum LanguageEnum {
   ENG = 'English',
   FRA = 'French',
