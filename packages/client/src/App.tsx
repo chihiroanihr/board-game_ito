@@ -11,12 +11,13 @@ import {
   SessionProvider,
   AuthProvider,
   RoomProvider,
+  GameProvider,
   SocketProvider,
   SubmissionStatusProvider,
   useWindowDimensions,
 } from '@/hooks';
-import { CommonLayout, ConnectLayout } from '@/layouts';
-import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, NotFound } from '@/pages';
+import { CommonLayout, ConnectLayout, GameLayout } from '@/layouts';
+import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, Game, NotFound } from '@/pages';
 import { socket } from './service/socket';
 
 // Function to calculate window (screen) height and set the CSS variable
@@ -43,11 +44,13 @@ function App() {
           <Route element={<ConnectLayout />}>
             <Route element={<CommonLayout />}>
               <Route path="/" element={<Home />} />
-
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/create-room" element={<CreateRoom />} />
               <Route path="/join-room" element={<JoinRoom />} />
-              <Route path="/waiting" element={<Waiting />} />
+              <Route element={<GameLayout />}>
+                <Route path="/waiting" element={<Waiting />} />
+                <Route path="/game" element={<Game />} />
+              </Route>
             </Route>
 
             <Route path="*" element={<NotFound />} />
@@ -61,11 +64,13 @@ function App() {
     <SessionProvider>
       <AuthProvider>
         <RoomProvider>
-          <SocketProvider socket={socket}>
-            <SubmissionStatusProvider>
-              <RouterProvider router={routes} />
-            </SubmissionStatusProvider>
-          </SocketProvider>
+          <GameProvider>
+            <SocketProvider socket={socket}>
+              <SubmissionStatusProvider>
+                <RouterProvider router={routes} />
+              </SubmissionStatusProvider>
+            </SocketProvider>
+          </GameProvider>
         </RoomProvider>
       </AuthProvider>
     </SessionProvider>

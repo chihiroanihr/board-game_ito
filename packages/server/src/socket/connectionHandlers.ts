@@ -2,8 +2,6 @@ import { Server, Socket } from 'socket.io';
 
 import { type PlayerReconnectedResponse, NamespaceEnum } from '@bgi/shared';
 
-import { getDB } from '../database/dbConnect';
-import * as handler from '../database/handlers';
 import * as log from '../log';
 import * as debug from '../debug';
 
@@ -50,12 +48,7 @@ export const handleSocketDisconnect = (socket: Socket, io: Server) => {
     /** @socket_update */
     socket.connected = false;
 
-    // [2] Start a new database session for transaction handling
-    const dbSession = getDB().startSession();
-    // [~2] If no database session, throw error
-    if (!dbSession) throw new Error('[Socket Error]: Unable to start a database session.');
-
-    // [~2] If database session created, proceed with transaction handling
+    // [2] If database session created, proceed with transaction handling
     try {
       // If user exists
       if (socket.user?._id) {
@@ -68,16 +61,10 @@ export const handleSocketDisconnect = (socket: Socket, io: Server) => {
             .emit(NamespaceEnum.PLAYER_DISCONNECTED, { socketId: socket.id, user: socket.user });
         }
 
-        // [4] Start database transaction
-        dbSession.startTransaction();
+        // [4] Update session connection status in database for the user disconnected
+        // await handler.handleSaveSession(socket);
 
-        // [5] Update session connection status in database for the user disconnected
-        await handler.handleSaveSession(socket);
-
-        // [6] Commit database transaction
-        await dbSession.commitTransaction();
-
-        // [7] Log user disconnect event
+        // [5] Log user disconnect event
         log.logSocketEvent('User Disconnected', socket);
 
         /** @debug */
@@ -88,14 +75,8 @@ export const handleSocketDisconnect = (socket: Socket, io: Server) => {
     } catch (error) {
       /** @todo - Delete session or save every user info to local storage for emergency */
 
-      // [~2] If error, rollback database transaction
-      if (dbSession.inTransaction()) await dbSession.abortTransaction();
-
       // [3] Log error
       log.handleServerError(error, 'handleSocketDisconnect');
-    } finally {
-      // End database session whether successful or not
-      await dbSession.endSession();
     }
   });
 };

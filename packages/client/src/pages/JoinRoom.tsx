@@ -27,7 +27,7 @@ import { type JoinRoomFormDataType } from '../enum.js';
 function JoinRoom() {
   const navigate = useNavigate();
   const { socket } = useSocket();
-  const { updateUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const { updateRoom } = useRoom();
 
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
@@ -104,6 +104,7 @@ function JoinRoom() {
     );
   };
 
+  if (!user) return null;
   return (
     <Box
       display="flex"

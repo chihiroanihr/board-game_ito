@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useBlocker } from 'react-router-dom';
 import {
   Typography,
   Stack,
@@ -27,7 +27,14 @@ import {
 } from '@bgi/shared';
 
 import { IconButton, RoomSettingForm, RoomSettingViewer, SnackbarRoomEdited } from '@/components';
-import { useSocket, useAuth, useRoom, usePreFormSubmission, useSubmissionStatus } from '@/hooks';
+import {
+  useSocket,
+  useAuth,
+  useRoom,
+  useGame,
+  usePreFormSubmission,
+  useSubmissionStatus,
+} from '@/hooks';
 import {
   navigateHome,
   navigateDashboard,
@@ -46,6 +53,7 @@ export default function HeaderLayout() {
   const { socket } = useSocket();
   const { user, discardUser } = useAuth();
   const { room, updateRoom, discardRoom } = useRoom();
+  const { game, discardGame } = useGame();
   const { isSubmitting } = useSubmissionStatus();
   const { loadingButton, processPreFormSubmission } = usePreFormSubmission();
 
@@ -55,6 +63,9 @@ export default function HeaderLayout() {
   const [snackbarRoomEditedInfo, setSnackbarRoomEditedInfo] =
     useState<SnackbarRoomEditedInfoType>(undefined);
   const [snackbars, setSnackbars] = React.useState<readonly SnackbarRoomEditedInfoType[]>([]);
+
+  // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
+  const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
 
   const isAdmin = !!(user?._id === room?.roomAdmin);
 
@@ -81,7 +92,7 @@ export default function HeaderLayout() {
     else if (snackbars.length && snackbarRoomEditedInfo && snackbarOpen) {
       handleSnackbarClose();
     }
-  }, [snackbars, snackbarOpen, snackbarRoomEditedInfo]);
+  }, [snackbarOpen, snackbarRoomEditedInfo, snackbars]);
 
   /**
    * Handler for editing room setting (inside game waiting room).
@@ -155,6 +166,7 @@ export default function HeaderLayout() {
       // SUCCESS
       else {
         setTriggeredButton(NamespaceEnum.LEAVE_ROOM); // Set which button was triggered
+        game && discardGame();
         room && discardRoom();
         navigateDashboard(navigate);
       }
@@ -187,6 +199,7 @@ export default function HeaderLayout() {
       // SUCCESS
       else {
         setTriggeredButton(NamespaceEnum.LOGOUT); // Set which button was triggered
+        game && discardGame();
         room && discardRoom();
         user && discardUser();
         navigateHome(navigate); // navigate
@@ -344,6 +357,20 @@ export default function HeaderLayout() {
         onClose={handleSnackbarClose}
         onExited={handleSnackbarExited}
       />
+
+      {/* Dialog before leaving (press back button) */}
+      <Dialog id="waiting_before-leave_dialog" open={blocker.state === 'blocked'}>
+        <DialogTitle>Are you sure you want to leave?</DialogTitle>
+        <DialogActions>
+          {/* No need of blocker.proceed?.() as handleLeaveRoom() automatically redirects */}
+          <Button onClick={() => blocker.reset?.()} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button onClick={handleLeaveRoom} disabled={isSubmitting}>
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

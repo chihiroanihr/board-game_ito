@@ -14,7 +14,7 @@ export const getSessionInfo = async (sessionId: string): Promise<Session | null>
 export const saveSessionConnected = async (
   sessionId: string,
   connected: boolean
-): Promise<{ matched: boolean; modified: boolean }> => {
+): Promise<boolean> => {
   logQueryEvent('Updating only the session connection status.');
 
   const result = await getDB().sessions.updateOne(
@@ -22,10 +22,14 @@ export const saveSessionConnected = async (
     { $set: { connected: connected } } // Update part: set the new status
   );
 
-  return {
-    matched: result.matchedCount > 0,
-    modified: result.modifiedCount > 0,
-  }; // true or false
+  if (result.matchedCount === 0) {
+    console.error('Session record was not matched.');
+  }
+  if (result.modifiedCount === 0) {
+    console.warn('Session record was matched but not modified.');
+  }
+
+  return result.matchedCount > 0; // true or false
 };
 
 export const saveSessionUserId = async (
@@ -82,32 +86,31 @@ export const saveSessionRoomId = async (
   );
 };
 
-export const saveSessionUserAndRoomId = async (
-  sessionId: string,
-  userId: ObjectId,
-  roomId: string,
+export const saveGivenUsersSessionGameId = async (
+  userIds: Array<ObjectId>,
+  gameId: ObjectId,
   dbSession: ClientSession | null = null
-): Promise<Session | null> => {
-  logQueryEvent('Updating both the user ID and room ID in session.');
+): Promise<boolean> => {
+  logQueryEvent('Updating the game ID for given array of users.');
 
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        includeResultMetadata: false,
-      }; // return the updated document
+  // Options object
+  const options = dbSession ? { session: dbSession } : {};
 
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
-  return await getDB().sessions.findOneAndUpdate(
-    { _id: sessionId }, // Query to match the session by its _id
-    { $set: { userId: userId, roomId: roomId } }, // Update both userId and roomId
+  // Update status for all users in the room
+  const result = await getDB().sessions.updateMany(
+    { userId: { $in: userIds } },
+    { $set: { gameId: gameId } },
     options
   );
+
+  if (result.matchedCount !== userIds.length) {
+    console.error('Some user records were not matched.');
+  }
+  if (result.modifiedCount !== userIds.length) {
+    console.warn('Some user records were matched but not modified.');
+  }
+
+  return result.matchedCount === userIds.length;
 };
 
 export const upsertSession = async (

@@ -53,14 +53,14 @@ const managePlayerButtonData: ManagePlayerButtonData[] = [
 interface PlayerListItemProps {
   player: User;
   adminId: ObjectId | undefined;
-  myselfId: ObjectId | undefined;
+  currentUserId: ObjectId | undefined;
   handleChangeAdmin: (user: User) => void;
 }
 
 const PlayerListItem: React.FC<PlayerListItemProps> = ({
   player,
   adminId,
-  myselfId,
+  currentUserId,
   handleChangeAdmin,
 }) => {
   const [playerDialogOpen, setPlayerDialogOpen] = useState(false);
@@ -115,7 +115,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
         <ListItemButton
           sx={{ paddingY: '0.5rem' }}
           onClick={() =>
-            myselfId?.toString() === adminId?.toString() &&
+            currentUserId?.toString() === adminId?.toString() &&
             player._id.toString() !== adminId?.toString() &&
             handleOpenPlayerDialog()
           }
@@ -142,7 +142,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
               </Typography>
             }
           />
-          {myselfId?.toString() === player._id.toString() && (
+          {currentUserId?.toString() === player._id.toString() && (
             <Typography
               variant="overline"
               bgcolor="primary.light"

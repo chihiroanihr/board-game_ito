@@ -6,7 +6,7 @@ import { CommunicationMethodEnum } from '@bgi/shared';
 
 import { HeaderLayout, ChatLayout, VoiceCallLayout } from '@/layouts';
 import { Loader, Copyright } from '@/components';
-import { useAuth, useRoom } from '@/hooks';
+import { useAuth, useRoom, useGame } from '@/hooks';
 import { appBarStyle } from '../theme';
 
 /** @/debug - Display amount of sockets connected: Only for development environment */
@@ -22,6 +22,7 @@ export default function CommonLayout() {
   const theme = useTheme();
   const { user } = useAuth();
   const { room } = useRoom();
+  const { game } = useGame();
   const location = useLocation(); /** @/debug */
 
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
@@ -98,9 +99,11 @@ export default function CommonLayout() {
         </Grid>
 
         {/* -------------- Footer -------------- */}
-        <Box component="footer" mt="0.5rem">
-          <Copyright />
-        </Box>
+        {game && (
+          <Box component="footer" mt="0.5rem">
+            <Copyright />
+          </Box>
+        )}
       </Box>
 
       {/* {process.env.NODE_ENV === 'development' && (

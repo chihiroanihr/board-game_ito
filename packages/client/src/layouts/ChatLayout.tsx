@@ -116,7 +116,7 @@ const ChatLayout = () => {
     return () => {
       socket.off(NamespaceEnum.RECEIVE_CHAT, onReceiveChatEvent);
     };
-  }, [socket, allMessages, anchorEl, isVisible, isLgViewport]);
+  }, [allMessages, anchorEl, isLgViewport, isVisible, socket]);
 
   /**
    * Every render
@@ -135,7 +135,7 @@ const ChatLayout = () => {
         setTriggerScroll(allMessages); // If messages exists and not yet scrolled down then scroll down
       }
     }
-  }, [allMessages, unreadMessages, anchorEl, isLgViewport, isVisible]);
+  }, [allMessages, anchorEl, isLgViewport, isVisible, unreadMessages]);
 
   return isLgViewport ? (
     <ChatContent

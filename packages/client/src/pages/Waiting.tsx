@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useBlocker } from 'react-router-dom';
-import { ObjectId } from 'mongodb';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import {
   Typography,
-  Button,
   Stack,
   List,
-  Dialog,
-  DialogTitle,
-  DialogActions,
   Backdrop,
   CircularProgress,
   useMediaQuery,
@@ -20,94 +15,41 @@ import {
   MIN_NUM_PLAYERS,
   MAX_NUM_PLAYERS,
   type User,
-  type WaitRoomResponse,
-  type PlayerInResponse,
-  type PlayerOutResponse,
-  type LeaveRoomResponse,
   type ChangeAdminResponse,
+  type CreateGameResponse,
   NamespaceEnum,
 } from '@bgi/shared';
 
-import {
-  TextButton,
-  AnimateTextThreeDots,
-  PlayerListItem,
-  SnackbarPlayerInQueue,
-  TooltipStyled,
-} from '@/components';
-import {
-  useAuth,
-  useRoom,
-  usePreFormSubmission,
-  usePlayerStatus,
-  useSubmissionStatus,
-  useSocket,
-} from '@/hooks';
-import { outputServerError, outputResponseTimeoutError } from '@/utils';
-import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
+import { TextButton, AnimateTextThreeDots, PlayerListItem, TooltipStyled } from '@/components';
+import { useAuth, useRoom, usePreFormSubmission, useSocket } from '@/hooks';
+import { navigateGame, outputServerError, outputResponseTimeoutError } from '@/utils';
+import { type GameLayoutOutletContextType } from '../enum';
 
 export default function Waiting() {
+  const { adminId, players, synchronousBlock } = useOutletContext<GameLayoutOutletContextType>();
+  const navigate = useNavigate();
   const { socket } = useSocket();
   const { user: currentUser } = useAuth();
-  const { room, updateRoom, discardRoom } = useRoom();
-  const { isSubmitting } = useSubmissionStatus();
+  const { room } = useRoom();
   const { loadingButton, processPreFormSubmission } = usePreFormSubmission();
 
   const theme = useTheme();
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
 
-  const [adminId, setAdminId] = useState<ObjectId>();
-  const [players, setPlayers] = useState<Array<User>>([]);
   const [allowStart, setAllowStart] = useState<boolean>(false);
-  const [synchronousBlock, setSynchronousBlock] = useState<boolean>(false); // Block other execution synchronously until state sets back to true (loading state just for consistent execution)
   const [backdropOpen, setBackdropOpen] = useState(false);
-
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarPlayerInQueueInfo, setSnackbarPlayerInQueueInfo] =
-    useState<SnackbarPlayerInQueueInfoType>(undefined);
-  const [playerSnackbars, setPlayerSnackbars] = React.useState<
-    readonly SnackbarPlayerInQueueInfoType[]
-  >([]);
 
   const isAdmin = !!(adminId?.toString() === currentUser?._id.toString());
 
-  // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
-  const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
-
-  // Snackbar handlers
-  const handleSnackbarOpen = () => setSnackbarOpen(true);
-  const handleSnackbarClose = () => setSnackbarOpen(false);
-  const handleSnackbarExited = () => setSnackbarPlayerInQueueInfo(undefined);
-
-  /**
-   * Handler for leaving gamer room.
-   */
-  const handleLeaveRoom = () => {
-    processPreFormSubmission(true);
-
-    // Create a timeout to check if the response is received
-    const timeoutId = setTimeout(() => {
-      processPreFormSubmission(false);
-      // ERROR
-      outputResponseTimeoutError();
-    }, 5000);
-
-    /** @socket_send - Send to socket & receive response */
-    socket.emit(NamespaceEnum.LEAVE_ROOM, async ({ error }: LeaveRoomResponse) => {
-      clearTimeout(timeoutId);
-
-      // ERROR
-      if (error) {
-        outputServerError({ error });
-      }
-      // SUCCESS
-      else {
-        room && discardRoom();
-      }
-
-      processPreFormSubmission(false);
-    });
-  };
+  // Enabling start game depending on player number
+  useEffect(() => {
+    // Enable start button if more than MIN_NUM_PLAYERS players
+    if (players.length >= MIN_NUM_PLAYERS) {
+      setAllowStart(true);
+    } else {
+      setAllowStart(false);
+    }
+  }, [players.length]);
 
   /**
    * Handler for changing admin.
@@ -137,174 +79,86 @@ export default function Waiting() {
   };
 
   /**
-   * Handler for starting game.
+   * Handler for creating (initializing) game.
    */
   const handleStartGame = () => {
     processPreFormSubmission(true);
-    setBackdropOpen(true);
 
-    // Create a timeout to check if the response is received
-    const timeoutId = setTimeout(() => {
-      processPreFormSubmission(false);
+    /** @socket_send - Create new game record & update room info */
+    socket.emit(NamespaceEnum.CREATE_GAME, async ({ error }: CreateGameResponse) => {
       // ERROR
-      outputResponseTimeoutError();
-      setBackdropOpen(false);
-    }, 5000);
-
-    /** @socket_send - Send to socket & receive response */
-    socket.emit(NamespaceEnum.START_GAME, room, async ({ error }: { error: Error }) => {
-      clearTimeout(timeoutId);
-
-      // ERROR
-      if (error) {
-        outputServerError({ error });
-        setBackdropOpen(false);
-      }
+      if (error) outputServerError({ error });
       // SUCCESS
-      else {
-        setBackdropOpen(false);
-      }
-
       processPreFormSubmission(false);
     });
   };
 
-  // Enabling start game depending on player number
   useEffect(() => {
-    // Enable start button if more than MIN_NUM_PLAYERS players
-    if (players.length >= MIN_NUM_PLAYERS) {
-      setAllowStart(true);
-    } else {
-      setAllowStart(false);
+    async function onGameCreating() {
+      setBackdropOpen(true);
     }
-  }, [players.length]);
+    // Executes whenever a socket event is received from the server
+    socket.on(NamespaceEnum.GAME_CREATING, onGameCreating);
+    return () => {
+      socket.off(NamespaceEnum.GAME_CREATING, onGameCreating);
+    };
+  }, [socket]);
 
-  // Consecutive snackbars (multiple snackbars without stacking them): (https://mui.com/material-ui/react-snackbar/#consecutive-snackbars)
   useEffect(() => {
-    // Set a new snack when we don't have an active one
-    if (playerSnackbars.length && !snackbarPlayerInQueueInfo) {
-      setSnackbarPlayerInQueueInfo(playerSnackbars[0]);
-      setPlayerSnackbars((prev) => prev.slice(1));
-      handleSnackbarOpen();
+    async function onGameCreateFailed() {
+      setBackdropOpen(false);
     }
-    // Close an active snack when a new one is added
-    else if (playerSnackbars.length && snackbarPlayerInQueueInfo && snackbarOpen) {
-      handleSnackbarClose();
-    }
-  }, [playerSnackbars, snackbarOpen, snackbarPlayerInQueueInfo]);
+    // Executes whenever a socket event is received from the server
+    socket.on(NamespaceEnum.GAME_CREATE_FAILED, onGameCreateFailed);
+    return () => {
+      socket.off(NamespaceEnum.GAME_CREATE_FAILED, onGameCreateFailed);
+    };
+  }, [socket]);
 
   /**
-   * [1] currentUser arrives
-   * ---------------------------------------------------
-   * Assume room info and user info in the local storage are already updated previously.
-   * 1. If you are a room admin:
-   *    - Receive new room info (Room obj), list of players (Array<User>), and user (currentUser) info (User obj) from the response
-   *    - Set admin ID (your user ID)
-   *    - Include yourself (User obj) in the list of players (Array<User>)
-   * 2. If you are a participant:
-   *    - Receive new room info (Room obj), list of players (Array<User>), and user (currentUser) info (User obj) from the response
-   *    - Set admin ID (room.roomAdmin)
-   *    - Set list of participating players (Array<User>)
-   *    - (Set other room config info, etc.)
+   * Admin has started game.
    */
   useEffect(() => {
-    room &&
-      /** @todo: Should I only send room.players instead of whole 'room'? */
-      socket.emit(NamespaceEnum.WAIT_ROOM, room, async ({ error, players }: WaitRoomResponse) => {
-        if (error) {
-          outputServerError({ error });
-        } else if (!players) {
-          /** @todo - Failed to fetch players error (create new error) */
-        } else {
-          // Add admin
-          setAdminId(room.roomAdmin);
-          // Add list of players
-          setPlayers(players);
-        }
-      });
-  }, [room, socket]);
+    async function onGameCreatedEvent() {
+      navigateGame(navigate); // Navigate to game page
+      setBackdropOpen(false);
+      // // Create a timeout to check if the response is received
+      // const timeoutId = setTimeout(() => {
+      //   // ERROR
+      //   setBackdropOpen(false);
+      //   outputResponseTimeoutError();
+      // }, 5000);
 
-  /**
-   * [2] New user arrives
-   * ---------------------------------------------------
-   * - Receive new room info (Room obj), list of players (Array<User>), and user (participated) info (User obj) from the response
-   * - Update room info in the local storage
-   * - Append new user to the list of players (just replace original list of players with new list of players received)
-   * - If list of players reaches more than MIN_NUM_PLAYERS, enable "allowStart"
-   * - Display message that new user has arrived
-   */
-  const handlePlayerIn = ({ user: player, room }: PlayerInResponse) => {
-    setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
+      // /** @socket_send - Request to update all the player's socket info */
+      // socket.emit(
+      //   NamespaceEnum.START_GAME,
+      //   {
+      //     room: updatedRoom,
+      //     game: newGame,
+      //   } as GameCreatedResponse,
+      //   async ({ error, user: updatedUser }: StartGameResponse) => {
+      //     clearTimeout(timeoutId);
 
-    // Update room in the local storage first
-    updateRoom(room);
-    // Add new player in the list of players
-    setPlayers((prevPlayers: User[]) => [...prevPlayers, player]);
-    // Store player and snackbar info for snackbar notification + Add to snackbar queue
-    setPlayerSnackbars((prev) => [
-      ...prev,
-      {
-        key: new Date().getTime(),
-        player: player,
-        status: PlayerInQueueActionEnum.IN,
-      },
-    ]);
+      //     // ERROR
+      //     if (error) outputServerError({ error });
+      //     // SUCCESS
+      //     else {
+      //       updateUser(updatedUser); // Update User
+      //       updateRoom(updatedRoom); // Update Room
+      //       updateGame(newGame); // Update Game
 
-    setSynchronousBlock(false); // Unblock
-  };
-
-  /**
-   * [3] currentUser leaves
-   * ---------------------------------------------------
-   * Nothing specific to do.
-   */
-
-  /**
-   * [4] Other participant leaves
-   * ---------------------------------------------------
-   * - Receive new room (Room obj), list of players (Array<User>), and user (left) info (User obj) from the response
-   * - Update room info in the local storage
-   * - Remove the user from the list of players (just replace original list of players with new list of players received)
-   * - If list of players decreases to less than MIN_NUM_PLAYERS, disable "allowStart"
-   * - Check if the player left was an admin (from the new room info received)
-   * 1. If the participant was a room admin:
-   *    - Set new room admin ID (room.roomAdmin)
-   *    - Display message that new user has left & admin has changed
-   * 2. Else:
-   *    - Display message that new user has left
-   */
-  const handlePlayerOut = ({ user: player, room }: PlayerOutResponse) => {
-    setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
-
-    // Update room in the local storage first
-    updateRoom(room);
-    // If room still exists (at least one player left in the room) AND If admin changed then set new admin
-    if (room && room.roomAdmin.toString() !== adminId?.toString()) {
-      setAdminId(room.roomAdmin);
+      //       navigateGame(navigate); // Navigate to game page
+      //     }
+      //   }
+      // );
     }
-    // Remove player from the list of players
-    setPlayers((prevPlayers: User[]) =>
-      prevPlayers.filter((prevPlayer: User) => prevPlayer._id.toString() !== player._id.toString())
-    );
-    // Store player and snackbar info for snackbar notification + Add to snackbar queue
-    //
-    setPlayerSnackbars((prev) => [
-      ...prev,
-      {
-        key: new Date().getTime(),
-        player: player,
-        status: PlayerInQueueActionEnum.OUT,
-      },
-    ]);
 
-    setSynchronousBlock(false); // Unblock
-  };
-
-  // Player connection status hook
-  usePlayerStatus({
-    onPlayerJoinedCallback: handlePlayerIn,
-    onPlayerLeftCallback: handlePlayerOut,
-  });
+    // Executes whenever a socket event is received from the server
+    socket.on(NamespaceEnum.GAME_CREATED, onGameCreatedEvent);
+    return () => {
+      socket.off(NamespaceEnum.GAME_CREATED, onGameCreatedEvent);
+    };
+  }, [navigate, socket]);
 
   const PlayersNumber = () => {
     return (
@@ -341,7 +195,7 @@ export default function Waiting() {
   const PlayersList = () => {
     return (
       <List id="waiting_player-list" dense={true} sx={{ overflowY: 'auto' }} disablePadding>
-        {players.map((player) => (
+        {players.map((player: User) => (
           <PlayerListItem
             key={player._id.toString()}
             player={player}
@@ -441,7 +295,8 @@ export default function Waiting() {
           variant="contained"
           loading={loadingButton}
           loadingElement="Loading..."
-          disabled={!isAdmin || !allowStart || !synchronousBlock} // Only admin can start the game
+          sx={{ fontWeight: 600 }}
+          disabled={!isAdmin || !allowStart || synchronousBlock} // Only admin can start the game
         >
           Start Game
         </TextButton>
@@ -520,29 +375,6 @@ export default function Waiting() {
           <StartGameButton />
         </Stack>
       )}
-
-      {/* Snackbar player in / out notification */}
-      <SnackbarPlayerInQueue
-        open={snackbarOpen}
-        snackbarInfo={snackbarPlayerInQueueInfo}
-        onClose={handleSnackbarClose}
-        onExited={handleSnackbarExited}
-      />
-
-      {/* Dialog before leaving (press back button) */}
-      {/** @todo: Consider if this can be moved to HeaderLayout.tsx */}
-      <Dialog id="waiting_before-leave_dialog" open={blocker.state === 'blocked'}>
-        <DialogTitle>Are you sure you want to leave?</DialogTitle>
-        <DialogActions>
-          {/* No need of blocker.proceed?.() as handleLeaveRoom() automatically redirects */}
-          <Button onClick={() => blocker.reset?.()} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button onClick={handleLeaveRoom} disabled={isSubmitting}>
-            Proceed
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Backdrop when game start button is pressed */}
       <Backdrop

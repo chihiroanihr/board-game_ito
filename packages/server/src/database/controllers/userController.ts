@@ -67,6 +67,33 @@ export const updateUserStatus = async (
   );
 };
 
+export const updateGivenUsersStatus = async (
+  userIds: Array<ObjectId>,
+  newStatus: UserStatusEnum,
+  dbSession: ClientSession | null = null
+): Promise<boolean> => {
+  logQueryEvent('Updating the user status for given array of users.');
+
+  // Options object
+  const options = dbSession ? { session: dbSession } : {};
+
+  // Update status for all users in the room
+  const result = await getDB().users.updateMany(
+    { _id: { $in: userIds } },
+    { $set: { status: newStatus } },
+    options
+  );
+
+  if (result.matchedCount !== userIds.length) {
+    console.error('Some user records were not matched.');
+  }
+  if (result.modifiedCount !== userIds.length) {
+    console.warn('Some user records were matched but not modified.');
+  }
+
+  return result.matchedCount === userIds.length;
+};
+
 export const deleteUser = async (
   userId: ObjectId,
   dbSession: ClientSession | null = null

@@ -12,6 +12,7 @@ export interface Session {
   _id: string;
   userId: ObjectId | null; // User._id
   roomId: string | null; // Room._id
+  gameId: ObjectId | null; // Game._id
   connected: boolean;
 }
 
@@ -47,7 +48,7 @@ export interface Game {
   rounds: Array<Round>; // Round records
   cardsAvailable: number[]; // [1, 2, 3, ..., 100]
   startTime: Date;
-  endTime: Date;
+  endTime: Date | null;
 }
 
 export interface Round {

@@ -15,7 +15,7 @@ import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '
 function CreateRoom() {
   const { socket } = useSocket();
   const navigate = useNavigate();
-  const { updateUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const { updateRoom } = useRoom();
 
   // Button click handlers
@@ -72,6 +72,7 @@ function CreateRoom() {
     };
   }, [formErrorMessage, setFormErrorMessage]);
 
+  if (!user) return null;
   return (
     <Box
       display="flex"

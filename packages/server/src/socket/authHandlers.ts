@@ -99,9 +99,9 @@ export const handleSocketLogout = (socket: Socket, io: Server) => {
 
         // [3.2] Remove user from room and update room in database (return value : Room | null (if room is deleted))
         const { user: updatedUser, room: updatedRoom } = await handler.handleLeaveRoom(
-          socket.sessionId,
           socket.user._id,
           socket.room._id,
+          socket.game?._id,
           dbSession
         );
 
@@ -112,6 +112,7 @@ export const handleSocketLogout = (socket: Socket, io: Server) => {
         // [3.4] Update socket instance with null for room
         /** @socket_update */
         socket.room = null;
+        socket.game = null;
 
         // [3.5] Save session to database using the provided socket instance storing session info
         await handler.handleSaveSession(socket, dbSession);

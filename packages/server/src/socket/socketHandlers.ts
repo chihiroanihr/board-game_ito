@@ -1,11 +1,18 @@
 import { Server, Socket } from 'socket.io';
 
-import { type User, type Room, type InitializeCallback, NamespaceEnum } from '@bgi/shared';
+import {
+  type User,
+  type Room,
+  type Game,
+  type InitializeCallback,
+  NamespaceEnum,
+} from '@bgi/shared';
 
 import * as connectionHandlers from './connectionHandlers';
 import * as sessionHandlers from './sessionHandlers';
 import * as authHandlers from './authHandlers';
 import * as roomHandlers from './roomHandlers';
+import * as gameHandlers from './gameHandlers';
 import * as chatHandlers from './chatHandlers';
 import * as voiceHandlers from './voiceHandlers';
 import * as controller from '../database/controllers';
@@ -20,6 +27,7 @@ declare module 'socket.io' {
     connected: boolean;
     user: User | null;
     room: Room | null;
+    game: Game | null;
   }
 }
 
@@ -83,9 +91,11 @@ const socketHandlers = (io: Server) => {
     roomHandlers.handleSocketCreateRoom(socket);
     roomHandlers.handleSocketEditRoom(socket);
     roomHandlers.handleSocketJoinRoom(socket);
-    roomHandlers.handleSocketWaitRoom(socket);
     roomHandlers.handleSocketLeaveRoom(socket);
+    roomHandlers.handleSocketFetchPlayers(socket);
     roomHandlers.handleSocketChangeAdmin(socket, io);
+    gameHandlers.handleSocketCreateGame(socket, io);
+    gameHandlers.handleSocketInGame(socket);
     chatHandlers.handleSocketChatMessage(socket, io);
     voiceHandlers.handleSocketMicReady(socket);
     voiceHandlers.handleSocketVoiceOffer(socket, io);

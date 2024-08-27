@@ -18,6 +18,7 @@ export function initializeSocketSession(socket: Socket): void {
   socket.connected = true;
   socket.user = null;
   socket.room = null;
+  socket.game = null;
 }
 
 /**
@@ -29,32 +30,30 @@ export function initializeSocketSession(socket: Socket): void {
 export async function checkAndRestoreSession(socket: Socket, sessionId: string): Promise<boolean> {
   // [1] Find existing session from the database
   const session = await handler.handleFindSession(sessionId);
-
   // [~1] Session found - restore session info
   if (session) {
     // [2] Update session connection status
-    const { matched, modified } = await controller.saveSessionConnected(sessionId, true);
-
-    // [~2] Session connection status not updated - throw error
-    if (!matched && !modified) {
+    if (!(await controller.saveSessionConnected(sessionId, true))) {
+      // [~2] Session connection status not updated - throw error
       throw log.handleDBError(
         new Error('Failed to update session connection status.'),
         'checkAndRestoreSession'
       );
     }
 
-    // [~2] Session connection status updated, restore session info by updating socket instance
+    // [5] Session connection status updated, restore session info by updating socket instance
     /** @socket_update */
-    socket.sessionId = session._id;
     socket.connected = true;
+    socket.sessionId = session._id;
     socket.user = session.user;
     socket.room = session.room;
+    socket.game = session.game;
 
-    // [3] Join socket to the room if room ID in the session info exists
+    // [4] Join socket to the room if room ID in the session info exists
     /** @socket_join */
     session.room?._id && socket.join(session.room._id);
 
-    // [4] Log session restored event & return result
+    // [5] Log session restored event & return result
     log.logSocketEvent('User Session Restored', socket);
     return true;
   }
@@ -76,5 +75,6 @@ export const handleSocketSession = (socket: Socket) => {
     sessionId: socket.sessionId,
     user: socket.user,
     room: socket.room,
+    game: socket.game,
   } as SessionResponse);
 };

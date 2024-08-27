@@ -7,7 +7,7 @@ import {
   type ChangeAdminCallback,
   type JoinRoomCallback,
   type LeaveRoomCallback,
-  type WaitRoomCallback,
+  type FetchPlayersCallback,
   type RoomEditedResponse,
   type AdminChangedResponse,
   type PlayerInResponse,
@@ -68,19 +68,11 @@ export const handleSocketCreateRoom = (socket: Socket) => {
         // [8] Commit the transaction
         await dbSession.commitTransaction();
 
-        // [9] Notify other players in the room that a new player has joined (except the sender)
-        /** @socket_emit */
-        socket.to(updatedRoom._id).emit(NamespaceEnum.PLAYER_IN, {
-          socketId: socket.id,
-          user: updatedUser,
-          room: updatedRoom,
-        } as PlayerInResponse);
-
-        // [10] Send back success response to client with updated user and room
+        // [9] Send back success response to client with updated user and room
         /** @socket_callback */
         callback({ user: updatedUser, room: updatedRoom });
 
-        // [11] Log socket event
+        // [10] Log socket event
         log.logSocketEvent('Create Room', socket);
       } catch (error) {
         // [~1] If an error occurs, abort the transaction if it exists
@@ -170,6 +162,7 @@ export const handleSocketChangeAdmin = (socket: Socket, io: Server) => {
       socket.room = updatedRoom;
 
       // [4] Broadcast to everyone in the room that the admin has been changed
+      /** @socket_io_emit */
       io.to(socket.room._id).emit(NamespaceEnum.ADMIN_CHANGED, {
         user: newAdmin,
         room: updatedRoom,
@@ -217,25 +210,26 @@ export const handleSocketLeaveRoom = (socket: Socket) => {
 
       // [4] Remove user from room and update room in database (return value : Room | null (if room is deleted))
       const { user: updatedUser, room: updatedRoom } = await handler.handleLeaveRoom(
-        socket.sessionId,
         socket.user._id,
         socket.room._id,
+        socket.game?._id,
         dbSession
       );
 
-      // [5] Save session to database using the provided socket instance storing user info (null user and room)
-      await handler.handleSaveSession(socket, dbSession);
-
-      // [6] Commit database transaction
-      await dbSession.commitTransaction();
-
-      // [7] Leave socket from the room
+      // [5] Leave socket from the room
       /** @socket_lave */
       socket.leave(socket.room._id);
 
-      // [8] Update socket instance with null for room
+      // [6] Update socket instance with null for room and game
       /** @socket_update */
       socket.room = null;
+      socket.game = null;
+
+      // [7] Save session to database using the provided socket instance storing user info (null user and room)
+      await handler.handleSaveSession(socket, dbSession);
+
+      // [8] Commit database transaction
+      await dbSession.commitTransaction();
 
       // [9] Notify others in the room that user has left (except the sender)
       updatedRoom &&
@@ -292,12 +286,7 @@ export const handleSocketJoinRoom = (socket: Socket) => {
       dbSession.startTransaction();
 
       // [4] Join user to room and update room in database
-      const response = await handler.handleJoinRoom(
-        socket.sessionId,
-        socket.user._id,
-        roomId,
-        dbSession
-      );
+      const response = await handler.handleJoinRoom(socket.user._id, roomId, dbSession);
 
       // [~4] If user can join room
       if (typeof response === 'object') {
@@ -361,13 +350,13 @@ export const handleSocketJoinRoom = (socket: Socket) => {
 };
 
 /**
- * @function handleSocketWaitRoom - Handles socket wait room event
- * @socket_event - Wait Room
+ * @function handleSocketFetchPlayers - Handles socket fetch players event
+ * @socket_event - Fetch Players
  * @param socket - Socket instance
  */
-export const handleSocketWaitRoom = (socket: Socket) => {
+export const handleSocketFetchPlayers = (socket: Socket) => {
   /** @socket_receive */
-  socket.on(NamespaceEnum.WAIT_ROOM, async (room: Room, callback: WaitRoomCallback) => {
+  socket.on(NamespaceEnum.FETCH_PLAYERS, async (room: Room, callback: FetchPlayersCallback) => {
     try {
       // [2] Validate user and room exists (if user is not connected and user is not in a room, throw error)
       if (!socket.user?._id) throw new Error('[Socket Error]: User is not connected.');
@@ -380,8 +369,8 @@ export const handleSocketWaitRoom = (socket: Socket) => {
       /** @socket_callback */
       callback({ players: players });
 
-      // [5] Log user wait room event
-      log.logSocketEvent('Wait Room', socket);
+      // [5] Log fetch players event
+      log.logSocketEvent('Fetch Players', socket);
     } catch (error) {
       // [1] If error, send back error response to client
       const errorResponse = error instanceof Error ? error : new Error(String(error));
@@ -389,7 +378,7 @@ export const handleSocketWaitRoom = (socket: Socket) => {
       callback({ error: errorResponse });
 
       // [2] Log error event
-      log.handleServerError(error, 'handleSocketWaitRoom');
+      log.handleServerError(error, 'handleSocketFetchPlayers');
     }
   });
 };

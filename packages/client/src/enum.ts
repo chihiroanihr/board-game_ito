@@ -1,4 +1,5 @@
 import { type User } from '@bgi/shared';
+import { ObjectId } from 'mongodb';
 
 export type LoginFormDataType = {
   name: string;
@@ -39,3 +40,9 @@ export type SnackbarRoomEditedInfoType =
       status: RoomEditedActionEnum;
     }
   | undefined;
+
+export type GameLayoutOutletContextType = {
+  adminId: ObjectId;
+  players: Array<User>;
+  synchronousBlock: boolean;
+};

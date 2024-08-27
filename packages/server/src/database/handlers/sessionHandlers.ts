@@ -1,7 +1,7 @@
 import { ClientSession } from 'mongodb';
 import { Socket } from 'socket.io';
 
-import type { User, Room, Session } from '@bgi/shared';
+import type { User, Room, Game, Session } from '@bgi/shared';
 
 import * as controller from '../controllers';
 import * as log from '../../log';
@@ -11,6 +11,7 @@ interface SessionData {
   connected: boolean;
   user: User | null;
   room: Room | null;
+  game: Game | null;
 }
 
 const handleFindSession = async (sessionId: string): Promise<SessionData | null> => {
@@ -22,12 +23,13 @@ const handleFindSession = async (sessionId: string): Promise<SessionData | null>
     if (!session) return null;
 
     // If session exists
-    const { _id, userId, roomId, connected } = session;
+    const { _id, userId, roomId, gameId, connected } = session;
     const user = userId ? await controller.getUserInfo(userId) : null;
     const room = roomId ? await controller.getRoomInfo(roomId) : null;
+    const game = gameId ? await controller.getGameInfo(gameId) : null;
 
     // All success
-    return { _id, connected, user, room };
+    return { _id, connected, user, room, game };
   } catch (error) {
     throw log.handleDBError(error, 'handleFindSession');
   }
@@ -38,19 +40,21 @@ const handleSaveSession = async (
   dbSession: ClientSession | null = null
 ): Promise<void> => {
   console.log(socket.connected);
+
   try {
     // Create / Update new session info
     const newSessionObj: Session = {
       _id: socket.sessionId,
       userId: socket.user?._id ?? null,
       roomId: socket.room?._id ?? null,
+      gameId: socket.game?._id ?? null,
       connected: socket.connected,
     };
 
     /** @api_call - Upsert new session (POST & PUT) */
-    const session = await controller.upsertSession(newSessionObj, dbSession);
+    const upsertSession = await controller.upsertSession(newSessionObj, dbSession);
     // Error
-    if (!session) {
+    if (!upsertSession) {
       throw new Error(`Failed to upsert session info (given session ID might not exist).`);
     }
 

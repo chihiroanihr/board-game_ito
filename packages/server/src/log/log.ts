@@ -6,7 +6,8 @@ export function logSocketEvent(eventType: string, socket: Socket) {
       socketId: ${socket.id}
       sessionId: ${socket.sessionId}
       userId: ${socket.user?._id ?? null}
-      roomId: ${socket.room?._id ?? null}`
+      roomId: ${socket.room?._id ?? null}
+      gameId: ${socket.game?._id ?? null}`
   );
 }
 
