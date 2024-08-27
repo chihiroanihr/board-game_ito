@@ -67,13 +67,9 @@ export default function HeaderLayout() {
   // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
   const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
 
-  const isAdmin = !!(user?._id === room?.roomAdmin);
-
   const submitBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Dialog open / close handlers
-  const handleDialogOpen = () => setDialogOpen(true);
-  const handleDialogClose = () => setDialogOpen(false);
+  const isAdmin = !!(user?._id === room?.roomAdmin);
 
   // Snackbar handlers
   const handleSnackbarOpen = () => setSnackbarOpen(true);
@@ -94,18 +90,41 @@ export default function HeaderLayout() {
     }
   }, [snackbarOpen, snackbarRoomEditedInfo, snackbars]);
 
+  // Room setting dialog open / close handlers
+  const handleRoomSettingDialogOpen = () => {
+    setTriggeredButton(NamespaceEnum.EDIT_ROOM); // Set which button was triggered
+    setDialogOpen(true);
+  };
+  const handleRoomSettingDialogClose = () => setDialogOpen(false);
+
+  // Leave room dialog open / close handlers
+  const handleLeaveRoomDialogOpen = () => {
+    setTriggeredButton(NamespaceEnum.LEAVE_ROOM);
+    setDialogOpen(true);
+  };
+  const handleLeaveRoomDialogClose = () => setDialogOpen(false);
+
+  // Logout dialog open / close handlers
+  const handleLogoutDialogOpen = () => {
+    setTriggeredButton(NamespaceEnum.LOGOUT);
+    setDialogOpen(true);
+  };
+  const handleLogoutDialogClose = () => setDialogOpen(false);
+
   /**
-   * Handler for editing room setting (inside game waiting room).
+   * @function handleEditRoom
+   * @description Handle edit room submission socket request
    * @param formData
    */
   const handleEditRoom = (formData: RoomSetting) => {
+    setTriggeredButton(NamespaceEnum.EDIT_ROOM); // Set which button was triggered
     processPreFormSubmission(true);
     snackbarOpen && handleSnackbarClose(); // Make sure to close all snackbars that are opened
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
-      processPreFormSubmission(false);
       // ERROR
+      processPreFormSubmission(false);
       outputResponseTimeoutError();
     }, 5000);
 
@@ -122,9 +141,9 @@ export default function HeaderLayout() {
         }
         // SUCCESS
         else {
-          setTriggeredButton(NamespaceEnum.EDIT_ROOM); // Set which button was triggered
           updateRoom(updatedRoom ? updatedRoom : null); // Update room info to local storage
-          handleDialogClose(); // close dialog
+          handleRoomSettingDialogClose(); // Close dialog
+
           // Store snackbar info for snackbar notification + Add to snackbar queue
           setSnackbars((prev) => [
             ...prev,
@@ -142,16 +161,18 @@ export default function HeaderLayout() {
   };
 
   /**
-   * Handler for leaving game room.
+   * @function handleLeaveRoom
+   * @description Handle leave room submission socket request
    */
   const handleLeaveRoom = () => {
+    setTriggeredButton(NamespaceEnum.LEAVE_ROOM); // Set which button was triggered
     processPreFormSubmission(true);
     snackbarOpen && handleSnackbarClose(); // Make sure to close all snackbars that are opened
 
     // Create a timeout to check if the response is received
     const timeoutId = setTimeout(() => {
-      processPreFormSubmission(false);
       // ERROR
+      processPreFormSubmission(false);
       outputResponseTimeoutError();
     }, 5000);
 
@@ -165,10 +186,10 @@ export default function HeaderLayout() {
       }
       // SUCCESS
       else {
-        setTriggeredButton(NamespaceEnum.LEAVE_ROOM); // Set which button was triggered
         game && discardGame();
         room && discardRoom();
-        navigateDashboard(navigate);
+        navigateDashboard(navigate); // Navigate
+        handleLeaveRoomDialogClose(); // Close dialog
       }
 
       processPreFormSubmission(false);
@@ -176,15 +197,17 @@ export default function HeaderLayout() {
   };
 
   /**
-   * Handler for user logging out of the game.
+   * @function handleLogout
+   * @description Handle logout submission socket request
    */
   const handleLogout = () => {
+    setTriggeredButton(NamespaceEnum.LOGOUT); // Set which button was triggered
     processPreFormSubmission(true); // Set submitting to true when the request is initiated
     snackbarOpen && handleSnackbarClose(); // Make sure to close all snackbars that are opened
 
     const timeoutId = setTimeout(() => {
-      processPreFormSubmission(false);
       // ERROR
+      processPreFormSubmission(false);
       outputResponseTimeoutError();
     }, 5000);
 
@@ -198,18 +221,20 @@ export default function HeaderLayout() {
       }
       // SUCCESS
       else {
-        setTriggeredButton(NamespaceEnum.LOGOUT); // Set which button was triggered
         game && discardGame();
         room && discardRoom();
         user && discardUser();
-        navigateHome(navigate); // navigate
+        navigateHome(navigate); // Navigate
+        handleLogoutDialogClose(); // Close dialog
       }
 
       processPreFormSubmission(false);
     });
   };
 
-  // When room setting is edited by admin
+  /**
+   * When room config is edited by the admin.
+   */
   useEffect(() => {
     async function onRoomEditedEvent({ room }: RoomEditedResponse) {
       updateRoom(room); // Update room in the local storage first
@@ -231,7 +256,9 @@ export default function HeaderLayout() {
     };
   }, [socket, updateRoom]);
 
-  // When room admin is changed by previous room admin
+  /**
+   * When new admin is assigned by the previous admin.
+   */
   useEffect(() => {
     async function onAdminChangedEvent({ user, room }: AdminChangedResponse) {
       updateRoom(room); // Update room in the local storage first
@@ -253,35 +280,68 @@ export default function HeaderLayout() {
     };
   }, [socket, updateRoom]);
 
+  /* --------------------------------------- JSX --------------------------------------- */
+
+  const LogoutButton = () => {
+    return (
+      <IconButton
+        onClick={game ? handleLogoutDialogOpen : handleLogout}
+        loading={loadingButton && triggeredButton === NamespaceEnum.LOGOUT}
+        tooltipProps={{ title: 'Exit Game', placement: 'top' }}
+        sx={{
+          ...commonIconButtonStyle,
+          // transform: 'scaleX(-1)',
+        }}
+      >
+        <LogoutIcon />
+      </IconButton>
+    );
+  };
+
+  const LeaveRoomButton = () => {
+    return (
+      <IconButton
+        onClick={game ? handleLeaveRoomDialogOpen : handleLeaveRoom}
+        loading={loadingButton && triggeredButton === NamespaceEnum.LEAVE_ROOM}
+        tooltipProps={{ title: 'Leave This Room', placement: 'top' }}
+        sx={commonIconButtonStyle}
+      >
+        <MeetingRoomIcon />
+      </IconButton>
+    );
+  };
+
+  const canEditRoomSetting = !game && isAdmin; // Only admin inside waiting room can edit room setting
+
+  const EditRoomButton = () => {
+    return (
+      <IconButton
+        onClick={handleRoomSettingDialogOpen}
+        loading={loadingButton && triggeredButton === NamespaceEnum.EDIT_ROOM}
+        tooltipProps={{
+          title: canEditRoomSetting ? 'Edit Game Room Setting' : 'View Game Room Setting',
+          placement: 'top',
+          // ...(user._id !== room.roomAdmin && { bgColor: 'grey.500' }),
+        }}
+        sx={commonIconButtonStyle}
+      >
+        {canEditRoomSetting ? <SettingsIcon /> : <VisibilityIcon />}
+      </IconButton>
+    );
+  };
+
   if (!user) return null;
   return (
     <>
+      {/* ------------------- ON APP BAR ------------------- */}
+
       <Stack direction="row" flexGrow={1} alignItems="center" justifyContent="space-between">
         <Stack direction="row" alignItems="center" spacing={{ xs: '0.75rem', md: '1rem' }}>
           {/* Leave Game Button */}
-          <IconButton
-            onClick={handleLogout}
-            loading={loadingButton && triggeredButton === NamespaceEnum.LOGOUT}
-            tooltipProps={{ title: 'Exit Game', placement: 'top' }}
-            sx={{
-              ...commonIconButtonStyle,
-              // transform: 'scaleX(-1)',
-            }}
-          >
-            <LogoutIcon />
-          </IconButton>
+          <LogoutButton />
 
           {/* Leave Room Button */}
-          {room && (
-            <IconButton
-              onClick={handleLeaveRoom}
-              loading={loadingButton && triggeredButton === NamespaceEnum.LEAVE_ROOM}
-              tooltipProps={{ title: 'Leave This Room', placement: 'top' }}
-              sx={commonIconButtonStyle}
-            >
-              <MeetingRoomIcon />
-            </IconButton>
-          )}
+          {room && <LeaveRoomButton />}
 
           <Typography variant="h6" component="div">
             Hello, <b>{user.name}</b>
@@ -289,88 +349,145 @@ export default function HeaderLayout() {
         </Stack>
 
         {/* Edit Room Button (only admin can configure this) */}
-        {room && (
-          <>
-            <IconButton
-              onClick={handleDialogOpen}
-              loading={loadingButton && triggeredButton === NamespaceEnum.EDIT_ROOM}
-              tooltipProps={{
-                title: isAdmin ? 'Edit Game Room Setting' : 'View Game Room Setting',
-                placement: 'top',
-                // ...(user._id !== room.roomAdmin && { bgColor: 'grey.500' }),
-              }}
-              sx={commonIconButtonStyle}
-            >
-              {isAdmin ? <SettingsIcon /> : <VisibilityIcon />}
-            </IconButton>
-
-            {/* Form Modal */}
-            <Dialog open={dialogOpen} onClose={handleDialogClose} scroll="body">
-              <DialogTitle>{isAdmin ? 'Edit Game Room Setting' : 'Game Room Setting'}</DialogTitle>
-
-              <DialogContent sx={{ paddingTop: '20px !important' }}>
-                {/* Place RoomSettingForm inside DialogContent */}
-                {isAdmin ? (
-                  // Admin can edit room setting modal
-                  <RoomSettingForm
-                    ref={submitBtnRef}
-                    roomSetting={room.setting}
-                    onSubmit={handleEditRoom}
-                    isInsideModal
-                  />
-                ) : (
-                  // Other players can only view room setting modal
-                  <RoomSettingViewer roomSetting={room.setting} />
-                )}
-              </DialogContent>
-
-              {isAdmin && (
-                <DialogActions>
-                  <Button
-                    sx={{ fontWeight: 600 }}
-                    onClick={handleDialogClose}
-                    disabled={isSubmitting}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    sx={{ fontWeight: 600 }}
-                    variant="contained"
-                    disableElevation
-                    onClick={() => submitBtnRef.current?.click()}
-                    disabled={isSubmitting}
-                  >
-                    Save
-                  </Button>
-                </DialogActions>
-              )}
-            </Dialog>
-          </>
-        )}
+        {room && <EditRoomButton />}
       </Stack>
 
-      {/* Room setting modified by admin notification */}
-      <SnackbarRoomEdited
-        open={snackbarOpen}
-        isAdmin={isAdmin}
-        snackbarInfo={snackbarRoomEditedInfo}
-        onClose={handleSnackbarClose}
-        onExited={handleSnackbarExited}
-      />
+      {/* --------------- DIALOGS & SNACKBARS --------------- */}
 
-      {/* Dialog before leaving (press back button) */}
-      <Dialog id="waiting_before-leave_dialog" open={blocker.state === 'blocked'}>
-        <DialogTitle>Are you sure you want to leave?</DialogTitle>
-        <DialogActions>
-          {/* No need of blocker.proceed?.() as handleLeaveRoom() automatically redirects */}
-          <Button onClick={() => blocker.reset?.()} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button onClick={handleLeaveRoom} disabled={isSubmitting}>
-            Proceed
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {room && (
+        <>
+          {/* Room setting modified by admin notification */}
+          <SnackbarRoomEdited
+            open={snackbarOpen}
+            isAdmin={isAdmin}
+            snackbarInfo={snackbarRoomEditedInfo}
+            onClose={handleSnackbarClose}
+            onExited={handleSnackbarExited}
+          />
+
+          {/* Room Setting Form Modal */}
+          <Dialog
+            id="room-setting_dialog"
+            open={dialogOpen && triggeredButton === NamespaceEnum.EDIT_ROOM}
+            onClose={handleRoomSettingDialogClose}
+            scroll="body"
+          >
+            <DialogTitle>
+              {canEditRoomSetting ? 'Edit Game Room Setting' : 'Game Room Setting'}
+            </DialogTitle>
+
+            <DialogContent sx={{ paddingTop: '20px !important' }}>
+              {/* Place RoomSettingForm inside DialogContent */}
+              {canEditRoomSetting ? (
+                // Admin can edit room setting modal
+                <RoomSettingForm
+                  ref={submitBtnRef}
+                  roomSetting={room.setting}
+                  onSubmit={handleEditRoom}
+                  isInsideModal
+                />
+              ) : (
+                // Other players can only view room setting modal
+                <RoomSettingViewer roomSetting={room.setting} displayHelperText={game && false} />
+              )}
+            </DialogContent>
+
+            {canEditRoomSetting && (
+              <DialogActions>
+                <Button
+                  sx={{ fontWeight: 600 }}
+                  onClick={handleRoomSettingDialogClose}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  sx={{ fontWeight: 600 }}
+                  variant="contained"
+                  disableElevation
+                  onClick={() => submitBtnRef.current?.click()}
+                  disabled={isSubmitting}
+                >
+                  Save
+                </Button>
+              </DialogActions>
+            )}
+          </Dialog>
+
+          {/* Dialog before leaving (press back button) */}
+          <Dialog id="leave-room_back-button_dialog" open={blocker.state === 'blocked'}>
+            <DialogTitle>Are you sure you want to leave?</DialogTitle>
+            <DialogActions>
+              {/* No need of blocker.proceed?.() as handleLeaveRoom() automatically redirects */}
+              <Button
+                onClick={() => blocker.reset?.()}
+                disabled={isSubmitting}
+                variant="contained"
+                color="inherit"
+                disableElevation
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleLeaveRoom}
+                disabled={isSubmitting}
+                variant="contained"
+                color="primary"
+                disableElevation
+              >
+                Proceed
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Dialog before leaving (inside game) */}
+          <Dialog
+            id="leave-room_in-game_dialog"
+            open={dialogOpen && triggeredButton === NamespaceEnum.LEAVE_ROOM}
+          >
+            <DialogTitle>Are you sure you want to leave?</DialogTitle>
+            <DialogActions>
+              <Button
+                onClick={handleLeaveRoomDialogClose}
+                variant="contained"
+                color="inherit"
+                disableElevation
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleLeaveRoom}
+                variant="contained"
+                color="primary"
+                disableElevation
+              >
+                Proceed
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Dialog before logout (inside game) */}
+          <Dialog
+            id="logout_in-game_dialog"
+            open={dialogOpen && triggeredButton === NamespaceEnum.LOGOUT}
+          >
+            <DialogTitle>Are you sure you want to logout?</DialogTitle>
+            <DialogActions>
+              <Button
+                onClick={handleLogoutDialogClose}
+                variant="contained"
+                color="inherit"
+                disableElevation
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleLogout} variant="contained" color="primary" disableElevation>
+                Proceed
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      )}
     </>
   );
 }

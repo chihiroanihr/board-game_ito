@@ -100,7 +100,10 @@ export const commonIconButtonStyle = {
   },
 };
 
-export const appBarStyle = {
+export const toolBarStyle = {
   backgroundColor: 'primary.main',
-  px: { lg: '1%' },
+  px: { xs: 2, lg: '1%' },
+  py: { xs: '0.685rem', md: 'initial' },
+  // borderBottom: '2px solid',
+  // borderColor: 'grey.300',
 };

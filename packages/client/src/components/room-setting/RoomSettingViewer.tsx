@@ -18,9 +18,13 @@ import { TextFieldWithIcon, TooltipStyled, ToggleButtonWithIcon } from '@/compon
 
 interface RoomSettingViewerProps {
   roomSetting: RoomSetting;
+  displayHelperText: boolean;
 }
 
-const RoomSettingViewer: React.FC<RoomSettingViewerProps> = ({ roomSetting }) => {
+const RoomSettingViewer: React.FC<RoomSettingViewerProps> = ({
+  roomSetting,
+  displayHelperText = true,
+}) => {
   const theme = useTheme();
 
   // Prepare react-hook-form
@@ -39,7 +43,7 @@ const RoomSettingViewer: React.FC<RoomSettingViewerProps> = ({ roomSetting }) =>
   }, [roomSetting, setValue]);
 
   return (
-    <Stack direction="column" spacing={4}>
+    <Stack direction="column" spacing={4} pb={!displayHelperText ? 1 : undefined}>
       {/* Field 1 */}
       <Stack direction="column" spacing={1}>
         <Controller
@@ -222,16 +226,18 @@ const RoomSettingViewer: React.FC<RoomSettingViewerProps> = ({ roomSetting }) =>
         </FormLabel>
       </Stack>
 
-      <FormHelperText
-        sx={{
-          margin: 0,
-          color: 'warning.light',
-          mx: 'auto !important',
-          mt: `${theme.spacing(3)} !important`,
-        }}
-      >
-        Only admin can change this setting.
-      </FormHelperText>
+      {displayHelperText && (
+        <FormHelperText
+          sx={{
+            margin: 0,
+            color: 'warning.light',
+            mx: 'auto !important',
+            mt: `${theme.spacing(3)} !important`,
+          }}
+        >
+          Only admin can change this setting.
+        </FormHelperText>
+      )}
     </Stack>
   );
 };

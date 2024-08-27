@@ -7,7 +7,7 @@ import { CommunicationMethodEnum } from '@bgi/shared';
 import { HeaderLayout, ChatLayout, VoiceCallLayout } from '@/layouts';
 import { Loader, Copyright } from '@/components';
 import { useAuth, useRoom, useGame } from '@/hooks';
-import { appBarStyle } from '../theme';
+import { toolBarStyle } from '../theme';
 
 /** @/debug - Display amount of sockets connected: Only for development environment */
 const SocketsConnected = React.lazy(() => import('../components/debug/SocketsConnected'));
@@ -35,15 +35,8 @@ export default function CommonLayout() {
         {/* -------------- Header -------------- */}
         {user && (
           <>
-            <AppBar
-              component="header"
-              sx={appBarStyle}
-              // px={{ xs: '1.4rem', lg: '2%' }}
-              // py="0.8rem"
-              // borderBottom="2px solid"
-              // borderColor="grey.300"
-            >
-              <Toolbar>
+            <AppBar component="header">
+              <Toolbar sx={toolBarStyle}>
                 <HeaderLayout />
               </Toolbar>
             </AppBar>
