@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import { Controller, type Control } from 'react-hook-form';
 import {
   Stack,
@@ -15,10 +15,8 @@ import {
   Box,
 } from '@mui/material';
 import { Help, Mic, Chat } from '@mui/icons-material';
-import { outputServerError } from '@/utils';
 
 import {
-  type AvailableThemeLanguageData,
   type RoomSetting,
   roomSettingConfig,
   CommunicationMethodEnum,
@@ -29,6 +27,7 @@ import { TooltipStyled, TextFieldWithIcon, ToggleButtonWithIcon } from '@/compon
 
 interface RoomSettingFormContentProps {
   control: Control<RoomSetting, unknown>;
+  languageChoices: [string, LanguageEnum][];
   inModal?: boolean;
 }
 
@@ -36,52 +35,28 @@ interface RoomSettingFormContentProps {
  * @function RoomSettingFormContent
  * @description Form content for RoomSettingForm
  * @param control - react-hook-form
+ * @param languageChoices - available languages for the game, used in language select option
  * @param inModal - whether the form is inside modal
  * @returns React component
  */
-const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({ control, inModal }) => {
-  const [availableLanguages, setAvailableLanguages] = useState<AvailableThemeLanguageData[]>([]);
-
-  useEffect(() => {
-    const fetchAvailableLanguages = async () => {
-      try {
-        // Fetch data
-        const response = await fetch(`${import.meta.env.VITE_SERVER_HOST_URL}/api/languages`);
-        // Network response error
-        if (!response.ok) {
-          throw new Error('Network response was not ok.');
-        }
-        // Success
-        const data = await response.json();
-        setAvailableLanguages(data);
-      } catch (error) {
-        // Server error
-        outputServerError(error);
-      }
-    };
-
-    fetchAvailableLanguages();
-  }, []);
-
-  // Filter the LanguageEnum entries based on the conditions from availableLanguages
-  const filteredLanguages = useMemo(() => {
-    return Object.entries(LanguageEnum).filter(([key, value]) => {
-      // Find a language in availableLanguages that matches the value and has a count >= 40
-      const matchedLanguage = availableLanguages.find(
-        (lang) => lang.language === value && lang.count >= 40
-      );
-      // If a match is found, include it in the filtered array
-      return !!matchedLanguage;
-    });
-  }, [availableLanguages]);
-
+const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({
+  control,
+  languageChoices,
+  inModal,
+}) => {
+  /**
+   * @function validateNumberInput
+   * @description Validate the number input
+   * @param value - The value to be validated
+   * @returns The error message if validation fails, or true if validation passes
+   */
   const validateNumberInput = (value: { toString: () => string }) => {
     if (!value) return 'Please enter a number.'; // Check if the field is empty
     if (!/^[1-9]\d*$/.test(value.toString())) return 'Please enter a valid number.'; // Check if it's only integer
     return true; // Return true if validation passes
   };
 
-  // const isSupportedLocale = (locale: LanguageEnum): locale is LanguageEnum => {};
+  /* ---------------------------- JSX ---------------------------- */
 
   const GameLanguageLabel = () => (
     <Box display="flex" justifyContent="center" alignItems="center">
@@ -94,6 +69,7 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({ control
 
   return (
     <Stack direction="column" spacing={4}>
+      {/* Select Option */}
       <FormControl>
         <InputLabel id="language-label">
           <GameLanguageLabel />
@@ -101,12 +77,13 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({ control
         <Controller
           name="language"
           control={control}
-          // rules={{
-          //   validate: {
-          //     isSupportedLocale: (value) =>
-          //       isSupportedLocale(value) || 'Selected language is not supported.',
-          //   },
-          // }}
+          rules={{
+            required: true,
+            //   validate: {
+            //     isSupportedLocale: (value) =>
+            //       isSupportedLocale(value) || 'Selected language is not supported.',
+            //   },
+          }}
           render={({ field, fieldState: { error } }) => (
             <>
               <Select
@@ -119,7 +96,7 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({ control
                 size="small"
                 // MenuProps={MenuProps}
               >
-                {filteredLanguages.map(([key, value]) => (
+                {languageChoices?.map(([key, value]) => (
                   <MenuItem
                     key={key}
                     value={value}
@@ -146,7 +123,7 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({ control
         />
       </FormControl>
 
-      {/* Field 1 */}
+      {/* Text Field 1 */}
       <Stack direction="column" spacing={1}>
         <Controller
           name="numRound"
@@ -186,7 +163,7 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({ control
         {/** @todo: Mobile version form helper text: <FormHelperText>{roomSettingConfig.numRound.helperText}</FormHelperText> */}
       </Stack>
 
-      {/* Field 2 */}
+      {/* Text Field 2 */}
       <Stack direction="column" spacing={1}>
         <Controller
           name="answerThemeTime"
@@ -228,7 +205,7 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({ control
         />
       </Stack>
 
-      {/* Field 3 */}
+      {/* Text Field 3 */}
       <Stack direction="column" spacing={1}>
         <Controller
           name="answerNumberTime"
