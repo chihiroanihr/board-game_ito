@@ -92,19 +92,25 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({
                 id="language"
                 label={<GameLanguageLabel />}
                 error={!!error}
+                disabled={inModal}
                 fullWidth
                 size="small"
+                {...(inModal && { value: field.value })}
                 // MenuProps={MenuProps}
               >
-                {languageChoices?.map(([key, value]) => (
-                  <MenuItem
-                    key={key}
-                    value={value}
-                    sx={{ fontWeight: field.value === value ? 'bold' : 'normal' }}
-                  >
-                    {value} {/* Display full name */}
-                  </MenuItem>
-                ))}
+                {inModal ? (
+                  <MenuItem value={field.value}>{field.value}</MenuItem>
+                ) : (
+                  languageChoices?.map(([key, value]) => (
+                    <MenuItem
+                      key={key}
+                      value={value}
+                      sx={{ fontWeight: field.value === value ? 'bold' : 'normal' }}
+                    >
+                      {value}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
               {error && (
                 <FormHelperText
@@ -121,6 +127,17 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({
             </>
           )}
         />
+        {inModal ? (
+          <FormHelperText sx={{ m: 0, mt: 1, lineHeight: 1.4, color: 'warning.light' }}>
+            Editing game language is disabled in active game waiting rooms.
+            <br />
+            Please create a new room to modify this setting.
+          </FormHelperText>
+        ) : (
+          <FormHelperText sx={{ m: 0, mt: 1, lineHeight: 1.4, color: 'warning.light' }}>
+            Choose carefully, as this setting cannot be edited after room creation.
+          </FormHelperText>
+        )}
       </FormControl>
 
       {/* Text Field 1 */}
@@ -305,23 +322,9 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({
         {/* Toggle Button 1 */}
         <FormControl>
           <FormLabel id="communicationMethod_toggle-buttons-group">
-            {inModal ? (
-              <FormHelperText sx={{ margin: 0, lineHeight: 1.4, color: 'warning.light' }}>
-                Editing communication methods is disabled in active game waiting rooms.
-                <br />
-                Please create a new room to modify this setting.
-              </FormHelperText>
-            ) : (
-              <>
-                <FormHelperText sx={{ margin: 0 }}>
-                  {roomSettingConfig.communicationMethod.label}
-                </FormHelperText>
-                <FormHelperText sx={{ margin: 0, lineHeight: 1.4, color: 'warning.light' }}>
-                  Choose carefully, as this setting cannot be edited after room creation.
-                </FormHelperText>
-              </>
-            )}
-
+            <FormHelperText sx={{ m: 0 }}>
+              {roomSettingConfig.communicationMethod.label}
+            </FormHelperText>
             <Controller
               name="communicationMethod"
               control={control}
@@ -346,6 +349,17 @@ const RoomSettingFormContent: React.FC<RoomSettingFormContentProps> = ({
                 </ToggleButtonGroup>
               )}
             />
+            {inModal ? (
+              <FormHelperText sx={{ m: 0, mt: 1, lineHeight: 1.4, color: 'warning.light' }}>
+                Editing communication methods is disabled in active game waiting rooms.
+                <br />
+                Please create a new room to modify this setting.
+              </FormHelperText>
+            ) : (
+              <FormHelperText sx={{ m: 0, mt: 1, lineHeight: 1.4, color: 'warning.light' }}>
+                Choose carefully, as this setting cannot be edited after room creation.
+              </FormHelperText>
+            )}
           </FormLabel>
         </FormControl>
       </Stack>
