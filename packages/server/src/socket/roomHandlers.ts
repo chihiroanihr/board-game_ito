@@ -47,7 +47,6 @@ export const handleSocketCreateRoom = (socket: Socket) => {
 
         // [4] Create a new room with given user as admin, then return updated user and new room data
         const { user: updatedUser, room: updatedRoom } = await handler.handleCreateRoom(
-          socket.sessionId,
           socket.user._id,
           roomSetting,
           dbSession
@@ -79,9 +78,8 @@ export const handleSocketCreateRoom = (socket: Socket) => {
         if (dbSession && dbSession.inTransaction()) await dbSession.abortTransaction();
 
         // [2] Send back error response to client
-        const errorResponse = error instanceof Error ? error : new Error(String(error));
         /** @socket_callback */
-        callback({ error: errorResponse });
+        callback({ error });
 
         // [3] Log socket error
         log.handleServerError(error, 'handleSocketCreateRoom');
@@ -129,9 +127,8 @@ export const handleSocketEditRoom = (socket: Socket) => {
         log.logSocketEvent('Edit Room', socket);
       } catch (error) {
         // [1] Send back error response to client
-        const errorResponse = error instanceof Error ? error : new Error(String(error));
         /** @socket_callback */
-        callback({ error: errorResponse });
+        callback({ error });
 
         // [2] Log error event
         log.handleServerError(error, 'handleSocketEditRoom');
@@ -176,9 +173,8 @@ export const handleSocketChangeAdmin = (socket: Socket, io: Server) => {
       log.logSocketEvent('Change Admin', socket);
     } catch (error) {
       // [1] Send back error response to client
-      const errorResponse = error instanceof Error ? error : new Error(String(error));
       /** @socket_callback */
-      callback({ error: errorResponse });
+      callback({ error });
 
       // [2] Log error event
       log.handleServerError(error, 'handleSocketChangeAdmin');
@@ -251,9 +247,8 @@ export const handleSocketLeaveRoom = (socket: Socket) => {
       if (dbSession && dbSession.inTransaction()) await dbSession.abortTransaction();
 
       // [2] Send back error response to client
-      const errorResponse = error instanceof Error ? error : new Error(String(error));
       /** @socket_callback */
-      callback({ error: errorResponse });
+      callback({ error });
 
       // [3] Log error event
       log.handleServerError(error, 'handleSocketLeaveRoom');
@@ -336,9 +331,8 @@ export const handleSocketJoinRoom = (socket: Socket) => {
       if (dbSession && dbSession.inTransaction()) await dbSession.abortTransaction();
 
       // [2] Send back error response to client
-      const errorResponse = error instanceof Error ? error : new Error(String(error));
       /** @socket_callback */
-      callback({ error: errorResponse });
+      callback({ error });
 
       // [3] Log error event
       log.handleServerError(error, 'handleSocketJoinRoom');
@@ -372,10 +366,9 @@ export const handleSocketFetchPlayers = (socket: Socket) => {
       // [5] Log fetch players event
       log.logSocketEvent('Fetch Players', socket);
     } catch (error) {
-      // [1] If error, send back error response to client
-      const errorResponse = error instanceof Error ? error : new Error(String(error));
+      // [~1] If error, send back error response to client
       /** @socket_callback */
-      callback({ error: errorResponse });
+      callback({ error });
 
       // [2] Log error event
       log.handleServerError(error, 'handleSocketFetchPlayers');

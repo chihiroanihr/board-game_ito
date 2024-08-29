@@ -20,7 +20,6 @@ export const enum NamespaceEnum {
   GAME_CREATING = 'game-creating',
   GAME_CREATE_FAILED = 'game-create-failed',
   GAME_CREATED = 'game-created',
-  START_GAME = 'start-game',
   GAME_STARTED = 'game-started',
   IN_GAME = 'in-game',
   SEND_CHAT = 'send-chat',

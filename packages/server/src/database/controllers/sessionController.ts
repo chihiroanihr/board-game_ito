@@ -23,13 +23,13 @@ export const saveSessionConnected = async (
   );
 
   if (result.matchedCount === 0) {
-    console.error('Session record was not matched.');
+    console.error('No session records were matched.');
   }
   if (result.modifiedCount === 0) {
     console.warn('Session record was matched but not modified.');
   }
 
-  return result.matchedCount > 0; // true or false
+  return !!result.matchedCount; // Convert into boolean
 };
 
 export const saveSessionUserId = async (
@@ -39,23 +39,23 @@ export const saveSessionUserId = async (
 ): Promise<Session | null> => {
   logQueryEvent('Updating only the user ID in session.');
 
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().sessions.findOneAndUpdate(
-    { _id: sessionId }, // Query part: find a session with this _id
-    { $set: { userId: userId } }, // Update part: set the new user ID
-    options
+    // Filter
+    { _id: sessionId }, // find a session with this _id
+    // Update
+    { $set: { userId: userId } }, // set the new user ID
+    // Option
+    dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          session: dbSession,
+          includeResultMetadata: false,
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          includeResultMetadata: false,
+        } // return the updated document
   );
 };
 
@@ -66,23 +66,23 @@ export const saveSessionRoomId = async (
 ): Promise<Session | null> => {
   logQueryEvent('Updating only the room ID in session.');
 
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().sessions.findOneAndUpdate(
-    { _id: sessionId }, // Query part: find a session with this _id
-    { $set: { roomId: roomId } }, // Update part: set the new room ID
-    options
+    // Filter
+    { _id: sessionId }, // find a session with this _id
+    // Update
+    { $set: { roomId: roomId } }, // set the new room ID
+    // Option
+    dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          session: dbSession,
+          includeResultMetadata: false,
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          includeResultMetadata: false,
+        } // return the updated document
   );
 };
 
@@ -93,14 +93,14 @@ export const saveGivenUsersSessionGameId = async (
 ): Promise<boolean> => {
   logQueryEvent('Updating the game ID for given array of users.');
 
-  // Options object
-  const options = dbSession ? { session: dbSession } : {};
-
   // Update status for all users in the room
   const result = await getDB().sessions.updateMany(
+    // Filter
     { userId: { $in: userIds } },
+    // Update
     { $set: { gameId: gameId } },
-    options
+    // Option
+    dbSession ? { session: dbSession } : {}
   );
 
   if (result.matchedCount !== userIds.length) {
@@ -122,23 +122,26 @@ export const upsertSession = async (
   // Destructure sessionId from newSessionObj and store the rest of the properties in sessionData
   const { _id, ...sessionData } = newSessionObj;
 
-  // Options object
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        upsert: true,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        upsert: true,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
-  return await getDB().sessions.findOneAndUpdate({ _id: _id }, { $set: sessionData }, options);
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
+  return await getDB().sessions.findOneAndUpdate(
+    // Filter
+    { _id: _id },
+    // Update
+    { $set: sessionData },
+    // Option
+    dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          upsert: true,
+          session: dbSession,
+          includeResultMetadata: false,
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          upsert: true,
+          includeResultMetadata: false,
+        }
+  );
 };
 
 export const insertSession = async (newSessionObj: Session): Promise<boolean> => {
@@ -146,22 +149,6 @@ export const insertSession = async (newSessionObj: Session): Promise<boolean> =>
 
   const result = await getDB().sessions.insertOne(newSessionObj);
   return result.acknowledged; // true or false
-};
-
-export const saveSession = async (
-  newSessionObj: Session
-): Promise<{ matched: boolean; modified: boolean }> => {
-  logQueryEvent('Updating the session info.');
-
-  // Destructure sessionId from newSessionObj and store the rest of the properties in sessionData
-  const { _id, ...sessionData } = newSessionObj;
-
-  const result = await getDB().sessions.updateOne({ _id: _id }, { $set: sessionData });
-
-  return {
-    matched: result.matchedCount > 0,
-    modified: result.modifiedCount > 0,
-  }; // true or false
 };
 
 export const deleteSession = async (sessionId: string): Promise<boolean> => {

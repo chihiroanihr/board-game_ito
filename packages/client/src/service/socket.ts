@@ -12,11 +12,11 @@ async function getPublicIP(): Promise<string | undefined> {
 }
 
 async function initializeSocket(): Promise<Socket> {
-  const SOCKET_URL = `${import.meta.env.VITE_SERVER_HOST_URL}:${import.meta.env.VITE_SERVER_PORT}`;
-  // const SOCKET_URL = `${window.location.hostname}:${import.meta.env.VITE_SERVER_PORT}`;
+  const SOCKET_URL = `${import.meta.env.VITE_SERVER_HOST_URL}`;
+  // const SOCKET_URL = `${window.location.hostname}`;
 
   // const hostIP = await getPublicIP();
-  // const SOCKET_URL = `${hostIP}:${import.meta.env.VITE_SERVER_PORT}`;
+  // const SOCKET_URL = `${hostIP}`;
 
   const socketOptions = {
     autoConnect: false, // The autoConnect is set to false so the connection is not established right away.

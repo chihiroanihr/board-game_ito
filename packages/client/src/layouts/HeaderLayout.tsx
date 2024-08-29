@@ -137,7 +137,7 @@ export default function HeaderLayout() {
 
         // ERROR
         if (error) {
-          outputServerError({ error });
+          outputServerError(error);
         }
         // SUCCESS
         else {
@@ -182,7 +182,7 @@ export default function HeaderLayout() {
 
       // ERROR
       if (error) {
-        outputServerError({ error });
+        outputServerError(error);
       }
       // SUCCESS
       else {
@@ -217,7 +217,7 @@ export default function HeaderLayout() {
 
       // ERROR
       if (error) {
-        outputServerError({ error });
+        outputServerError(error);
       }
       // SUCCESS
       else {

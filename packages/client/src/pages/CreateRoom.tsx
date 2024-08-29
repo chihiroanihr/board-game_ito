@@ -45,7 +45,7 @@ function CreateRoom() {
 
         // ERROR
         if (error) {
-          outputServerError({ error });
+          outputServerError(error);
         }
         // SUCCESS
         else {

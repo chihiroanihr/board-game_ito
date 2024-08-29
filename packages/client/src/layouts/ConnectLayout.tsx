@@ -93,7 +93,7 @@ export default function ConnectLayout() {
    */
   useEffect(() => {
     function onErrorEvent(error: unknown) {
-      outputServerError({ error });
+      outputServerError(error);
     }
 
     // Receive

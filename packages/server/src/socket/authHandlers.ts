@@ -60,9 +60,8 @@ export const handleSocketLogin = (socket: Socket, io: Server) => {
       if (dbSession.inTransaction()) await dbSession.abortTransaction();
 
       // [2] Send back error response to client
-      const errorResponse = error instanceof Error ? error : new Error(String(error));
       /** @socket_callback */
-      callback({ error: errorResponse });
+      callback({ error });
 
       // [3] Log error event
       log.handleServerError(error, 'handleSocketLogin');
@@ -165,9 +164,8 @@ export const handleSocketLogout = (socket: Socket, io: Server) => {
       if (dbSession.inTransaction()) await dbSession.abortTransaction();
 
       // [2] Send back error response to client
-      const errorResponse = error instanceof Error ? error : new Error(String(error));
       /** @socket_callback */
-      callback({ error: errorResponse });
+      callback({ error });
 
       // [3] Log error event
       log.handleServerError(error, 'handleSocketLogout');

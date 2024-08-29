@@ -34,9 +34,7 @@ const useLocalMediaStream = () => {
       })
       .catch((error) =>
         console.error(
-          `Failed to read write to local storage: ${
-            error instanceof Error ? error.message : String(error)
-          }`
+          `Failed to read write to local storage: ${error instanceof Error ? error.message : error}`
         )
       );
   }, []);

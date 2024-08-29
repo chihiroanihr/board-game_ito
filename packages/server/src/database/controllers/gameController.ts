@@ -17,11 +17,14 @@ export const insertGame = async (
 ): Promise<boolean> => {
   logQueryEvent('Inserting new game.');
 
-  // Options object
-  const options = dbSession ? { session: dbSession } : {};
-
   // Execute insert
-  const result = await getDB().games.insertOne(newGameObj, options);
+  const result = await getDB().games.insertOne(
+    // Insert
+    newGameObj,
+    // Option
+    dbSession ? { session: dbSession } : {}
+  );
+
   return result.acknowledged; // true or false
 };
 
@@ -34,23 +37,26 @@ export const upsertGame = async (
   // Destructure game._id from newGameObj and store the rest of the properties in gameData
   const { _id, roomId, ...gameData } = newGameObj;
 
-  // Options object
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        upsert: true,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        upsert: true,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
-  return await getDB().games.findOneAndUpdate({ roomId: roomId }, { $set: gameData }, options);
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
+  return await getDB().games.findOneAndUpdate(
+    // Filter
+    { roomId: roomId },
+    // Update
+    { $set: gameData },
+    // Option
+    dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          upsert: true,
+          session: dbSession,
+          includeResultMetadata: false,
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          upsert: true,
+          includeResultMetadata: false,
+        } // return the updated document
+  );
 };
 
 export const deleteGame = async (
@@ -59,11 +65,47 @@ export const deleteGame = async (
 ): Promise<boolean> => {
   logQueryEvent('Deleting the game.');
 
-  // Options object
-  const options = dbSession ? { session: dbSession } : {};
-
   // Execute delete
-  const result = await getDB().games.deleteOne({ _id: gameId }, options);
+  const result = await getDB().games.deleteOne(
+    // Filter
+    { _id: gameId },
+    // Option
+    dbSession ? { session: dbSession } : {}
+  );
 
   return result.deletedCount === 1; // true or false
+};
+
+export const updateRoundThemeChosenBy = async (
+  playerId: ObjectId,
+  gameId: ObjectId,
+  roundId: ObjectId,
+  dbSession: ClientSession | null = null
+): Promise<boolean> => {
+  logQueryEvent('Updating the "themeChosenBy" in the given game round.');
+
+  const result = await getDB().games.updateOne(
+    // Filter
+    {
+      _id: gameId,
+      'rounds._id': roundId,
+    },
+    // Update
+    {
+      $set: {
+        'rounds.$.themeChosenBy': playerId,
+      },
+    },
+    // Option
+    dbSession ? { session: dbSession } : {}
+  );
+
+  if (result.matchedCount === 0) {
+    console.error('No Game-Round records were matched.');
+  }
+  if (result.modifiedCount === 0) {
+    console.warn('Game-Round records were matched but not modified.');
+  }
+
+  return !!result.matchedCount; // Convert into boolean
 };

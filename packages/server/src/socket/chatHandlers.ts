@@ -32,9 +32,8 @@ export const handleSocketChatMessage = (socket: Socket, io: Server) => {
         log.logSocketEvent('Send Chat', socket);
       } catch (error) {
         // [~0] Send back error response to client
-        const errorResponse = error instanceof Error ? error : new Error(String(error));
         /** @socket_callback */
-        callback({ error: errorResponse });
+        callback({ error });
 
         // [1] Log error event
         log.handleServerError(error, 'handleSocketChatMessage');

@@ -27,17 +27,15 @@ const generateUniqueRoomId = async (): Promise<string> => {
     const roomId: string = util.generateRandomRoomId();
 
     /** @api_call - Fetch room info (GET) */
-    const room = await controller.getRoomInfo(roomId);
-
-    // Success - room does not overlaps (room with given room ID doesn't exist in the DB.)
-    if (!room) return roomId;
+    if (!(await controller.getRoomInfo(roomId)))
+      // Success - room does not overlaps (room with given room ID doesn't exist in the DB.)
+      return roomId;
   }
 
   throw new Error('Failed to generate a unique room ID.');
 };
 
 export const handleCreateRoom = async (
-  sessionId: string,
   userId: ObjectId,
   roomSetting: RoomSetting,
   dbSession: ClientSession | null = null
@@ -69,9 +67,8 @@ export const handleCreateRoom = async (
     /** @api_call - Insert new room (POST) */
     const success = await controller.insertRoom(newRoomObj, dbSession);
     // Error
-    if (!success) {
+    if (!success)
       throw new Error('Failed to insert new room (there might be duplicates in the database).');
-    }
 
     // All success
     return { user: updatedUser, room: newRoomObj };
@@ -88,9 +85,8 @@ export const handleEditRoom = async (
   try {
     /** @api_call - Update room setting (PUT) */
     const updatedRoom = await controller.updateRoomSetting(roomId, newRoomSetting, dbSession);
-    if (!updatedRoom) {
+    if (!updatedRoom)
       throw new Error('Failed to update room setting (given room ID might not exist).');
-    }
 
     // All success
     return updatedRoom;
@@ -109,18 +105,11 @@ export const handleJoinRoom = async (
     const room = await controller.getRoomInfo(roomId);
 
     // If room does not exist
-    if (!room) {
-      return 'This room does not exist.';
-    }
-    //  If room exists but playing
-    else if (room.status === RoomStatusEnum.PLAYING) {
-      return 'This room is currently playing.';
-    }
-    //  If room exists but full
-    else if (room.status === RoomStatusEnum.FULL) {
-      return 'This room is full of players.';
-    }
-
+    if (!room) return 'This room does not exist.';
+    // If room exists but playing
+    else if (room.status === RoomStatusEnum.PLAYING) return 'This room is currently playing.';
+    // If room exists but full
+    else if (room.status === RoomStatusEnum.FULL) return 'This room is full of players.';
     // If room exists and not full
     else {
       if (room.players.length >= 9) {
@@ -226,9 +215,7 @@ export const handleChangeAdmin = async (
   try {
     /** @api_call - Update room admin (PUT) */
     const updatedRoom = await controller.updateRoomAdmin(newAdminId, roomId, dbSession);
-    if (!updatedRoom) {
-      throw new Error('Failed to update room admin (given room might not exist).');
-    }
+    if (!updatedRoom) throw new Error('Failed to update room admin (given room might not exist).');
 
     // All success
     return updatedRoom;

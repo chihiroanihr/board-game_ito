@@ -161,7 +161,7 @@ const handleSocketInitialize = (socket: Socket, io: Server) => {
         await dbSession.abortTransaction();
       }
       /** @socket_emit - Send back error to client */
-      callback({ error: error instanceof Error ? error : new Error(String(error)) });
+      callback({ error });
 
       log.handleServerError(error, 'handleSocketInitialize');
     } finally {

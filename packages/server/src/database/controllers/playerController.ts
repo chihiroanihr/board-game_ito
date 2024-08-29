@@ -14,8 +14,7 @@ export const getAllPlayerIdsInRoom = async (roomId: string): Promise<Array<Objec
     { projection: { players: 1 } } // only return the players array
   );
 
-  // Return the players array from the room object (an empty array if no players in the room),
-  // or null if no room is found
+  // Return the players array from the room object (an empty array if no players in the room), or null if no room is found
   return room ? room.players : null;
 };
 
@@ -71,8 +70,7 @@ export const insertPlayerInRoom = async (
         includeResultMetadata: false,
       }; // return the updated document
 
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().rooms.findOneAndUpdate(
     { _id: roomId },
     { $addToSet: { players: userId } }, // `$addToSet` adds the user without creating duplicates
@@ -98,8 +96,7 @@ export const deletePlayerFromRoom = async (
         includeResultMetadata: false,
       }; // return the updated document
 
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().rooms.findOneAndUpdate(
     { _id: roomId },
     { $pull: { players: userId } }, // `$pull` operator removes the user ID from the array

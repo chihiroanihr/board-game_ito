@@ -72,7 +72,7 @@ const GameLayout = () => {
       room,
       async ({ error, players }: FetchPlayersResponse) => {
         if (error) {
-          outputServerError({ error });
+          outputServerError(error);
         } else if (!players) {
           /** @todo - Failed to fetch players error (create new error) */
         } else {

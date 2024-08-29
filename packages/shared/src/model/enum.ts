@@ -18,10 +18,11 @@ export enum CommunicationMethodEnum {
   CHAT = 'chat',
 }
 
-export enum RoundStatusEnum {
+export enum GameRoundStatusEnum {
+  PENDING = 'pending',
+  PLAYING = 'playing',
   SUCCESS = 'success',
   FAIL = 'fail',
-  PLAYING = 'playing',
 }
 
 export enum LanguageEnum {

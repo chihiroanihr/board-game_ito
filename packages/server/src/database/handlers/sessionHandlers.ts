@@ -52,11 +52,9 @@ const handleSaveSession = async (
     };
 
     /** @api_call - Upsert new session (POST & PUT) */
-    const upsertSession = await controller.upsertSession(newSessionObj, dbSession);
-    // Error
-    if (!upsertSession) {
+    if (!(await controller.upsertSession(newSessionObj, dbSession)))
+      // Error
       throw new Error(`Failed to upsert session info (given session ID might not exist).`);
-    }
 
     // All success
     return;

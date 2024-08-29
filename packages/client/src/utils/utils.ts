@@ -62,7 +62,7 @@ export const computeRelativeTime = (timestamp: number) => {
  * @param {string | undefined} message - An optional custom message to provide additional context about the error. Default is an empty string.
  */
 export const outputServerError = (error: unknown, message?: string): void => {
-  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorMessage = error instanceof Error ? error.message : error;
   console.error(
     `[Server Error]: ${message ? ` ${message}` : ''}${errorMessage ? `\n${errorMessage}` : ''}`
   );

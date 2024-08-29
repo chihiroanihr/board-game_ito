@@ -4,7 +4,7 @@ import {
   RoomStatusEnum,
   UserStatusEnum,
   CommunicationMethodEnum,
-  RoundStatusEnum,
+  GameRoundStatusEnum,
   LanguageEnum,
 } from './enum';
 
@@ -33,6 +33,7 @@ export interface Room {
 }
 
 export interface RoomSetting {
+  language: LanguageEnum;
   numRound: number;
   answerThemeTime: number;
   answerNumberTime: number;
@@ -54,9 +55,10 @@ export interface Game {
 export interface Round {
   _id: ObjectId;
   roundNumber: number; // Round number (maximum value: 10 as 10 rounds)
-  theme: Theme; // Selected theme for this round
+  theme: Theme | null; // Selected theme for this round
+  themeChosenBy: ObjectId | null; // User._id
   playerCards: Array<PlayerCard>; // Cards submitted by each players
-  status: RoundStatusEnum; // Update from "playing", whether this round was "success" or "fail"
+  status: GameRoundStatusEnum; // Update from "playing", whether this round was "success" or "fail"
 }
 
 export interface PlayerCard {

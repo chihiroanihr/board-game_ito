@@ -78,7 +78,7 @@ const ChatLayout = () => {
 
       // ERROR
       if (error) {
-        outputServerError({ error });
+        outputServerError(error);
         setIsChatButtonLoading(false);
       }
       // SUCCESS

@@ -28,7 +28,7 @@ export default function useLocalStorage<T>(
       /** @/debug */
       console.error(
         `Failed to read from / write to local storage: ${
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error ? error.message : error
         }`
       );
 
@@ -47,9 +47,7 @@ export default function useLocalStorage<T>(
       } catch (error) {
         /** @/debug */
         console.error(
-          `Failed to read write to local storage: ${
-            error instanceof Error ? error.message : String(error)
-          }`
+          `Failed to read write to local storage: ${error instanceof Error ? error.message : error}`
         );
       }
     },

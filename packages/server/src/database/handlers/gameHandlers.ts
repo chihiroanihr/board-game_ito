@@ -1,6 +1,6 @@
 import { ClientSession, ObjectId } from 'mongodb';
 
-import { type Room, type Game, RoomStatusEnum } from '@bgi/shared';
+import { type Room, type Game, type Round, RoomStatusEnum, GameRoundStatusEnum } from '@bgi/shared';
 
 import * as controller from '../controllers';
 import * as log from '../../log';
@@ -20,11 +20,21 @@ export const handleCreateGame = async (
       // Error
       throw new Error("Failed to update room's status (given room might not exist).");
 
-    // Create a new game
+    // Create a new round object
+    const firstRoundObj: Round = {
+      _id: new ObjectId(),
+      roundNumber: 1,
+      theme: null,
+      themeChosenBy: null,
+      playerCards: [],
+      status: GameRoundStatusEnum.PENDING,
+    };
+
+    // Create a new game object
     const newGameObj: Game = {
       _id: new ObjectId(),
       roomId: roomId,
-      rounds: [], // Initially no rounds
+      rounds: [firstRoundObj],
       cardsAvailable: Array.from({ length: 100 }, (_, i) => i + 1), // Create an array of number cards (from 1 to 100)
       startTime: new Date(),
       endTime: null, // End time will be set when the game ends

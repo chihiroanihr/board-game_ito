@@ -71,7 +71,7 @@ export default function Waiting() {
 
       // ERROR
       if (error) {
-        outputServerError({ error });
+        outputServerError(error);
       }
 
       processPreFormSubmission(false);
@@ -87,7 +87,7 @@ export default function Waiting() {
     /** @socket_send - Create new game record & update room info */
     socket.emit(NamespaceEnum.CREATE_GAME, async ({ error }: CreateGameResponse) => {
       // ERROR
-      if (error) outputServerError({ error });
+      if (error) outputServerError(error);
       // SUCCESS
       processPreFormSubmission(false);
     });
@@ -122,35 +122,6 @@ export default function Waiting() {
     async function onGameCreatedEvent() {
       navigateGame(navigate); // Navigate to game page
       setBackdropOpen(false);
-      // // Create a timeout to check if the response is received
-      // const timeoutId = setTimeout(() => {
-      //   // ERROR
-      //   setBackdropOpen(false);
-      //   outputResponseTimeoutError();
-      // }, 5000);
-
-      // /** @socket_send - Request to update all the player's socket info */
-      // socket.emit(
-      //   NamespaceEnum.START_GAME,
-      //   {
-      //     room: updatedRoom,
-      //     game: newGame,
-      //   } as GameCreatedResponse,
-      //   async ({ error, user: updatedUser }: StartGameResponse) => {
-      //     clearTimeout(timeoutId);
-
-      //     // ERROR
-      //     if (error) outputServerError({ error });
-      //     // SUCCESS
-      //     else {
-      //       updateUser(updatedUser); // Update User
-      //       updateRoom(updatedRoom); // Update Room
-      //       updateGame(newGame); // Update Game
-
-      //       navigateGame(navigate); // Navigate to game page
-      //     }
-      //   }
-      // );
     }
 
     // Executes whenever a socket event is received from the server

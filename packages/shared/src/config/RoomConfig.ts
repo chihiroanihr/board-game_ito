@@ -1,3 +1,5 @@
+import { LanguageEnum } from '../model/enum';
+
 export const MIN_NUM_PLAYERS = 4;
 export const MAX_NUM_PLAYERS = 10;
 
@@ -9,6 +11,10 @@ export const roomIdConfig = {
 };
 
 export const roomSettingConfig = {
+  language: {
+    helperText: 'Select a language for the game.',
+    defaultLanguage: LanguageEnum.ENG,
+  },
   numRound: {
     helperText: 'Enter desired number of rounds.',
     defaultRounds: 10,

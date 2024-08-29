@@ -82,7 +82,7 @@ function JoinRoom() {
 
         // ERROR
         if (error) {
-          outputServerError({ error });
+          outputServerError(error);
           handleSnackbarOpen();
         } else {
           // SUCCESS: User can join room

@@ -1,4 +1,5 @@
 import RoomSettingForm from './RoomSettingForm';
-import RoomSettingViewer from './RoomSettingViewer.js';
+import RoomSettingFormContent from './RoomSettingFormContent';
+import RoomSettingViewer from './RoomSettingViewer';
 
-export { RoomSettingForm, RoomSettingViewer };
+export { RoomSettingForm, RoomSettingFormContent, RoomSettingViewer };

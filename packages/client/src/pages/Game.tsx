@@ -15,6 +15,9 @@ const Game = () => {
   const { room, updateRoom } = useRoom();
   const { game, updateGame } = useGame();
 
+  /**
+   * First render: fetch game info via socket, and update game UI.
+   */
   useEffect(() => {
     if (!sessionId) return;
 
@@ -24,7 +27,7 @@ const Game = () => {
       async ({ error, user, room, game }: InGameResponse) => {
         // ERROR
         if (error || !user || !room || !game) {
-          outputServerError({ error });
+          outputServerError(error);
         }
         // SUCCESS
         else {
@@ -36,6 +39,14 @@ const Game = () => {
       }
     );
   }, [sessionId, socket, updateGame, updateRoom, updateUser]);
+
+  // (1) choose theme card -> display to everyone
+
+  // (2) distribute number cards
+
+  // (3) player submit number cards from smallest to biggest
+
+  // (4) if number cards in order -> success. If not -> fail.
 
   // Do not display the UI until game is fetched and updated via local storage.
   if (!game) return null;
