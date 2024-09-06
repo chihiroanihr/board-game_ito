@@ -29,9 +29,10 @@ export const handleSocketMicReady = (socket: Socket) => {
 
       // [2] Notify mic ready event to all clients in the room (except the sender) with the sender's socket ID
       /** @socket_emit */
-      socket
-        .to(socket.room._id)
-        .emit(NamespaceEnum.PLAYER_MIC_READY, { socketId: socket.id } as PlayerMicReadyResponse); // Send back the client's own socket ID
+      socket.to(socket.room._id).emit(NamespaceEnum.PLAYER_MIC_READY, {
+        socketId: socket.id,
+        strUserId: socket.user._id.toString(),
+      } as PlayerMicReadyResponse); // Send back the client's own socket ID
 
       // [3] Send back success response to client
       /** @socket_callback */
@@ -60,7 +61,7 @@ export const handleSocketIceCandidate = (socket: Socket, io: Server) => {
   /** @socket_receive */
   socket.on(
     NamespaceEnum.SEND_ICE_CANDIDATE,
-    async ({ candidate, fromSocketId, toSocketId }: RTCIceCandidateData) => {
+    async ({ candidate, toSocketId }: RTCIceCandidateData) => {
       // [0] Receive ice candidate event from client
       try {
         // [1] Validate user and room exists (if user is not connected and user is not in a room, throw error)
@@ -71,7 +72,8 @@ export const handleSocketIceCandidate = (socket: Socket, io: Server) => {
         /** @socket_io_emit */
         io.to(toSocketId).emit(NamespaceEnum.RECEIVE_ICE_CANDIDATE, {
           candidate,
-          fromSocketId,
+          fromSocketId: socket.id,
+          fromStrUserId: socket.user._id.toString(),
         } as ReceiveIceCandidateResponse);
 
         // [3] Log ice candidate event
@@ -94,7 +96,7 @@ export const handleSocketVoiceOffer = (socket: Socket, io: Server) => {
   /** @socket_receive */
   socket.on(
     NamespaceEnum.SEND_VOICE_OFFER,
-    async ({ signal, fromSocketId, toSocketId }: RTCSessionDescriptionData) => {
+    async ({ signal, toSocketId }: RTCSessionDescriptionData) => {
       // [0] Receive voice offer event from client
       try {
         // [1] Validate user and room exists (if user is not connected and user is not in a room, throw error)
@@ -105,7 +107,8 @@ export const handleSocketVoiceOffer = (socket: Socket, io: Server) => {
         /** @socket_io_emit */
         io.to(toSocketId).emit(NamespaceEnum.RECEIVE_VOICE_OFFER, {
           signal,
-          fromSocketId,
+          fromSocketId: socket.id,
+          fromStrUserId: socket.user._id.toString(),
         } as ReceiveVoiceOfferResponse);
 
         // [3] Log voice offer event
@@ -128,7 +131,7 @@ export const handleSocketVoiceAnswer = (socket: Socket, io: Server) => {
   /** @socket_receive */
   socket.on(
     NamespaceEnum.SEND_VOICE_ANSWER,
-    async ({ signal, fromSocketId, toSocketId }: RTCSessionDescriptionData) => {
+    async ({ signal, toSocketId }: RTCSessionDescriptionData) => {
       // [0] Receive voice answer event from client
       try {
         // [1] Validate user and room exists (if user is not connected and user is not in a room, throw error)
@@ -139,7 +142,8 @@ export const handleSocketVoiceAnswer = (socket: Socket, io: Server) => {
         /** @socket_io_emit */
         io.to(toSocketId).emit(NamespaceEnum.RECEIVE_VOICE_ANSWER, {
           signal,
-          fromSocketId,
+          fromSocketId: socket.id,
+          fromStrUserId: socket.user._id.toString(),
         } as ReceiveVoiceAnswerResponse);
 
         // [3] Log voice answer event

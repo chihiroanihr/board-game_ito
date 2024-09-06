@@ -44,5 +44,15 @@ export type SnackbarRoomEditedInfoType =
 export type GameLayoutOutletContextType = {
   adminId: ObjectId;
   players: Array<User>;
+  activeSpeakers: Array<string>;
   synchronousBlock: boolean;
+};
+
+export type SetUpPeerConnectionType = {
+  peerConnection: RTCPeerConnection;
+  toSocketId: string;
+};
+
+export type PeerConnectionsDataType = {
+  [key: string]: RTCPeerConnection | undefined;
 };

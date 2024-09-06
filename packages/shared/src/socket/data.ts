@@ -8,12 +8,10 @@ export interface RoomChatMessage {
 
 export interface RTCIceCandidateData {
   candidate: RTCIceCandidate;
-  fromSocketId: string;
   toSocketId: string;
 }
 
 export interface RTCSessionDescriptionData {
   signal: RTCSessionDescriptionInit;
-  fromSocketId: string;
   toSocketId: string;
 }

@@ -174,7 +174,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
             bgcolor="grey.200"
             marginBottom="1rem"
           >
-            <Avatar {...getAvatarProps(player.name)} />
+            <Avatar alt={player.name} {...getAvatarProps(player.name)} />
             <Typography component="div">{player.name}</Typography>
           </Stack>
 

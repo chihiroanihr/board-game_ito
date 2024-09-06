@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 
 import {
   type MicReadyResponse,
@@ -18,12 +18,17 @@ import {
   useLocalMediaStream,
   usePeerConnections,
   usePlayerStatus,
-  useVoiceCall,
+  useVoiceActivity,
 } from '@/hooks';
 import { outputServerError } from '@/utils';
+import type { SetUpPeerConnectionType, PeerConnectionsDataType } from '../enum';
 
-const VoiceCallLayout = () => {
-  const { socket } = useSocket();
+const VoiceCallLayout = ({
+  setActiveSpeakers,
+}: {
+  setActiveSpeakers: React.Dispatch<React.SetStateAction<string[]>>;
+}) => {
+  const { socket: mySocket } = useSocket();
   const { user } = useAuth();
   const { localMediaStream, toggleMuteMediaStream, isMuted } = useLocalMediaStream();
   const {
@@ -37,7 +42,16 @@ const VoiceCallLayout = () => {
 
   const localAudioRef = useRef<HTMLAudioElement>(null);
 
-  const mySocketId = socket.id;
+  const isLocalActive = useVoiceActivity({ stream: localMediaStream, threshold: 5 });
+
+  // Update who is currently speaking
+  useEffect(() => {
+    if (isLocalActive) {
+      setActiveSpeakers((prev) => [...prev, user._id.toString()]);
+    } else {
+      setActiveSpeakers((prev) => prev.filter((id) => id !== user._id.toString()));
+    }
+  }, [isLocalActive, user._id, setActiveSpeakers]);
 
   // When mute button is toggled
   useEffect(() => {
@@ -49,43 +63,17 @@ const VoiceCallLayout = () => {
     if (localAudioRef.current && localMediaStream) {
       localAudioRef.current.srcObject = localMediaStream;
 
-      /** @todo: Move to usePreFormSubmission */
-      socket.emit(NamespaceEnum.MIC_READY, async ({ error }: MicReadyResponse) => {
+      mySocket.emit(NamespaceEnum.MIC_READY, async ({ error }: MicReadyResponse) => {
         if (error) console.error(error);
       });
     }
-  }, [localMediaStream, socket]);
+  }, [localMediaStream, mySocket]);
 
-  /**
-   * Callbacks for player connection status hook
-   */
-  const handlePlayerMicReady = async ({ socketId: playerSocketId }: PlayerMicReadyResponse) => {
-    // Avoid duplicate creation due to multi-rendering
-    if (!peerConnections.current[playerSocketId]) {
-      console.log(`[SENDER] create and send new peer connection for ${playerSocketId}.`);
-      // Create peer connection and assign
-      const newPeerConnection = createNewPeerConnection(localMediaStream);
-      // Store new player into peerConnections object
-      peerConnections.current[playerSocketId] = newPeerConnection;
-      // Create and send ICE candidate to new player
-      setupPeerConnection({
-        peerConnection: newPeerConnection,
-        fromSocketId: mySocketId,
-        toSocketId: playerSocketId,
-      });
-      // Create and send offer
-      await createOfferAndSendSignal({
-        peerConnection: newPeerConnection,
-        fromSocketId: mySocketId,
-        toSocketId: playerSocketId,
-      });
-    }
+  const handlePlayerLeft = ({ socketId, user: player, room }: PlayerOutResponse) => {
+    closePeerConnection(player._id.toString()); // Close peer connection for player just disconnected
   };
-  const handlePlayerLeft = ({ socketId, user, room }: PlayerOutResponse) => {
-    closePeerConnection(socketId); // Close peer connection for player just disconnected
-  };
-  const handlePlayerDisconnected = ({ socketId, user }: PlayerDisconnectedResponse) => {
-    closePeerConnection(socketId); // Close peer connection for player just disconnected
+  const handlePlayerDisconnected = ({ socketId, user: player }: PlayerDisconnectedResponse) => {
+    closePeerConnection(player._id.toString()); // Close peer connection for player just disconnected
   };
   /**
    * Player connection status hook
@@ -93,7 +81,6 @@ const VoiceCallLayout = () => {
   usePlayerStatus({
     onPlayerLeftCallback: handlePlayerLeft,
     onPlayerDisconnectedCallback: handlePlayerDisconnected,
-    onPlayerMicReadyCallback: handlePlayerMicReady,
   });
 
   const handleEventConnectionStateChange = useCallback(
@@ -146,6 +133,12 @@ const VoiceCallLayout = () => {
     }
   }, []);
 
+  /**
+   * @function handleEventTrackRemoteStreams - Handles track remote streams
+   * @param {RTCTrackEvent} event - The track remote stream event
+   * @returns {void}
+   * [RECEIVER] [3]
+   */
   const handleEventTrackRemoteStreams = useCallback((event: RTCTrackEvent) => {
     console.log(`--------------- Received remote stream ---------------`);
     console.log(event.streams[0]);
@@ -165,19 +158,21 @@ const VoiceCallLayout = () => {
     }
   }, []);
 
-  const setupPeerConnection: ({
-    peerConnection,
-    fromSocketId,
-    toSocketId,
-  }: {
-    peerConnection: RTCPeerConnection;
-    fromSocketId: string;
-    toSocketId: string;
-  }) => void = useCallback(
-    ({ peerConnection, fromSocketId, toSocketId }) => {
+  /**
+   * @function setupPeerConnection - Sets up a new peer connection
+   * @param {Object} params - The parameters for the new peer connection
+   * @param {RTCPeerConnection} params.peerConnection - The new peer connection
+   * @param {string} params.fromSocketId - The socket ID of the sender
+   * @param {string} params.toSocketId - The socket ID of the receiver
+   * @returns {void}
+   * [RECEIVER] [2]
+   */
+  const setupPeerConnection = useCallback(
+    ({ peerConnection, toSocketId }: SetUpPeerConnectionType) => {
       // Handle remote audio stream
-      peerConnection.ontrack = (event) => handleEventTrackRemoteStreams(event);
-
+      peerConnection.ontrack = (event: RTCTrackEvent) => {
+        handleEventTrackRemoteStreams(event);
+      };
       // Handle peer connection state change
       peerConnection.onconnectionstatechange = () =>
         handleEventConnectionStateChange(peerConnection);
@@ -185,108 +180,231 @@ const VoiceCallLayout = () => {
         handleEventIceConnectionStateChange(peerConnection);
 
       // Handle ICE candidates (send ice candidate)
-      peerConnection.onicecandidate = (event) => {
+      peerConnection.onicecandidate = (event: RTCPeerConnectionIceEvent) => {
         if (event.candidate) {
-          socket.emit(NamespaceEnum.SEND_ICE_CANDIDATE, {
+          mySocket.emit(NamespaceEnum.SEND_ICE_CANDIDATE, {
             candidate: event.candidate,
-            fromSocketId,
             toSocketId,
           });
         }
       };
     },
-    [
-      handleEventConnectionStateChange,
-      handleEventIceConnectionStateChange,
-      handleEventTrackRemoteStreams,
-      socket,
-    ]
+    [handleEventConnectionStateChange, handleEventIceConnectionStateChange, mySocket]
   );
 
   /**
-   * Callbacks for voice call hooks
+   * Handle incoming player voice-ready status
+   * [RECEIVER] [1]
    */
-  const handleIceCandidate = ({ candidate, fromSocketId }: ReceiveIceCandidateResponse) => {
-    if (peerConnections.current[fromSocketId]) {
-      peerConnections.current[fromSocketId]!.addIceCandidate(candidate); // Add sender's candidate to remote description
-    } else {
-      console.error(`[!] Incoming ice candidate error for ${fromSocketId}.`);
-    }
-  };
-  const handleVoiceOffer = async ({ signal, fromSocketId }: ReceiveVoiceOfferResponse) => {
-    // Search sender's ID in peer connection
-    let peerConnection = peerConnections.current[fromSocketId];
+  useEffect(() => {
+    const onPlayerMicReady = async ({
+      socketId: playerSocketId,
+      strUserId: playerStrUserId,
+    }: PlayerMicReadyResponse) => {
+      // Avoid duplicate creation due to multi-rendering
+      if (!peerConnections.current[playerStrUserId]) {
+        console.log(`[SENDER] create and send new peer connection for\n
+          Socket ID: ${playerSocketId}
+           User ID: ${playerStrUserId}
+        `);
+        // Create peer connection and assign
+        const newPeerConnection = createNewPeerConnection(localMediaStream);
+        // Store new player into peerConnections object
+        peerConnections.current[playerStrUserId] = newPeerConnection;
+        // Create and send ICE candidate to new player
+        setupPeerConnection({
+          peerConnection: newPeerConnection,
+          toSocketId: playerSocketId,
+        });
+        // Create and send offer
+        await createOfferAndSendSignal({
+          peerConnection: newPeerConnection,
+          toSocketId: playerSocketId,
+        });
+      }
+    };
 
-    // If sender does not exist: new sender's info arrived
-    if (!peerConnection) {
-      // Create new peer connection for the offer
-      peerConnection = createNewPeerConnection(localMediaStream)!;
-      // Create and send ICE candidate
-      setupPeerConnection({
+    mySocket.on(NamespaceEnum.PLAYER_MIC_READY, onPlayerMicReady);
+    return () => mySocket.off(NamespaceEnum.PLAYER_MIC_READY, onPlayerMicReady);
+  }, [
+    createNewPeerConnection,
+    createOfferAndSendSignal,
+    localMediaStream,
+    mySocket,
+    peerConnections,
+    setupPeerConnection,
+  ]);
+
+  /**
+   * Handle incoming ice candidate
+   */
+  useEffect(() => {
+    async function onIceCandidate({
+      candidate,
+      fromSocketId,
+      fromStrUserId,
+    }: ReceiveIceCandidateResponse) {
+      if (peerConnections.current[fromStrUserId]) {
+        peerConnections.current[fromStrUserId].addIceCandidate(candidate); // Add sender's candidate to remote description
+      } else {
+        console.error(`[!] Incoming ice candidate error for\n
+          Socket ID: ${fromSocketId}
+          User ID: ${fromStrUserId}.
+        `);
+      }
+    }
+
+    mySocket.on(NamespaceEnum.RECEIVE_ICE_CANDIDATE, onIceCandidate);
+    return () => mySocket.off(NamespaceEnum.RECEIVE_ICE_CANDIDATE, onIceCandidate);
+  }, [peerConnections, mySocket]);
+
+  /**
+   * Handle incoming offer
+   */
+  useEffect(() => {
+    async function onVoiceOffer({
+      signal,
+      fromSocketId,
+      fromStrUserId,
+    }: ReceiveVoiceOfferResponse) {
+      // Search sender's ID in peer connection
+      let peerConnection = peerConnections.current[fromStrUserId];
+
+      // If sender does not exist: new sender's info arrived
+      if (!peerConnection) {
+        console.log(`[SENDER] create and send new peer connection for\n
+          Socket ID: ${fromSocketId}
+           User ID: ${fromStrUserId}
+        `);
+        // Create new peer connection for the offer
+        peerConnection = createNewPeerConnection(localMediaStream)!;
+        // Add sender to the list of peers
+        peerConnections.current[fromStrUserId] = peerConnection;
+        // Create and send ICE candidate
+        setupPeerConnection({
+          peerConnection,
+          toSocketId: fromSocketId,
+        });
+      }
+
+      // Proceed with creating and sending answer
+      await createAnswerAndSendSignal({
         peerConnection,
-        fromSocketId: mySocketId,
+        signal,
         toSocketId: fromSocketId,
       });
-      // Add sender to the list of peers
-      peerConnections.current[fromSocketId] = peerConnection!;
     }
 
-    // Proceed with creating and sending answer
-    await createAnswerAndSendSignal({
-      peerConnection,
-      signal,
-      fromSocketId: mySocketId,
-      toSocketId: fromSocketId,
-    });
-  };
-  const handleVoiceAnswer = ({ signal, fromSocketId }: ReceiveVoiceAnswerResponse) => {
-    // If answer is back from the ID stored
-    if (peerConnections.current[fromSocketId]) {
-      peerConnections.current[fromSocketId]!.setRemoteDescription(signal); // Set sender's signal to remote description
-    }
-    // Answer came from nowhere (user ID never stored)
-    else {
-      console.error(`[!] Incoming answer error from ${fromSocketId}. Who is this?`);
-    }
-  };
+    mySocket.on(NamespaceEnum.RECEIVE_VOICE_OFFER, onVoiceOffer);
+    return () => mySocket.off(NamespaceEnum.RECEIVE_VOICE_OFFER, onVoiceOffer);
+  }, [
+    createAnswerAndSendSignal,
+    createNewPeerConnection,
+    localMediaStream,
+    peerConnections,
+    setupPeerConnection,
+    mySocket,
+  ]);
+
   /**
-   * Voice call hook
+   * Handle incoming answer
+   * [RECEIVER] [4]
    */
-  useVoiceCall({
-    onIceCandidateCallback: handleIceCandidate,
-    onVoiceOfferCallback: handleVoiceOffer,
-    onVoiceAnswerCallback: handleVoiceAnswer,
-  });
+  useEffect(() => {
+    async function onVoiceAnswer({
+      signal,
+      fromSocketId,
+      fromStrUserId,
+    }: ReceiveVoiceAnswerResponse) {
+      // If answer is back from the ID stored
+      if (peerConnections.current[fromStrUserId]) {
+        peerConnections.current[fromStrUserId].setRemoteDescription(signal); // Set sender's signal to remote description
+      }
+      // Answer came from nowhere (user ID never stored)
+      else {
+        console.error(`[!] Incoming answer error from \n\
+          \tSocket ID: ${fromSocketId}\n
+          \tUser ID: ${fromStrUserId}\n
+          Who is this?
+        `);
+      }
+    }
+
+    mySocket.on(NamespaceEnum.RECEIVE_VOICE_ANSWER, onVoiceAnswer);
+    return () => mySocket.off(NamespaceEnum.RECEIVE_VOICE_ANSWER, onVoiceAnswer);
+  }, [peerConnections, mySocket]);
 
   /** @LOG */
-  //   if (!peerConnections.current) {
-  //     console.log('No peer connections.');
-  //   } else {
-  //     console.log(peerConnections.current);
-  //     for (const key of Object.keys(peerConnections.current)) {
-  //       const peerConnection = peerConnections.current[key];
-  //       if (peerConnection) {
-  //         console.log(
-  //           '[connection state]',
-  //           peerConnection.connectionState,
-  //           '\n',
-  //           '[ice connection state]',
-  //           peerConnection.iceConnectionState,
-  //           '\n',
-  //           '[ice gathering state]',
-  //           peerConnection.iceGatheringState,
-  //           '\n'
-  //         );
-  //       }
-  //     }
-  //   }
+  if (!peerConnections.current) {
+    console.log('No peer connections.');
+  } else {
+    console.log(peerConnections.current);
+  }
 
   return (
     <>
       <VoiceButton isMuted={isMuted} disabled={!localMediaStream} onClick={toggleMuteMediaStream} />
+
       {localMediaStream && <audio ref={localAudioRef} autoPlay muted />}
+
+      {Object.entries((peerConnections as PeerConnectionsDataType).current).map(
+        ([playerId, connection]) => (
+          <PeerAudio
+            key={playerId}
+            connection={connection as RTCPeerConnection | undefined}
+            playerId={playerId as string}
+            setActiveSpeakers={setActiveSpeakers}
+          />
+        )
+      )}
     </>
   );
 };
 
 export default VoiceCallLayout;
+
+const PeerAudio = ({
+  connection,
+  playerId,
+  setActiveSpeakers,
+}: {
+  connection: RTCPeerConnection | undefined;
+  playerId: string;
+  setActiveSpeakers: React.Dispatch<React.SetStateAction<string[]>>;
+}) => {
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+
+  useEffect(() => {
+    if (!connection) return;
+
+    // Listen for remote tracks
+    const onTrack = (event: RTCTrackEvent) => {
+      // Get remote stream
+      const remoteStream = event.streams[0];
+      if (remoteStream) {
+        setRemoteStream(remoteStream);
+      }
+    };
+    connection.addEventListener('track', onTrack);
+    return () => connection.removeEventListener('track', onTrack);
+  }, [connection]);
+
+  useEffect(() => {
+    if (remoteAudioRef.current && remoteStream) {
+      remoteAudioRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
+
+  const isRemoteActive = useVoiceActivity({ remoteStream, threshold: 5 });
+
+  useEffect(() => {
+    if (isRemoteActive) {
+      setActiveSpeakers((prev) => [...prev, playerId]);
+    } else {
+      setActiveSpeakers((prev) => prev.filter((id) => id !== playerId));
+    }
+  }, [isRemoteActive, setActiveSpeakers, playerId]);
+
+  return <audio ref={remoteAudioRef} autoPlay />;
+};

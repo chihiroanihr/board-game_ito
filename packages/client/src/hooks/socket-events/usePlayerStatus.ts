@@ -5,7 +5,6 @@ import {
   type PlayerOutResponse,
   type PlayerDisconnectedResponse,
   type PlayerReconnectedResponse,
-  type PlayerMicReadyResponse,
   NamespaceEnum,
 } from '@bgi/shared';
 import { useSocket } from '@/hooks';
@@ -15,7 +14,6 @@ interface PlayerStatusCallback {
   onPlayerReconnectedCallback?: (data: PlayerReconnectedResponse) => void;
   onPlayerJoinedCallback?: (data: PlayerInResponse) => void;
   onPlayerLeftCallback?: (data: PlayerOutResponse) => void;
-  onPlayerMicReadyCallback?: (data: { socketId: string }) => void;
 }
 
 export const usePlayerStatus = ({
@@ -23,7 +21,6 @@ export const usePlayerStatus = ({
   onPlayerReconnectedCallback,
   onPlayerJoinedCallback,
   onPlayerLeftCallback,
-  onPlayerMicReadyCallback,
 }: PlayerStatusCallback) => {
   const { socket } = useSocket();
 
@@ -74,16 +71,4 @@ export const usePlayerStatus = ({
     socket.on(NamespaceEnum.PLAYER_OUT, onPlayerLeft);
     return () => socket.off(NamespaceEnum.PLAYER_OUT, onPlayerLeft);
   }, [onPlayerLeftCallback, socket]);
-
-  /**
-   * Incoming socket event handler: Player voice ready
-   */
-  useEffect(() => {
-    const onPlayerMicReady = ({ socketId }: PlayerMicReadyResponse) => {
-      onPlayerMicReadyCallback?.({ socketId });
-    };
-
-    socket.on(NamespaceEnum.PLAYER_MIC_READY, onPlayerMicReady);
-    return () => socket.off(NamespaceEnum.PLAYER_MIC_READY, onPlayerMicReady);
-  }, [onPlayerMicReadyCallback, socket]);
 };

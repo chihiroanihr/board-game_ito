@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ObjectId } from 'mongodb';
+import { Grid, useMediaQuery, useTheme } from '@mui/material';
 
 import {
   type User,
@@ -8,16 +9,21 @@ import {
   type PlayerInResponse,
   type PlayerOutResponse,
   NamespaceEnum,
+  CommunicationMethodEnum,
 } from '@bgi/shared';
 
+import { ChatLayout, VoiceCallLayout } from '@/layouts';
 import { SnackbarPlayerInQueue } from '@/components';
 import { useRoom, useSocket } from '@/hooks';
 import { outputServerError } from '@/utils';
 import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
 const GameLayout = () => {
+  const theme = useTheme();
   const { socket } = useSocket();
   const { room, updateRoom } = useRoom();
+
+  const [activeSpeakers, setActiveSpeakers] = useState<string[]>([]);
 
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
@@ -29,6 +35,9 @@ const GameLayout = () => {
   const [playerSnackbars, setPlayerSnackbars] = React.useState<
     readonly SnackbarPlayerInQueueInfoType[]
   >([]);
+
+  const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
+  const communicationMethod = room?.setting.communicationMethod;
 
   // Snackbar handlers
   const handleSnackbarOpen = () => setSnackbarOpen(true);
@@ -86,6 +95,7 @@ const GameLayout = () => {
   }, [room, socket]);
 
   /**
+   * Incoming socket event handler: Player joined room
    * [2] New user arrives
    * ---------------------------------------------------
    * - Receive new room info (Room obj), list of players (Array<User>), and user (participated) info (User obj) from the response
@@ -93,29 +103,6 @@ const GameLayout = () => {
    * - Append new user to the list of players (just replace original list of players with new list of players received)
    * - If list of players reaches more than MIN_NUM_PLAYERS, enable "allowStart"
    * - Display message that new user has arrived
-   */
-  // const handlePlayerIn = ({ user: player, room }: PlayerInResponse) => {
-  //   setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
-
-  //   // Update room in the local storage first
-  //   updateRoom(room);
-  //   // Add new player in the list of players
-  //   setPlayers((prevPlayers: User[]) => [...prevPlayers, player]);
-  //   // Store player and snackbar info for snackbar notification + Add to snackbar queue
-  //   setPlayerSnackbars((prev) => [
-  //     ...prev,
-  //     {
-  //       key: new Date().getTime(),
-  //       player: player,
-  //       status: PlayerInQueueActionEnum.IN,
-  //     },
-  //   ]);
-
-  //   setSynchronousBlock(false); // Unblock
-  // };
-
-  /**
-   * Incoming socket event handler: Player joined room
    */
   useEffect(() => {
     const onPlayerJoined = ({ socketId, user: player, room }: PlayerInResponse) => {
@@ -149,6 +136,7 @@ const GameLayout = () => {
    */
 
   /**
+   * Incoming socket event handler: Player left room
    * [4] Other participant leaves
    * ---------------------------------------------------
    * - Receive new room (Room obj), list of players (Array<User>), and user (left) info (User obj) from the response
@@ -161,42 +149,6 @@ const GameLayout = () => {
    *    - Display message that new user has left & admin has changed
    * 2. Else:
    *    - Display message that new user has left
-   */
-  //   const handlePlayerOut = ({ user: player, room }: PlayerOutResponse) => {
-  //     setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
-
-  //     // Update room in the local storage first
-  //     updateRoom(room);
-  //     // If room still exists (at least one player left in the room) AND If admin changed then set new admin
-  //     if (room && room.roomAdmin.toString() !== adminId?.toString()) {
-  //       setAdminId(room.roomAdmin);
-  //     }
-  //     // Remove player from the list of players
-  //     setPlayers((prevPlayers: User[]) =>
-  //       prevPlayers.filter((prevPlayer: User) => prevPlayer._id.toString() !== player._id.toString())
-  //     );
-  //     // Store player and snackbar info for snackbar notification + Add to snackbar queue
-  //     //
-  //     setPlayerSnackbars((prev) => [
-  //       ...prev,
-  //       {
-  //         key: new Date().getTime(),
-  //         player: player,
-  //         status: PlayerInQueueActionEnum.OUT,
-  //       },
-  //     ]);
-
-  //     setSynchronousBlock(false); // Unblock
-  //   };
-
-  //   // Player connection status hook
-  //   usePlayerStatus({
-  //     onPlayerJoinedCallback: handlePlayerIn,
-  //     onPlayerLeftCallback: handlePlayerOut,
-  //   });
-
-  /**
-   * Incoming socket event handler: Player left room
    */
   useEffect(() => {
     const onPlayerLeft = ({ socketId, user: player, room }: PlayerOutResponse) => {
@@ -233,7 +185,30 @@ const GameLayout = () => {
 
   return (
     <>
-      <Outlet context={{ adminId, players, synchronousBlock }} />
+      <Outlet context={{ adminId, players, activeSpeakers, synchronousBlock }} />
+
+      {/* Communication Method Layout */}
+      {communicationMethod && (
+        <Grid
+          id="communication-wrapper"
+          item
+          xs={3.6} // grid item width
+          sx={{
+            ...(isLgViewport && communicationMethod === CommunicationMethodEnum.CHAT
+              ? { display: 'flex', height: '100%', ml: '2rem' } // Only when chat option + viewport > large, grow horizontally
+              : {
+                  position: 'fixed',
+                  bottom: '1.4rem',
+                  right: { xs: '1.4rem', lg: '2%' },
+                }), // Otherwise, fixed position with chat / mic button on the bottom-left
+          }}
+        >
+          {communicationMethod === CommunicationMethodEnum.CHAT && <ChatLayout />}
+          {communicationMethod === CommunicationMethodEnum.MIC && (
+            <VoiceCallLayout setActiveSpeakers={setActiveSpeakers} />
+          )}
+        </Grid>
+      )}
 
       {/* Snackbar player in / out notification */}
       <SnackbarPlayerInQueue

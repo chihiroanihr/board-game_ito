@@ -100,15 +100,24 @@ export type PlayerOutResponse = { socketId: string; user: User; room: Room | nul
 
 export type ReceiveChatResponse = RoomChatMessage;
 
-export type PlayerMicReadyResponse = { socketId: string };
+export type PlayerMicReadyResponse = { socketId: string; strUserId: string };
 
-export type ReceiveIceCandidateResponse = { candidate: RTCIceCandidate; fromSocketId: string };
+export type ReceiveIceCandidateResponse = {
+  candidate: RTCIceCandidate;
+  fromSocketId: string;
+  fromStrUserId: string;
+};
 
-export type ReceiveVoiceOfferResponse = { signal: RTCSessionDescriptionInit; fromSocketId: string };
+export type ReceiveVoiceOfferResponse = {
+  signal: RTCSessionDescriptionInit;
+  fromSocketId: string;
+  fromStrUserId: string;
+};
 
 export type ReceiveVoiceAnswerResponse = {
   signal: RTCSessionDescriptionInit;
   fromSocketId: string;
+  fromStrUserId: string;
 };
 
 /** @debug */

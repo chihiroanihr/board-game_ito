@@ -26,11 +26,16 @@ export const userNameToColor = (string: string, opacity?: number) => {
   return color;
 };
 
-export const getAvatarProps = (name: string) => {
+export const getAvatarProps = (name: string, isSpeaking = false) => {
   return {
+    alt: name,
     // background color
     sx: {
       bgcolor: userNameToColor(name),
+      ...(isSpeaking && {
+        border: '2px solid',
+        borderColor: 'primary.main',
+      }),
     },
     // name as initial
     children: `${name[0]}${name[1]}`,
