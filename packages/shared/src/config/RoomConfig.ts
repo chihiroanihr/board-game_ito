@@ -13,7 +13,7 @@ export const roomIdConfig = {
 export const roomSettingConfig = {
   language: {
     helperText: 'Select a language for the game.',
-    defaultLanguage: LanguageEnum.ENG,
+    defaultLanguage: '',
   },
   numRound: {
     helperText: 'Enter desired number of rounds.',

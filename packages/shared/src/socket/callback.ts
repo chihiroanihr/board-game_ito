@@ -103,7 +103,7 @@ export type ReceiveChatResponse = RoomChatMessage;
 export type PlayerMicReadyResponse = { socketId: string; strUserId: string };
 
 export type ReceiveIceCandidateResponse = {
-  candidate: RTCIceCandidate;
+  candidate: RTCIceCandidateInit;
   fromSocketId: string;
   fromStrUserId: string;
 };

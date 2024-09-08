@@ -21,13 +21,12 @@ import {
 } from '@bgi/shared';
 
 import { TextButton, AnimateTextThreeDots, PlayerListItem, TooltipStyled } from '@/components';
-import { useAuth, useRoom, usePreFormSubmission, useSocket } from '@/hooks';
+import { useAuth, useRoom, usePreFormSubmission, useSocket, useDataChannels } from '@/hooks';
 import { navigateGame, outputServerError, outputResponseTimeoutError } from '@/utils';
 import { type GameLayoutOutletContextType } from '../enum';
 
 export default function Waiting() {
-  const { adminId, players, activeSpeakers, synchronousBlock } =
-    useOutletContext<GameLayoutOutletContextType>();
+  const { adminId, players, synchronousBlock } = useOutletContext<GameLayoutOutletContextType>();
   const navigate = useNavigate();
   const { socket } = useSocket();
   const { user: currentUser } = useAuth();
@@ -355,12 +354,6 @@ export default function Waiting() {
       >
         <CircularProgress color="inherit" size="3rem" />
       </Backdrop>
-
-      {activeSpeakers.map((speakerId: string) => (
-        <div key={speakerId}>
-          {players.find((player: User) => player._id.toString() === speakerId)?.name}
-        </div>
-      ))}
     </>
   );
 }

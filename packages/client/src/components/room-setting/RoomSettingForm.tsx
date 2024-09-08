@@ -27,7 +27,11 @@ interface RoomSettingFormProps {
   children?: React.ReactNode;
 }
 
-const formDefaultValues: RoomSetting = {
+type RoomSettingWithoutLanguage = Omit<RoomSetting, 'language'> & {
+  language: LanguageEnum | string;
+};
+
+const formDefaultValues: RoomSettingWithoutLanguage = {
   /** @todo - dynamically set language based on user's application locale. If locale not supported, set English as default. */
   language: roomSettingConfig.language.defaultLanguage,
   numRound: roomSettingConfig.numRound.defaultRounds,
@@ -109,14 +113,14 @@ const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFo
         const data = await response.json();
 
         // Update default language value if the original default language value is not in data
-        if (
-          data[0] &&
-          data.some(
-            (lang: { language: LanguageEnum }) => lang.language !== formDefaultValues.language
-          )
-        ) {
-          formDefaultValues.language = data[0].language;
-        }
+        // if (
+        //   data[0] &&
+        //   data.some(
+        //     (lang: { language: LanguageEnum }) => lang.language !== formDefaultValues.language
+        //   )
+        // ) {
+        //   formDefaultValues.language = data[0].language;
+        // }
 
         // // Filter the LanguageEnum entries based on the conditions from data
         // const filteredLanguages = Object.entries(LanguageEnum).filter(([key, value]) => {
@@ -144,7 +148,7 @@ const RoomSettingForm: ForwardRefRenderFunction<HTMLButtonElement, RoomSettingFo
    * @returns An array of filtered LanguageEnum entries [key, value]
    */
   const filteredLanguages: [string, LanguageEnum][] = useMemo(() => {
-    return Object.entries(LanguageEnum).filter(([key, value]) => {
+    return Object.entries(LanguageEnum).filter(([, value]) => {
       // Find a language in usedLanguages that matches the value and has a count >= 40
       const matchedLanguage = usedLanguages.find(
         (lang) => lang.language === value && lang.count >= 40

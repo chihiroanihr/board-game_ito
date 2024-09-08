@@ -1,45 +1,42 @@
-// usePeerConnections.js
-import { useRef, useCallback, useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface VoiceActivityProps {
   stream: MediaStream | null;
   threshold: number;
+  isMuted: boolean;
+  onVoiceActivity: (isActive: boolean) => void;
 }
 
 /**
- * @function useVoiceActivity - Check if user is speaking in a stream
+ * @function useVoiceActivity - A hook that detects voice activity in the local stream.
  * @param {VoiceActivityProps} props - Props for the hook
  * @param {MediaStream} props.stream - Media stream to check
  * @param {number} props.threshold - Threshold for audio level
- * @returns {boolean} isActive - True if user is speaking, false otherwise
+ * @param {boolean} props.isMuted - Whether the stream is muted
+ * @param {Function} props.onVoiceActivity - Callback function to be called when voice activity changes
  */
-const useVoiceActivity = ({ stream, threshold }: VoiceActivityProps): boolean => {
-  const [isActive, setIsActive] = useState(false);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+const useVoiceActivity = ({ stream, threshold, isMuted, onVoiceActivity }: VoiceActivityProps) => {
   useEffect(() => {
-    if (!stream) return;
+    if (!stream || isMuted) return;
 
-    audioContextRef.current = new AudioContext();
-    analyserRef.current = audioContextRef.current.createAnalyser();
-    const source = audioContextRef.current.createMediaStreamSource(stream);
-    source.connect(analyserRef.current);
+    const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
 
-    const bufferLength = analyserRef.current.frequencyBinCount;
+    const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
 
-    const checkAudioLevel = () => {
-      if (!analyserRef.current) return;
+    let isActive = false;
 
-      analyserRef.current.getByteFrequencyData(dataArray);
+    const checkAudioLevel = () => {
+      analyser.getByteFrequencyData(dataArray);
       const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
 
-      if (average > threshold) {
-        setIsActive(true);
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(() => setIsActive(false), 500);
+      const newIsActive = average > threshold;
+      if (newIsActive !== isActive) {
+        isActive = newIsActive;
+        onVoiceActivity(isActive);
       }
     };
 
@@ -47,12 +44,9 @@ const useVoiceActivity = ({ stream, threshold }: VoiceActivityProps): boolean =>
 
     return () => {
       clearInterval(intervalId);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (audioContextRef.current) audioContextRef.current.close();
+      audioContext.close();
     };
-  }, [stream, threshold]);
-
-  return isActive;
+  }, [isMuted, onVoiceActivity, stream, threshold]);
 };
 
 export default useVoiceActivity;

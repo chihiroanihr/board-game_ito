@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ObjectId } from 'mongodb';
 import { Grid, useMediaQuery, useTheme } from '@mui/material';
@@ -8,13 +8,15 @@ import {
   type FetchPlayersResponse,
   type PlayerInResponse,
   type PlayerOutResponse,
+  type PlayerDisconnectedResponse,
+  type PlayerReconnectedResponse,
   NamespaceEnum,
   CommunicationMethodEnum,
 } from '@bgi/shared';
 
 import { ChatLayout, VoiceCallLayout } from '@/layouts';
 import { SnackbarPlayerInQueue } from '@/components';
-import { useRoom, useSocket } from '@/hooks';
+import { useRoom, useSocket, useLocalMediaStream, usePeerConnections } from '@/hooks';
 import { outputServerError } from '@/utils';
 import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
@@ -22,8 +24,8 @@ const GameLayout = () => {
   const theme = useTheme();
   const { socket } = useSocket();
   const { room, updateRoom } = useRoom();
-
-  const [activeSpeakers, setActiveSpeakers] = useState<string[]>([]);
+  const { closeLocalMediaStream } = useLocalMediaStream();
+  const { closePeerConnection, closeAllPeerConnections } = usePeerConnections();
 
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
@@ -38,6 +40,19 @@ const GameLayout = () => {
 
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
   const communicationMethod = room?.setting.communicationMethod;
+
+  const cleanupRef = useRef(() => {});
+
+  // Cleanup of peer connections and local media stream when unmounted (i.e., browser refreshed or closed)
+  useEffect(() => {
+    cleanupRef.current = () => {
+      if (room?.setting.communicationMethod === CommunicationMethodEnum.MIC) {
+        closeAllPeerConnections();
+        closeLocalMediaStream();
+      }
+    };
+    return () => cleanupRef.current();
+  }, [closeAllPeerConnections, closeLocalMediaStream, room?.setting.communicationMethod]);
 
   // Snackbar handlers
   const handleSnackbarOpen = () => setSnackbarOpen(true);
@@ -154,6 +169,9 @@ const GameLayout = () => {
     const onPlayerLeft = ({ socketId, user: player, room }: PlayerOutResponse) => {
       setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
 
+      // Close peer connection for player just disconnected
+      closePeerConnection(player._id.toString());
+
       // Update room in the local storage first
       updateRoom(room);
       // If room still exists (at least one player left in the room) AND If admin changed then set new admin
@@ -181,11 +199,36 @@ const GameLayout = () => {
 
     socket.on(NamespaceEnum.PLAYER_OUT, onPlayerLeft);
     return () => socket.off(NamespaceEnum.PLAYER_OUT, onPlayerLeft);
-  }, [adminId, socket, updateRoom]);
+  }, [adminId, closePeerConnection, socket, updateRoom]);
+
+  /**
+   * Incoming socket event handler: Player disconnected
+   */
+  useEffect(() => {
+    const onPlayerDisconnected = ({ socketId, user: player }: PlayerDisconnectedResponse) => {
+      // Close peer connection for player just disconnected
+      closePeerConnection(player._id.toString());
+    };
+
+    socket.on(NamespaceEnum.PLAYER_DISCONNECTED, onPlayerDisconnected);
+    return () => socket.off(NamespaceEnum.PLAYER_DISCONNECTED, onPlayerDisconnected);
+  }, [closePeerConnection, socket]);
+
+  /**
+   * Incoming socket event handler: Player reconnected
+   */
+  useEffect(() => {
+    const onPlayerReconnected = ({ socketId, user: player }: PlayerReconnectedResponse) => {};
+
+    socket.on(NamespaceEnum.PLAYER_RECONNECTED, onPlayerReconnected);
+    return () => socket.off(NamespaceEnum.PLAYER_RECONNECTED, onPlayerReconnected);
+  }, [socket]);
+
+  /* ------------------------------------- JSX -------------------------------------- */
 
   return (
     <>
-      <Outlet context={{ adminId, players, activeSpeakers, synchronousBlock }} />
+      <Outlet context={{ adminId, players, synchronousBlock }} />
 
       {/* Communication Method Layout */}
       {communicationMethod && (
@@ -204,9 +247,7 @@ const GameLayout = () => {
           }}
         >
           {communicationMethod === CommunicationMethodEnum.CHAT && <ChatLayout />}
-          {communicationMethod === CommunicationMethodEnum.MIC && (
-            <VoiceCallLayout setActiveSpeakers={setActiveSpeakers} />
-          )}
+          {communicationMethod === CommunicationMethodEnum.MIC && <VoiceCallLayout />}
         </Grid>
       )}
 
