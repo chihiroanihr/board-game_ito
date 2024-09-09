@@ -1,25 +1,25 @@
 /**
- * @class MediaStreamManager - A singleton
+ * @class LocalMediaStreamManager - A singleton
  * @classdesc A class that manages the local media stream, including muting and unmuting.
- * @returns {MediaStreamManager} The singleton instance of the MediaStreamManager.
+ * @returns {LocalMediaStreamManager} The singleton instance of the LocalMediaStreamManager.
  *
  * It's independent of React's state and lifecycle, ensuring the stream is always accessible.
  */
-class MediaStreamManager {
-  private static instance: MediaStreamManager;
+class LocalMediaStreamManager {
+  private static instance: LocalMediaStreamManager;
   private mediaStream: MediaStream | null = null;
 
   private constructor() {}
 
   /**
-   * @function getInstance - A static method that returns the singleton instance of the MediaStreamManager.
-   * @returns {MediaStreamManager} The singleton instance of the MediaStreamManager.
+   * @function getInstance - A static method that returns the singleton instance of the LocalMediaStreamManager.
+   * @returns {LocalMediaStreamManager} The singleton instance of the LocalMediaStreamManager.
    */
-  public static getInstance(): MediaStreamManager {
-    if (!MediaStreamManager.instance) {
-      MediaStreamManager.instance = new MediaStreamManager();
+  public static getInstance(): LocalMediaStreamManager {
+    if (!LocalMediaStreamManager.instance) {
+      LocalMediaStreamManager.instance = new LocalMediaStreamManager();
     }
-    return MediaStreamManager.instance;
+    return LocalMediaStreamManager.instance;
   }
 
   /**
@@ -30,9 +30,7 @@ class MediaStreamManager {
     try {
       // Access media stream
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-        },
+        audio: true,
         video: false,
       });
       // Mute by default
@@ -46,7 +44,7 @@ class MediaStreamManager {
     }
   }
 
-  async unmuteStream(): Promise<void> {
+  unmuteStream() {
     try {
       if (this.mediaStream) {
         // Unmute
@@ -118,4 +116,4 @@ class MediaStreamManager {
   }
 }
 
-export default MediaStreamManager.getInstance();
+export default LocalMediaStreamManager.getInstance();

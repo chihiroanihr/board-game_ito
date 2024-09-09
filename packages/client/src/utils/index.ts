@@ -1,5 +1,5 @@
 export * from './utils';
 export * from './navigate';
 export * from './avatar';
-import MediaStreamManager from './mediaStreamManager';
-export { MediaStreamManager };
+import LocalMediaStreamManager from './localMediaStreamManager';
+export { LocalMediaStreamManager };

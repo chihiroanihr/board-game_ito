@@ -11,7 +11,7 @@ import {
 
 import { VoiceButton } from '@/components';
 import { useSocket, useAuth, usePeerConnections } from '@/hooks';
-import { MediaStreamManager, outputServerError } from '@/utils';
+import { LocalMediaStreamManager, outputServerError } from '@/utils';
 
 const VoiceCallLayout = () => {
   const { socket: mySocket } = useSocket();
@@ -25,7 +25,7 @@ const VoiceCallLayout = () => {
   } = usePeerConnections();
 
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [localMediaStream, setLocalMediaStream] = useState<MediaStream | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   // const localAudioRef = useRef<HTMLAudioElement>(null);
 
@@ -35,19 +35,19 @@ const VoiceCallLayout = () => {
   const toggleMuteMediaStream = useCallback(async () => {
     try {
       // If unmuted for the first time, start the media stream
-      if (!MediaStreamManager.hasStream()) {
-        await MediaStreamManager.startStream();
-        setLocalMediaStream(MediaStreamManager.getStream());
+      if (!LocalMediaStreamManager.hasStream()) {
+        await LocalMediaStreamManager.startStream();
+        setLocalStream(LocalMediaStreamManager.getStream());
       }
 
       // If initially muted
       if (isMuted) {
-        await MediaStreamManager.unmuteStream();
+        LocalMediaStreamManager.unmuteStream();
         setIsMuted(false);
       }
       // If initially unmuted
       else {
-        MediaStreamManager.muteStream();
+        LocalMediaStreamManager.muteStream();
         setIsMuted(true);
       }
     } catch (error) {
@@ -57,10 +57,10 @@ const VoiceCallLayout = () => {
 
   // When your local media stream is ready
   useEffect(() => {
-    if (!localMediaStream) return;
-    // if (!localAudioRef.current || !localMediaStream) return;
+    if (!localStream) return;
+    // if (!localAudioRef.current || !localStream) return;
     // // Add stream to local audio element
-    // localAudioRef.current.srcObject = localMediaStream;
+    // localAudioRef.current.srcObject = localStream;
 
     console.log('Sending mic ready status.');
 
@@ -68,10 +68,10 @@ const VoiceCallLayout = () => {
     mySocket.emit(NamespaceEnum.MIC_READY, async ({ error }: MicReadyResponse) => {
       if (error) console.error(error);
     });
-  }, [localMediaStream, mySocket]);
+  }, [localStream, mySocket]);
 
   useEffect(() => {
-    if (!localMediaStream) return;
+    if (!localStream) return;
 
     const handlePlayerMicReady = async ({
       socketId: remoteSocketId,
@@ -85,7 +85,7 @@ const VoiceCallLayout = () => {
         `);
       // Create new peer connection and send ICE candidate to new player
       const newPeerConnection = createNewPeerConnection(
-        localMediaStream,
+        localStream,
         remoteSocketId,
         remoteStrUserId
       );
@@ -106,11 +106,7 @@ const VoiceCallLayout = () => {
          User ID: ${fromStrUserId}
       `);
       // Create new peer connection for the offer and send ICE candidate
-      const newPeerConnection = createNewPeerConnection(
-        localMediaStream,
-        fromSocketId,
-        fromStrUserId
-      );
+      const newPeerConnection = createNewPeerConnection(localStream, fromSocketId, fromStrUserId);
       // Create new data channel (for voice activity detection)
       // createNewDataChannel(newPeerConnection, fromStrUserId);
       // Proceed with creating and sending answer
@@ -132,7 +128,7 @@ const VoiceCallLayout = () => {
       fromStrUserId,
     }: ReceiveIceCandidateResponse) => {
       console.log(`[ICE Candidate] Received ICE candidate: ${fromSocketId}, ${fromStrUserId}`);
-      setRemotePeerCandidate(candidate, fromStrUserId);
+      await setRemotePeerCandidate(candidate, fromStrUserId);
     };
 
     mySocket.on(NamespaceEnum.PLAYER_MIC_READY, handlePlayerMicReady);
@@ -150,14 +146,14 @@ const VoiceCallLayout = () => {
     createAnswerAndSendSignal,
     createNewPeerConnection,
     createOfferAndSendSignal,
-    localMediaStream,
+    localStream,
     mySocket,
     setRemotePeerAnswer,
     setRemotePeerCandidate,
   ]);
 
   // useEffect(() => {
-  //   console.log('LOCAL MEDIA STREAM: ', localMediaStream?.getTracks()[0]);
+  //   console.log('LOCAL MEDIA STREAM: ', localStream?.getTracks()[0]);
   //   console.log('PEER CONNECTIONS: ', peerConnections.current);
   //   Object.entries(
   //     peerConnections.current as React.MutableRefObject<Record<string, RTCPeerConnection>>
@@ -165,13 +161,13 @@ const VoiceCallLayout = () => {
   //     console.log(playerId);
   //     console.log(connection);
   //   });
-  // }, [localMediaStream, peerConnections]);
+  // }, [localStream, peerConnections]);
 
   return (
     <>
       <VoiceButton isMuted={isMuted} onClick={toggleMuteMediaStream} />
 
-      {/* {localMediaStream && <audio ref={localAudioRef} autoPlay muted />} */}
+      {/* {localStream && <audio ref={localAudioRef} autoPlay muted />} */}
     </>
   );
 };

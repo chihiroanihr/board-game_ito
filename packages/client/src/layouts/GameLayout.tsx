@@ -17,7 +17,7 @@ import {
 import { ChatLayout, VoiceCallLayout } from '@/layouts';
 import { SnackbarPlayerInQueue } from '@/components';
 import { useRoom, useSocket, usePeerConnections } from '@/hooks';
-import { outputServerError, MediaStreamManager } from '@/utils';
+import { outputServerError, LocalMediaStreamManager } from '@/utils';
 import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
 const GameLayout = () => {
@@ -45,7 +45,7 @@ const GameLayout = () => {
     return () => {
       if (room?.setting.communicationMethod === CommunicationMethodEnum.MIC) {
         closeAllPeerConnections();
-        MediaStreamManager.endStream();
+        LocalMediaStreamManager.endStream();
       }
     };
   }, [closeAllPeerConnections, room?.setting.communicationMethod]);

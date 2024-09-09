@@ -78,9 +78,7 @@ const usePeerConnections = () => {
   const restartPeerConnection = useCallback(
     (localMediaStream: MediaStream, remoteStrUserId: string) => {
       // Close existing connection
-      if (peerConnections.current[remoteStrUserId]) {
-        peerConnections.current[remoteStrUserId].close();
-      }
+      closePeerConnection(remoteStrUserId);
 
       // Initiate new connection
       if (localMediaStream) {
@@ -89,7 +87,7 @@ const usePeerConnections = () => {
         });
       }
     },
-    [socket]
+    [closePeerConnection, socket]
   );
 
   /**
