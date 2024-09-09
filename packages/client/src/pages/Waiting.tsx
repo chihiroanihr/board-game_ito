@@ -21,7 +21,7 @@ import {
 } from '@bgi/shared';
 
 import { TextButton, AnimateTextThreeDots, PlayerListItem, TooltipStyled } from '@/components';
-import { useAuth, useRoom, usePreFormSubmission, useSocket, useDataChannels } from '@/hooks';
+import { useAuth, useRoom, usePreFormSubmission, useSocket } from '@/hooks';
 import { navigateGame, outputServerError, outputResponseTimeoutError } from '@/utils';
 import { type GameLayoutOutletContextType } from '../enum';
 
@@ -352,7 +352,7 @@ export default function Waiting() {
         open={backdropOpen}
         sx={{ color: 'common.white', zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
-        <CircularProgress color="inherit" size="3rem" />
+        {backdropOpen && <CircularProgress color="inherit" size="3rem" />}
       </Backdrop>
     </>
   );

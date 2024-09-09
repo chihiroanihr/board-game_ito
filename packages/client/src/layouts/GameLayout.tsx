@@ -16,15 +16,14 @@ import {
 
 import { ChatLayout, VoiceCallLayout } from '@/layouts';
 import { SnackbarPlayerInQueue } from '@/components';
-import { useRoom, useSocket, useLocalMediaStream, usePeerConnections } from '@/hooks';
-import { outputServerError } from '@/utils';
+import { useRoom, useSocket, usePeerConnections } from '@/hooks';
+import { outputServerError, MediaStreamManager } from '@/utils';
 import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
 const GameLayout = () => {
   const theme = useTheme();
   const { socket } = useSocket();
   const { room, updateRoom } = useRoom();
-  const { closeLocalMediaStream } = useLocalMediaStream();
   const { closePeerConnection, closeAllPeerConnections } = usePeerConnections();
 
   const [adminId, setAdminId] = useState<ObjectId>();
@@ -41,18 +40,15 @@ const GameLayout = () => {
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
   const communicationMethod = room?.setting.communicationMethod;
 
-  const cleanupRef = useRef(() => {});
-
   // Cleanup of peer connections and local media stream when unmounted (i.e., browser refreshed or closed)
   useEffect(() => {
-    cleanupRef.current = () => {
+    return () => {
       if (room?.setting.communicationMethod === CommunicationMethodEnum.MIC) {
         closeAllPeerConnections();
-        closeLocalMediaStream();
+        MediaStreamManager.endStream();
       }
     };
-    return () => cleanupRef.current();
-  }, [closeAllPeerConnections, closeLocalMediaStream, room?.setting.communicationMethod]);
+  }, [closeAllPeerConnections, room?.setting.communicationMethod]);
 
   // Snackbar handlers
   const handleSnackbarOpen = () => setSnackbarOpen(true);

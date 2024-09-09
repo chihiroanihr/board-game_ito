@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import {
   type MicReadyResponse,
@@ -10,54 +10,54 @@ import {
 } from '@bgi/shared';
 
 import { VoiceButton } from '@/components';
-import {
-  useSocket,
-  useAuth,
-  useLocalMediaStream,
-  usePeerConnections,
-  useDataChannels,
-  useVoiceActivity,
-} from '@/hooks';
-import { outputServerError } from '@/utils';
+import { useSocket, useAuth, usePeerConnections } from '@/hooks';
+import { MediaStreamManager, outputServerError } from '@/utils';
 
 const VoiceCallLayout = () => {
   const { socket: mySocket } = useSocket();
   const { user } = useAuth();
-  const { localMediaStream, toggleMuteMediaStream, openLocalMediaStream, isMuted } =
-    useLocalMediaStream();
-  const { createNewDataChannel, sendVoiceActivity, setActiveSpeakers, activeSpeakers } =
-    useDataChannels();
   const {
-    peerConnections,
     createNewPeerConnection,
     createOfferAndSendSignal,
     createAnswerAndSendSignal,
+    setRemotePeerAnswer,
+    setRemotePeerCandidate,
   } = usePeerConnections();
 
-  const [micReadySent, setMicReadySent] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(true);
+  const [localMediaStream, setLocalMediaStream] = useState<MediaStream | null>(null);
 
   // const localAudioRef = useRef<HTMLAudioElement>(null);
 
-  useVoiceActivity({
-    stream: localMediaStream,
-    threshold: 5,
-    isMuted,
-    onVoiceActivity: sendVoiceActivity,
-  });
+  /**
+   * Toggle mute button handler
+   */
+  const toggleMuteMediaStream = useCallback(async () => {
+    try {
+      // If unmuted for the first time, start the media stream
+      if (!MediaStreamManager.hasStream()) {
+        await MediaStreamManager.startStream();
+        setLocalMediaStream(MediaStreamManager.getStream());
+      }
 
-  // When mute button is toggled
-  // useEffect(() => {
-  //   muteFromAllPeerConnections(peerConnections.current, localMediaStream, isMuted);
-  // }, [isMuted, localMediaStream, muteFromAllPeerConnections, peerConnections]);
-
-  // Open local media stream as soon as page is rendered
-  useEffect(() => {
-    openLocalMediaStream();
-  }, [openLocalMediaStream]);
+      // If initially muted
+      if (isMuted) {
+        await MediaStreamManager.unmuteStream();
+        setIsMuted(false);
+      }
+      // If initially unmuted
+      else {
+        MediaStreamManager.muteStream();
+        setIsMuted(true);
+      }
+    } catch (error) {
+      console.error('[Media Error] Cannot toggle mute state of the local media stream: ', error);
+    }
+  }, [isMuted]);
 
   // When your local media stream is ready
   useEffect(() => {
-    if (!localMediaStream || micReadySent) return;
+    if (!localMediaStream) return;
     // if (!localAudioRef.current || !localMediaStream) return;
     // // Add stream to local audio element
     // localAudioRef.current.srcObject = localMediaStream;
@@ -67,9 +67,8 @@ const VoiceCallLayout = () => {
     // Emit mic ready signal to server
     mySocket.emit(NamespaceEnum.MIC_READY, async ({ error }: MicReadyResponse) => {
       if (error) console.error(error);
-      else setMicReadySent(true); // Flag: mark mic ready sent
     });
-  }, [localMediaStream, micReadySent, mySocket]);
+  }, [localMediaStream, mySocket]);
 
   useEffect(() => {
     if (!localMediaStream) return;
@@ -91,7 +90,7 @@ const VoiceCallLayout = () => {
         remoteStrUserId
       );
       // Create new data channel (for voice activity detection)
-      createNewDataChannel(newPeerConnection, remoteStrUserId);
+      // createNewDataChannel(newPeerConnection, remoteStrUserId);
       // Create and send offer
       await createOfferAndSendSignal(newPeerConnection, remoteSocketId);
     };
@@ -106,14 +105,16 @@ const VoiceCallLayout = () => {
         Socket ID: ${fromSocketId}
          User ID: ${fromStrUserId}
       `);
-      // Avoid duplicate creation due to multi-rendering
-      let peerConnection = peerConnections.current[fromStrUserId];
       // Create new peer connection for the offer and send ICE candidate
-      peerConnection = createNewPeerConnection(localMediaStream, fromSocketId, fromStrUserId);
+      const newPeerConnection = createNewPeerConnection(
+        localMediaStream,
+        fromSocketId,
+        fromStrUserId
+      );
       // Create new data channel (for voice activity detection)
-      createNewDataChannel(peerConnection, fromStrUserId);
+      // createNewDataChannel(newPeerConnection, fromStrUserId);
       // Proceed with creating and sending answer
-      await createAnswerAndSendSignal(peerConnection, signal, fromSocketId);
+      await createAnswerAndSendSignal(newPeerConnection, signal, fromSocketId);
     };
 
     const handleReceiveVoiceAnswer = async ({
@@ -122,20 +123,7 @@ const VoiceCallLayout = () => {
       fromStrUserId,
     }: ReceiveVoiceAnswerResponse) => {
       console.log(`[Voice Answer] Received voice answer: ${fromSocketId}, ${fromStrUserId}`);
-      const peerConnection = peerConnections.current[fromStrUserId];
-      // If answer is back from the voice exchanged user
-      if (peerConnection) {
-        // Set sender's signal to remote description
-        await peerConnection.setRemoteDescription(signal);
-      }
-      // Answer came from nowhere (user ID never stored)
-      else {
-        console.error(`[!] Incoming answer error from \n\
-        \tSocket ID: ${fromSocketId}\n
-        \tUser ID: ${fromStrUserId}\n
-        Who is this?
-      `);
-      }
+      await setRemotePeerAnswer(signal, fromStrUserId);
     };
 
     const handleReceiveIceCandidate = async ({
@@ -144,17 +132,7 @@ const VoiceCallLayout = () => {
       fromStrUserId,
     }: ReceiveIceCandidateResponse) => {
       console.log(`[ICE Candidate] Received ICE candidate: ${fromSocketId}, ${fromStrUserId}`);
-      const peerConnection = peerConnections.current[fromStrUserId];
-      // If sender exists
-      if (peerConnection) {
-        // Add sender's candidate to remote description
-        await peerConnection.addIceCandidate(candidate);
-      } else {
-        console.error(`[!] Incoming ice candidate error for\n
-          Socket ID: ${fromSocketId}
-          User ID: ${fromStrUserId}.
-        `);
-      }
+      setRemotePeerCandidate(candidate, fromStrUserId);
     };
 
     mySocket.on(NamespaceEnum.PLAYER_MIC_READY, handlePlayerMicReady);
@@ -170,36 +148,30 @@ const VoiceCallLayout = () => {
     };
   }, [
     createAnswerAndSendSignal,
-    createNewDataChannel,
     createNewPeerConnection,
     createOfferAndSendSignal,
     localMediaStream,
     mySocket,
-    peerConnections,
+    setRemotePeerAnswer,
+    setRemotePeerCandidate,
   ]);
 
-  useEffect(() => {
-    console.log('LOCAL MEDIA STREAM: ', localMediaStream?.getTracks()[0]);
-    console.log('PEER CONNECTIONS: ', peerConnections.current);
-    Object.entries(
-      peerConnections.current as React.MutableRefObject<Record<string, RTCPeerConnection>>
-    ).map(([playerId, connection]) => {
-      console.log(playerId);
-      console.log(connection);
-    });
-  }, [localMediaStream, peerConnections]);
+  // useEffect(() => {
+  //   console.log('LOCAL MEDIA STREAM: ', localMediaStream?.getTracks()[0]);
+  //   console.log('PEER CONNECTIONS: ', peerConnections.current);
+  //   Object.entries(
+  //     peerConnections.current as React.MutableRefObject<Record<string, RTCPeerConnection>>
+  //   ).map(([playerId, connection]) => {
+  //     console.log(playerId);
+  //     console.log(connection);
+  //   });
+  // }, [localMediaStream, peerConnections]);
 
   return (
     <>
-      <VoiceButton isMuted={isMuted} disabled={!localMediaStream} onClick={toggleMuteMediaStream} />
+      <VoiceButton isMuted={isMuted} onClick={toggleMuteMediaStream} />
 
       {/* {localMediaStream && <audio ref={localAudioRef} autoPlay muted />} */}
-      <div>
-        Active Speakers:
-        {activeSpeakers.map((speakerId: string) => (
-          <div key={speakerId}>{speakerId}</div>
-        ))}
-      </div>
     </>
   );
 };

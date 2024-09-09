@@ -29,7 +29,6 @@ const useDataChannels = () => {
 
       dataChannel.onmessage = (event) => {
         const { isActive } = JSON.parse(event.data);
-        console.log('<ESSJKJKLASJKLSAJKLDJASLK');
         setActiveSpeakers((prev) =>
           isActive
             ? [...new Set([...prev, remoteStrUserId])]

@@ -24,7 +24,6 @@ import {
   type LeaveRoomResponse,
   type AdminChangedResponse,
   NamespaceEnum,
-  CommunicationMethodEnum,
 } from '@bgi/shared';
 
 import { IconButton, RoomSettingForm, RoomSettingViewer, SnackbarRoomEdited } from '@/components';
@@ -33,8 +32,6 @@ import {
   useAuth,
   useRoom,
   useGame,
-  useLocalMediaStream,
-  usePeerConnections,
   usePreFormSubmission,
   useSubmissionStatus,
 } from '@/hooks';
@@ -57,8 +54,6 @@ export default function HeaderLayout() {
   const { user, discardUser } = useAuth();
   const { room, updateRoom, discardRoom } = useRoom();
   const { game, discardGame } = useGame();
-  const { closeLocalMediaStream } = useLocalMediaStream();
-  const { closeAllPeerConnections } = usePeerConnections();
   const { isSubmitting } = useSubmissionStatus();
   const { loadingButton, processPreFormSubmission } = usePreFormSubmission();
 
@@ -191,11 +186,6 @@ export default function HeaderLayout() {
       }
       // SUCCESS
       else {
-        // If you have game room and the communication method was through mic
-        if (room?.setting.communicationMethod === CommunicationMethodEnum.MIC) {
-          closeAllPeerConnections();
-          closeLocalMediaStream();
-        }
         // Discard game and room info from local storage
         game && discardGame();
         room && discardRoom();
@@ -232,11 +222,6 @@ export default function HeaderLayout() {
       }
       // SUCCESS
       else {
-        // If you have game room and the communication method was through mic
-        if (room?.setting.communicationMethod === CommunicationMethodEnum.MIC) {
-          closeAllPeerConnections();
-          closeLocalMediaStream();
-        }
         // Discard game, room, and user info from local storage
         game && discardGame();
         room && discardRoom();

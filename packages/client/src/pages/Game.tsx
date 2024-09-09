@@ -4,15 +4,7 @@ import { Avatar, Typography, Box, Stack } from '@mui/material';
 
 import { type User, type Room, type Game, type InGameResponse, NamespaceEnum } from '@bgi/shared';
 
-import {
-  useSession,
-  useAuth,
-  useRoom,
-  useGame,
-  useSocket,
-  useWindowDimensions,
-  useDataChannels,
-} from '@/hooks';
+import { useSession, useAuth, useRoom, useGame, useSocket, useWindowDimensions } from '@/hooks';
 import { outputServerError, getAvatarProps } from '@/utils';
 import { type GameLayoutOutletContextType } from '../enum';
 
@@ -25,7 +17,6 @@ const Game = () => {
   const { game, updateGame } = useGame();
 
   const { width, height } = useWindowDimensions();
-  const { activeSpeakers } = useDataChannels();
 
   /**
    * First render: fetch game info via socket, and update game UI.
@@ -124,12 +115,6 @@ const Game = () => {
               </Typography>
             )}
             <Avatar {...getAvatarProps(player.name)} />
-
-            {activeSpeakers.map((speakerId: string) => (
-              <div key={speakerId}>
-                {players.find((player: User) => player._id.toString() === speakerId)?.name}
-              </div>
-            ))}
           </Stack>
         );
       })}
