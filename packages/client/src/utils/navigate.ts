@@ -39,3 +39,11 @@ export const navigateJoinRoom = (navigate: NavigateFunction): void => {
 export const navigateWaiting = (navigate: NavigateFunction): void => {
   navigate('/waiting', { replace: true });
 };
+
+/**
+ * Directly navigates to Game "/game".
+ * @param navigate - The navigate function obtained from useNavigate hook.
+ */
+export const navigateGame = (navigate: NavigateFunction): void => {
+  navigate('/game', { replace: true });
+};

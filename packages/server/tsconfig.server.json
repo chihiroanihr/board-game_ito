@@ -10,7 +10,7 @@
       "@bgi/shared": ["../shared/src"]
     } /* Specify a set of entries that re-map imports to additional lookup locations. */
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
   "extends": "../../tsconfig.base.json"
 }

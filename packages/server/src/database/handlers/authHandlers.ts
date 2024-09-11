@@ -19,11 +19,9 @@ export const handleLogin = async (
     };
 
     /** @api_call - Append new user info to database (POST) */
-    const success = await controller.insertUser(newUserObj, dbSession);
-    // Error
-    if (!success) {
+    if (!(await controller.insertUser(newUserObj, dbSession)))
+      // ERROR
       throw new Error('Failed to insert new user (there might be duplicates in the database).');
-    }
 
     // All success
     return newUserObj;
@@ -40,11 +38,9 @@ export const handleLogout = async (
 
   try {
     /** @api_call - Delete the user (DELETE) */
-    const success = await controller.deleteUser(userId, dbSession);
-    // Error
-    if (!success) {
+    if (!(await controller.deleteUser(userId, dbSession)))
+      // Error
       throw new Error('Failed to delete the user (given user might not exist).');
-    }
 
     // All success
     return;

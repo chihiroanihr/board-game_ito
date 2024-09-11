@@ -1,8 +1,9 @@
 import AnimateTextThreeDots from './AnimateTextThreeDots';
+import MessageSpeechBubble from './MessageSpeechBubble';
 import TooltipStyled from './MuiTooltipStyled';
 import SnackbarStyled from './MuiSnackbarStyled';
 
-export { AnimateTextThreeDots, TooltipStyled, SnackbarStyled };
+export { AnimateTextThreeDots, MessageSpeechBubble, TooltipStyled, SnackbarStyled };
 
 export * from './MuiBadgeStyled';
 export * from './MuiTextFieldStyled';

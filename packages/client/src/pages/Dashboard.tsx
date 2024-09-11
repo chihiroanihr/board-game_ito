@@ -14,23 +14,23 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { setIsSubmitting } = useSubmissionStatus();
 
-  const processButtonStatus = (status: boolean) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const processPreFormSubmission = (status: boolean) => {
     setIsLoading(status);
     setIsSubmitting(status);
   };
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
   const joinRoomHandler = () => {
-    processButtonStatus(true);
+    processPreFormSubmission(true);
     navigateJoinRoom(navigate);
-    processButtonStatus(false);
+    processPreFormSubmission(false);
   };
 
   const createRoomHandler = () => {
-    processButtonStatus(true);
+    processPreFormSubmission(true);
     navigateCreateRoom(navigate);
-    processButtonStatus(false);
+    processPreFormSubmission(false);
   };
 
   return (

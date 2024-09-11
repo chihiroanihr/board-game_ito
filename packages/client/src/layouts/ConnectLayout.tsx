@@ -4,8 +4,14 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { type SessionResponse, NamespaceEnum } from '@bgi/shared';
 
 import { Loader } from '@/components';
-import { useSession, useAuth, useRoom, useSocket } from '@/hooks';
-import { navigateHome, navigateDashboard, navigateWaiting, outputServerError } from '@/utils';
+import { useSession, useAuth, useRoom, useGame, useSocket } from '@/hooks';
+import {
+  navigateHome,
+  navigateDashboard,
+  navigateWaiting,
+  navigateGame,
+  outputServerError,
+} from '@/utils';
 
 export default function ConnectLayout() {
   const navigate = useNavigate();
@@ -13,9 +19,10 @@ export default function ConnectLayout() {
   const { socket } = useSocket();
 
   // Retrieve local storage values
-  const { sessionId, updateSessionId, discardSessionId } = useSession();
+  const { sessionId, updateSessionId } = useSession();
   const { user, discardUser, updateUser } = useAuth();
-  const { room, discardRoom, updateRoom } = useRoom();
+  const { room, updateRoom } = useRoom();
+  const { game, updateGame } = useGame();
 
   const [sessionDataFetched, setSessionDataFetched] = useState<boolean>(false);
   const [connectionTimeout, setConnectionTimeout] = useState<boolean>(false);
@@ -56,7 +63,7 @@ export default function ConnectLayout() {
    * 2. If client didn't have session ID or server could not find same session ID from the database, server will return the newly generated session ID.
    */
   useEffect(() => {
-    function onSessionEvent({ sessionId, user, room }: SessionResponse) {
+    function onSessionEvent({ sessionId, user, room, game }: SessionResponse) {
       // Attach the session ID to the next reconnection attempts
       socket.auth = { sessionId };
 
@@ -64,6 +71,7 @@ export default function ConnectLayout() {
       updateSessionId(sessionId);
       updateUser(user);
       updateRoom(room);
+      updateGame(game);
 
       setSessionDataFetched(true);
     }
@@ -75,7 +83,7 @@ export default function ConnectLayout() {
     return () => {
       socket.off(NamespaceEnum.SESSION, onSessionEvent);
     };
-  }, [room, updateSessionId, socket, updateRoom, updateUser, user]);
+  }, [socket, updateGame, updateRoom, updateSessionId, updateUser]);
 
   // Connection error handling
   /**
@@ -85,7 +93,7 @@ export default function ConnectLayout() {
    */
   useEffect(() => {
     function onErrorEvent(error: unknown) {
-      outputServerError({ error });
+      outputServerError(error);
     }
 
     // Receive
@@ -100,9 +108,10 @@ export default function ConnectLayout() {
   // ========== Prevent Navigating without User Information ========== //
 
   useEffect(() => {
+    if (!sessionDataFetched) return;
+
     // If user is not logged in, redirect to the home page.
     if (!sessionId || !user) {
-      room && discardRoom(); // leave room
       user && discardUser(); // logout
       navigateHome(navigate);
     }
@@ -110,11 +119,15 @@ export default function ConnectLayout() {
     else if (!room) {
       navigateDashboard(navigate);
     }
-    // If user is logged in and part of a room, redirect to the waiting page.
-    else {
+    // If user is logged in, part of a room, yet game did not start, redirect to the waiting page.
+    else if (!game) {
       navigateWaiting(navigate);
     }
-  }, [discardRoom, discardUser, navigate, room, sessionId, user]);
+    // If user is logged in, part of a room, and game has started, redirect to the game page.
+    else {
+      navigateGame(navigate);
+    }
+  }, [discardUser, game, navigate, room, sessionDataFetched, sessionId, user]);
 
   // ================ Local Storage Manually Modified ================ //
 
@@ -125,6 +138,7 @@ export default function ConnectLayout() {
       updateSessionId(sessionId);
       updateUser(user);
       updateRoom(room);
+      updateGame(game);
     };
 
     // Listen for event: when local storage (manually) changes
@@ -133,18 +147,7 @@ export default function ConnectLayout() {
     return () => {
       window.removeEventListener('storage', checkLocalStorage);
     };
-  }, [
-    discardSessionId,
-    discardRoom,
-    room,
-    updateSessionId,
-    sessionId,
-    updateRoom,
-    updateUser,
-    user,
-    discardUser,
-    navigate,
-  ]);
+  }, [game, room, sessionId, updateGame, updateRoom, updateSessionId, updateUser, user]);
 
   return !sessionDataFetched ? (
     connectionTimeout ? (

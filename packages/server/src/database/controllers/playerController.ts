@@ -5,7 +5,7 @@ import type { Room, User } from '@bgi/shared';
 import { getDB } from '../dbConnect';
 import { logQueryEvent } from '../../log';
 
-export const getAllPlayersInRoom = async (roomId: string): Promise<Array<ObjectId> | null> => {
+export const getAllPlayerIdsInRoom = async (roomId: string): Promise<Array<ObjectId> | null> => {
   logQueryEvent('Fetching all players in the room.');
 
   // Fetch the room and project only the players array
@@ -14,8 +14,7 @@ export const getAllPlayersInRoom = async (roomId: string): Promise<Array<ObjectI
     { projection: { players: 1 } } // only return the players array
   );
 
-  // Return the players array from the room object (an empty array if no players in the room),
-  // or null if no room is found
+  // Return the players array from the room object (an empty array if no players in the room), or null if no room is found
   return room ? room.players : null;
 };
 
@@ -29,20 +28,20 @@ export const convertPlayerIdsToPlayerObjs = async (
     There might be scenarios where the actual runtime objects are not being correctly recognized as ObjectId instances by the MongoDB driver. This could be due to:
     Serialization/deserialization processes that convert ObjectId to strings, such as when receiving data over a network or storing/retrieving data from a place that doesn't preserve the original types (like JSON storage, HTTP requests, etc.).
   */
-  // const playerObjIds: ObjectId[] = playerIds.map((id) => new ObjectId(id));
+  const playerObjIds: ObjectId[] = playerIds.map((id) => new ObjectId(id));
 
   // Return array of User objects if each player (user) ID matches with what's in the database
-  const players: Array<User> = [];
-  for (const playerId of playerIds) {
-    const player = await getDB().users.findOne({ _id: new ObjectId(playerId) });
-    if (player) {
-      players.push(player);
-    }
-  }
+  // const players: Array<User> = [];
+  // for (const playerId of playerIds) {
+  //   const player = await getDB().users.findOne({ _id: new ObjectId(playerId) });
+  //   if (player) {
+  //     players.push(player);
+  //   }
+  // }
   // The below was unable to fetch the results based on insertion order.
-  // const players = await getDB()
-  //   .users.find({ _id: { $in: playerObjIds } })
-  //   .toArray();
+  const players = await getDB()
+    .users.find({ _id: { $in: playerObjIds } })
+    .toArray();
 
   if (players.length !== playerIds.length) {
     throw new Error(
@@ -71,8 +70,7 @@ export const insertPlayerInRoom = async (
         includeResultMetadata: false,
       }; // return the updated document
 
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().rooms.findOneAndUpdate(
     { _id: roomId },
     { $addToSet: { players: userId } }, // `$addToSet` adds the user without creating duplicates
@@ -98,38 +96,10 @@ export const deletePlayerFromRoom = async (
         includeResultMetadata: false,
       }; // return the updated document
 
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().rooms.findOneAndUpdate(
     { _id: roomId },
     { $pull: { players: userId } }, // `$pull` operator removes the user ID from the array
-    options
-  );
-};
-
-export const updateRoomAdmin = async (
-  userId: ObjectId,
-  roomId: string,
-  dbSession: ClientSession | null = null
-): Promise<Room | null> => {
-  logQueryEvent('Updating only the room admin in Room.');
-
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
-  return await getDB().rooms.findOneAndUpdate(
-    { _id: roomId },
-    { $set: { roomAdmin: userId } },
     options
   );
 };

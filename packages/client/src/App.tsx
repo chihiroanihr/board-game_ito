@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   Route,
   RouterProvider,
@@ -11,13 +11,20 @@ import {
   SessionProvider,
   AuthProvider,
   RoomProvider,
+  GameProvider,
   SocketProvider,
   SubmissionStatusProvider,
+  RemoteStreamsProvider,
   useWindowDimensions,
 } from '@/hooks';
-import { CommonLayout, ConnectLayout } from '@/layouts';
-import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, NotFound } from '@/pages';
-import { socket } from './service/socket';
+import { CommonLayout, ConnectLayout, GameLayout } from '@/layouts';
+import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, Game, NotFound } from '@/pages';
+import { socket } from '@/services';
+
+// Function to calculate window (screen) height and set the CSS variable
+const setWindowHeightCSS = (height: number = window.innerHeight) => {
+  document.documentElement.style.setProperty('--window-height', `${height}px`);
+};
 
 function App() {
   const { width, height } = useWindowDimensions();
@@ -25,44 +32,48 @@ function App() {
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
 
   useEffect(() => {
-    // Function to calculate window (screen) height and set the CSS variable
-    const setWindowHeightCSS = () => {
-      const doc = document.documentElement;
-      doc.style.setProperty('--window-height', `${height}px`);
-    };
-
     // Calculate window height only when window width is less than large viewport (a.k.a on mobile screen)
     if (!isLgViewport) {
-      setWindowHeightCSS();
+      setWindowHeightCSS(height);
     }
-  }, [height, isLgViewport, width]); // * width as dependency is important since it is a value for resize event listener
+  }, [height, isLgViewport]);
 
-  const routes = createBrowserRouter(
-    createRoutesFromElements(
-      <Route element={<ConnectLayout />}>
-        <Route element={<CommonLayout />}>
-          <Route path="/" element={<Home />} />
+  const routes = useMemo(
+    () =>
+      createBrowserRouter(
+        createRoutesFromElements(
+          <Route element={<ConnectLayout />}>
+            <Route element={<CommonLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/create-room" element={<CreateRoom />} />
+              <Route path="/join-room" element={<JoinRoom />} />
+              <Route element={<GameLayout />}>
+                <Route path="/waiting" element={<Waiting />} />
+                <Route path="/game" element={<Game />} />
+              </Route>
+            </Route>
 
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/create-room" element={<CreateRoom />} />
-          <Route path="/join-room" element={<JoinRoom />} />
-          <Route path="/waiting" element={<Waiting />} />
-        </Route>
-
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    )
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        )
+      ),
+    []
   );
 
   return (
     <SessionProvider>
       <AuthProvider>
         <RoomProvider>
-          <SocketProvider socket={socket}>
-            <SubmissionStatusProvider>
-              <RouterProvider router={routes} />
-            </SubmissionStatusProvider>
-          </SocketProvider>
+          <GameProvider>
+            <SocketProvider socket={socket}>
+              <SubmissionStatusProvider>
+                <RemoteStreamsProvider>
+                  <RouterProvider router={routes} />
+                </RemoteStreamsProvider>
+              </SubmissionStatusProvider>
+            </SocketProvider>
+          </GameProvider>
         </RoomProvider>
       </AuthProvider>
     </SessionProvider>

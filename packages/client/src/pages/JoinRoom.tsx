@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   Typography,
@@ -12,24 +13,23 @@ import {
   Snackbar,
 } from '@mui/material';
 
-import { roomIdConfig } from '@bgi/shared';
+import { roomIdConfig, type JoinRoomResponse, NamespaceEnum } from '@bgi/shared';
 
 import { TextButton } from '@/components';
-import {
-  useAction,
-  type BeforeSubmitCallbackParams,
-  type BeforeSubmitCallbackFunction,
-  type ErrorCallbackParams,
-  type ErrorCallbackFunction,
-  type SuccessCallbackFunction,
-} from '@/hooks';
+import { useSocket, usePreFormSubmission, useAuth, useRoom } from '@/hooks';
+import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
 import { type JoinRoomFormDataType } from '../enum.js';
 
 /**
- * Subpage for Dashboard
+ * Sub-page for Dashboard
  * @returns
  */
 function JoinRoom() {
+  const navigate = useNavigate();
+  const { socket } = useSocket();
+  const { user, updateUser } = useAuth();
+  const { updateRoom } = useRoom();
+
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
 
   // Prepare react-hook-form
@@ -45,20 +45,66 @@ function JoinRoom() {
   const handleSnackbarClose = () => setSnackbarOpen(false);
   const handleSnackbarOpen = () => setSnackbarOpen(true);
 
-  // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {};
-  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
-    handleSnackbarOpen();
-  };
-  const onSuccess: SuccessCallbackFunction = ({ action }) => {};
-
   // Button click handlers
-  const { handleJoinRoom, loadingButton, errorMessage } = useAction({
-    beforeSubmit,
-    onError,
-    onSuccess,
-  });
+  const { loadingButton, formErrorMessage, setFormErrorMessage, processPreFormSubmission } =
+    usePreFormSubmission();
 
+  /**
+   * Handler for joining to game waiting room.
+   * @param data
+   * @returns
+   */
+  const handleJoinRoom = (data: JoinRoomFormDataType) => {
+    processPreFormSubmission(true); // Set submitting to true when the request is initiated
+    setFormErrorMessage(''); // Reset error message
+
+    const roomId = data.roomId.trim().toUpperCase();
+    // ERROR
+    if (!roomId) {
+      processPreFormSubmission(false);
+      setFormErrorMessage('Please enter a valid Room ID.');
+      handleSnackbarOpen();
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      processPreFormSubmission(false);
+      // ERROR
+      outputResponseTimeoutError();
+    }, 5000);
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(
+      NamespaceEnum.JOIN_ROOM,
+      roomId,
+      async ({ error, user: updatedUser, room: updatedRoom }: JoinRoomResponse) => {
+        clearTimeout(timeoutId);
+
+        // ERROR
+        if (error) {
+          outputServerError(error);
+          handleSnackbarOpen();
+        } else {
+          // SUCCESS: User can join room
+          if (typeof updatedRoom === 'object') {
+            updateUser(updatedUser ? updatedUser : null); // Store updated user info to local storage
+            updateRoom(updatedRoom ? updatedRoom : null); // Save room info to local storage and navigate
+            navigateWaiting(navigate); // Navigate
+          }
+          // ERROR: User cannot join room
+          else {
+            const unavailableMsg = updatedRoom; // room is now string message
+            setFormErrorMessage(unavailableMsg || 'You cannot join this room for unknown reason.');
+            handleSnackbarOpen();
+          }
+        }
+
+        processPreFormSubmission(false);
+      }
+    );
+  };
+
+  if (!user) return null;
   return (
     <Box
       display="flex"
@@ -125,7 +171,7 @@ function JoinRoom() {
           anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           onClose={handleSnackbarClose}
         >
-          <Alert severity="error">{errorMessage}</Alert>
+          <Alert severity="error">{formErrorMessage}</Alert>
         </Snackbar>
       </Box>
     </Box>

@@ -14,7 +14,7 @@ export const handleServerError = (
   // Create a new error instance with the concatenated error message
   const newError = new Error(
     `[Server Error]: ${addMessage}\n` + functionName &&
-      `Error in ${functionName}: \n` + `${error instanceof Error ? error.message : String(error)}`
+      `Error in ${functionName}: \n` + `${error instanceof Error ? error.message : error}`
   );
 
   /** @debug */
@@ -41,7 +41,7 @@ export const handleDBError = (
   const newError = new Error(
     `[DB Error]: ${addMessage}\n
         Error in ${functionName}: \n
-        ${error instanceof Error ? error.message : String(error)}`
+        ${error instanceof Error ? error.message : error}`
   );
 
   /** @debug */

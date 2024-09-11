@@ -1,24 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Fab } from '@mui/material';
-import { Mic as MicIcon } from '@mui/icons-material';
+import { Mic as MicOnIcon, MicOff as MicOffIcon } from '@mui/icons-material';
 
-const VoiceButton = () => {
-  const [isMuted, setIsMuted] = useState<boolean>(false);
+interface VoiceButtonProps {
+  isMuted: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}
 
-  const handleToggleMic = () => {
-    setIsMuted((prevState) => !prevState);
-  };
-
+const VoiceButton = ({ isMuted, disabled, onClick }: VoiceButtonProps) => {
   return (
     <Fab
       component="button"
       color="primary"
       aria-describedby={isMuted ? 'mic-button' : undefined}
-      onClick={handleToggleMic}
+      disabled={disabled}
+      onClick={onClick}
     >
-      <MicIcon sx={{ width: 'unset', height: 'unset', p: '0.6rem' }} />
+      {isMuted ? <MicOffIcon fontSize="large" /> : <MicOnIcon fontSize="large" color="error" />}
     </Fab>
   );
 };
+// sx={{ width: 'unset', height: 'unset', p: '0.6rem' }}
 
 export default VoiceButton;

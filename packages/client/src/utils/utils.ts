@@ -51,6 +51,13 @@ export const computeRelativeTime = (timestamp: number) => {
   }
 };
 
+export const convertHexToRgb = (hex: string) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return { r, g, b };
+};
+
 /**
  * Logs a server error to the console and displays an alert to the user.
  *
@@ -62,7 +69,7 @@ export const computeRelativeTime = (timestamp: number) => {
  * @param {string | undefined} message - An optional custom message to provide additional context about the error. Default is an empty string.
  */
 export const outputServerError = (error: unknown, message?: string): void => {
-  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorMessage = error instanceof Error ? error.message : error;
   console.error(
     `[Server Error]: ${message ? ` ${message}` : ''}${errorMessage ? `\n${errorMessage}` : ''}`
   );

@@ -15,7 +15,7 @@ body {
   min-width: 280px;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  /* overflow: hidden; */
   min-height: 100vh;
   height: var(--window-height);
 }

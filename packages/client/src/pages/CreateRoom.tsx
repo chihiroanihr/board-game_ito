@@ -1,47 +1,78 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Alert, Stack } from '@mui/material';
 
+import { type RoomSetting, type CreateRoomResponse, NamespaceEnum } from '@bgi/shared';
+
 import { RoomSettingForm } from '@/components';
-import {
-  useAction,
-  type BeforeSubmitCallbackParams,
-  type BeforeSubmitCallbackFunction,
-  type ErrorCallbackParams,
-  type ErrorCallbackFunction,
-  type SuccessCallbackParams,
-  type SuccessCallbackFunction,
-} from '@/hooks';
+import { useSocket, usePreFormSubmission, useAuth, useRoom } from '@/hooks';
+import { navigateWaiting, outputServerError, outputResponseTimeoutError } from '@/utils';
 
 /**
- * Subpage for Dashboard
+ * Sub-page for Dashboard
  * @returns
  */
 function CreateRoom() {
-  // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {};
-  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {};
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {};
+  const { socket } = useSocket();
+  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
+  const { updateRoom } = useRoom();
 
   // Button click handlers
-  const { handleCreateRoom, loadingButton, errorMessage, setErrorMessage } = useAction({
-    beforeSubmit,
-    onError,
-    onSuccess,
-  });
+  const { loadingButton, formErrorMessage, setFormErrorMessage, processPreFormSubmission } =
+    usePreFormSubmission();
+
+  /**
+   * Handler for creating game room (by admin).
+   * @param formData
+   */
+  const handleCreateRoom = (formData: RoomSetting) => {
+    processPreFormSubmission(true); // Set submitting to true when the request is initiated
+    setFormErrorMessage(''); // Reset error message
+
+    const timeoutId = setTimeout(() => {
+      processPreFormSubmission(false);
+      // ERROR
+      outputResponseTimeoutError();
+    }, 5000);
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(
+      NamespaceEnum.CREATE_ROOM,
+      formData,
+      async ({ error, user: updatedUser, room: updatedRoom }: CreateRoomResponse) => {
+        clearTimeout(timeoutId);
+
+        // ERROR
+        if (error) {
+          outputServerError(error);
+        }
+        // SUCCESS
+        else {
+          updateUser(updatedUser ? updatedUser : null); // Store updated user info to local storage
+          updateRoom(updatedRoom ? updatedRoom : null); // Store room info to local storage and redirect
+          navigateWaiting(navigate); // Navigate
+        }
+
+        processPreFormSubmission(false);
+      }
+    );
+  };
 
   // Disappear error message after 5 seconds
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
-    if (errorMessage) {
+    if (formErrorMessage) {
       timer = setTimeout(() => {
-        setErrorMessage('');
+        setFormErrorMessage('');
       }, 5000);
     }
     return () => {
       clearTimeout(timer);
     };
-  }, [errorMessage, setErrorMessage]);
+  }, [formErrorMessage, setFormErrorMessage]);
 
+  if (!user) return null;
   return (
     <Box
       display="flex"
@@ -65,7 +96,7 @@ function CreateRoom() {
       </RoomSettingForm>
 
       {/* Form Request Error */}
-      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
+      {formErrorMessage && <Alert severity="error">{formErrorMessage}</Alert>}
     </Box>
   );
 }

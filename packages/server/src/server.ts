@@ -1,6 +1,7 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
-import { createServer, Server as HTTPServer } from 'http';
+import fs from 'fs';
+import { createServer, Server as HTTPServer } from 'https';
 import { Server as SocketIOServer } from 'socket.io';
 
 import { connectDB, closeDB } from './database/dbConnect';
@@ -23,8 +24,15 @@ app.use(
 app.use(express.json()); // Using express.json() instead of bodyParser.json() due to deprecation.
 app.use(router); // Mount the routes
 
+/** @todo: When deploying, ensure your server is configured to serve static files correctly. */
+// app.use(express.static('public')); // Tells Express to serve the files in the public folder as static files, making them accessible to clients.
+
 // HTTP server initialization
-const server: HTTPServer = createServer(app);
+const options = {
+  key: fs.readFileSync('../../ssl/localhost.key'),
+  cert: fs.readFileSync('../../ssl/localhost.crt'),
+};
+const server: HTTPServer = createServer(options, app);
 
 // Socket.io server initialization
 const io: SocketIOServer = new SocketIOServer(server, {

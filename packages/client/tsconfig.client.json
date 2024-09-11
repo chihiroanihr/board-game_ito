@@ -10,7 +10,10 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
 
-    /* Producing build folder (You need to change path index.html if you disabled these & run app from /dist) */
+    /*
+    No producing build folder
+    (You need to change path index.html if you disabled these & it will produce build folder, you will need to run app from /dist)
+    */
     "noEmit": true,
     "allowImportingTsExtensions": true,
 
@@ -25,7 +28,8 @@
       "@/components": ["./src/components", "./src/components/*"],
       "@/components/debug": ["./src/components/debug", "./src/components/debug/*"],
       "@/hooks": ["./src/hooks", "./src/hooks/*"],
-      "@/utils": ["./src/utils", "./src/utils/*"]
+      "@/utils": ["./src/utils", "./src/utils/*"],
+      "@/services": ["./src/services", "./src/services/*"]
     }
   },
   "include": ["src"],

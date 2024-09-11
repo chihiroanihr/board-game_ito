@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useBlocker } from 'react-router-dom';
-import { ObjectId } from 'mongodb';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import {
   Typography,
-  Button,
   Stack,
   List,
-  Dialog,
-  DialogTitle,
-  DialogActions,
   Backdrop,
   CircularProgress,
   useMediaQuery,
@@ -17,86 +12,33 @@ import {
 import { People as PeopleIcon } from '@mui/icons-material';
 
 import {
-  type User,
-  type WaitRoomResponse,
-  type PlayerInResponse,
-  type PlayerOutResponse,
-  NamespaceEnum,
   MIN_NUM_PLAYERS,
   MAX_NUM_PLAYERS,
+  type User,
+  type ChangeAdminResponse,
+  type CreateGameResponse,
+  NamespaceEnum,
 } from '@bgi/shared';
 
-import { TextButton, AnimateTextThreeDots, PlayerListItem, SnackbarPlayer } from '@/components';
-import {
-  useAuth,
-  useRoom,
-  useAction,
-  useSubmissionStatus,
-  type BeforeSubmitCallbackParams,
-  type BeforeSubmitCallbackFunction,
-  type ErrorCallbackParams,
-  type ErrorCallbackFunction,
-  type SuccessCallbackParams,
-  type SuccessCallbackFunction,
-  useSocket,
-} from '@/hooks';
-import { outputServerError } from '@/utils';
-import { type SnackbarPlayerInfoType } from '../enum';
+import { TextButton, AnimateTextThreeDots, PlayerListItem, TooltipStyled } from '@/components';
+import { useAuth, useRoom, usePreFormSubmission, useSocket } from '@/hooks';
+import { navigateGame, outputServerError, outputResponseTimeoutError } from '@/utils';
+import { type GameLayoutOutletContextType } from '../enum';
 
 export default function Waiting() {
-  const { socket } = useSocket();
-  const { user: myself } = useAuth();
-  const { room, updateRoom } = useRoom();
-  const { isSubmitting } = useSubmissionStatus();
-
   const theme = useTheme();
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
+  const navigate = useNavigate();
+  const { socket } = useSocket();
+  const { user: currentUser } = useAuth();
+  const { room } = useRoom();
+  const { loadingButton, processPreFormSubmission } = usePreFormSubmission();
+  const { adminId, players, synchronousBlock } = useOutletContext<GameLayoutOutletContextType>();
 
-  const [adminId, setAdminId] = useState<ObjectId>();
-  const [players, setPlayers] = useState<Array<User>>([]);
   const [allowStart, setAllowStart] = useState<boolean>(false);
-  const [synchronousBlock, setSynchronousBlock] = useState<boolean>(false); // Block other execution synchronously until state sets back to true (loading state just for consistent execution
-
   const [backdropOpen, setBackdropOpen] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarPlayerInfo, setSnackbarPlayerInfo] = useState<SnackbarPlayerInfoType>(undefined);
-  const [playerSnackbars, setPlayerSnackbars] = React.useState<readonly SnackbarPlayerInfoType[]>(
-    []
-  );
 
-  const isAdmin = !!(adminId?.toString() === myself?._id.toString());
-
-  // When back button pressed (https://reactrouter.com/en/6.22.3/hooks/use-blocker)
-  const blocker = useBlocker(({ historyAction }) => historyAction === 'POP');
-
-  // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {
-    if (action && action === NamespaceEnum.START_GAME) {
-      setBackdropOpen(true);
-    }
-  };
-  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
-    if (action && action === NamespaceEnum.START_GAME) {
-      setBackdropOpen(false);
-    }
-  };
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
-    if (action && action === NamespaceEnum.START_GAME) {
-      setBackdropOpen(false);
-    }
-  };
-
-  // Button click handlers
-  const { handleLeaveRoom, handleStartGame, loadingButton } = useAction({
-    beforeSubmit,
-    onError,
-    onSuccess,
-  });
-
-  // Snackbar handlers
-  const handleSnackbarOpen = () => setSnackbarOpen(true);
-  const handleSnackbarClose = () => setSnackbarOpen(false);
-  const handleSnackbarExited = () => setSnackbarPlayerInfo(undefined);
+  const isAdmin = !!(adminId?.toString() === currentUser?._id.toString());
 
   // Enabling start game depending on player number
   useEffect(() => {
@@ -108,142 +50,85 @@ export default function Waiting() {
     }
   }, [players.length]);
 
-  // Consecutive snackbars (multiple snackbars without stacking them): (https://mui.com/material-ui/react-snackbar/#consecutive-snackbars)
-  useEffect(() => {
-    // Set a new snack when we don't have an active one
-    if (playerSnackbars.length && !snackbarPlayerInfo) {
-      setSnackbarPlayerInfo(playerSnackbars[0]);
-      setPlayerSnackbars((prev) => prev.slice(1));
-      handleSnackbarOpen();
-    }
-    // Close an active snack when a new one is added
-    else if (playerSnackbars.length && snackbarPlayerInfo && snackbarOpen) {
-      handleSnackbarClose();
-    }
-  }, [playerSnackbars, snackbarOpen, snackbarPlayerInfo]);
-
   /**
-   * [1] Myself arrives
-   * ---------------------------------------------------
-   * Assume room info and user info in the local storage are already updated previously.
-   * 1. If you are a room admin:
-   *    - Receive new room info (Room obj), list of players (Array<User>), and user (myself) info (User obj) from the response
-   *    - Set admin ID (your user ID)
-   *    - Include yourself (User obj) in the list of players (Array<User>)
-   * 2. If you are a participant:
-   *    - Receive new room info (Room obj), list of players (Array<User>), and user (myself) info (User obj) from the response
-   *    - Set admin ID (room.roomAdmin)
-   *    - Set list of participating players (Array<User>)
-   *    - (Set other room config info, etc.)
+   * Handler for changing admin.
+   * @returns
    */
-  useEffect(() => {
-    room &&
-      socket.emit(NamespaceEnum.WAIT_ROOM, room, async ({ error, players }: WaitRoomResponse) => {
-        if (error) {
-          outputServerError({ error });
-        } else if (!players) {
-          /** @todo - Failed to fetch players error (create new error) */
-        } else {
-          // Add admin
-          setAdminId(room.roomAdmin);
-          // Add list of players
-          setPlayers(players);
-        }
-      });
-  }, [room, socket]);
+  const handleChangeAdmin = (newAdmin: User) => {
+    processPreFormSubmission(true);
 
-  /**
-   * [2] New user arrives
-   * ---------------------------------------------------
-   * - Receive new room info (Room obj), list of players (Array<User>), and user (participated) info (User obj) from the response
-   * - Update room info in the local storage
-   * - Append new user to the list of players (just replace oroginal list of players with new list of players received)
-   * - If list of players reaches more than MIN_NUM_PLAYERS, enable "allowStart"
-   * - Display message that new user has arrived
-   */
-  useEffect(() => {
-    async function onPlayerInEvent({ user: player, room }: PlayerInResponse) {
-      setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      processPreFormSubmission(false);
+      // ERROR
+      outputResponseTimeoutError();
+    }, 5000);
 
-      // Update room in the local storage first
-      updateRoom(room);
-      // Add new player in the list of players
-      setPlayers((prevPlayers: User[]) => [...prevPlayers, player]);
-      // Store player and snackbar info for snackbar notification + Add to snackbar queue
-      setPlayerSnackbars((prev) => [
-        ...prev,
-        {
-          key: new Date().getTime(),
-          player: player,
-          status: 'in',
-        },
-      ]);
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(NamespaceEnum.CHANGE_ADMIN, newAdmin, async ({ error }: ChangeAdminResponse) => {
+      clearTimeout(timeoutId);
 
-      setSynchronousBlock(false); // Unblock
-    }
-
-    // Executes whenever a socket event is recieved from the server
-    socket.on(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
-    return () => {
-      socket.off(NamespaceEnum.PLAYER_IN, onPlayerInEvent);
-    };
-  }, [socket, updateRoom]);
-
-  /**
-   * [3] Myself leaves
-   * ---------------------------------------------------
-   * Nothing specific to do.
-   */
-
-  /**
-   * [4] Other participant leaves
-   * ---------------------------------------------------
-   * - Receive new room (Room obj), list of players (Array<User>), and user (left) info (User obj) from the response
-   * - Update room info in the local storage
-   * - Remove the user from the list of players (just replace original list of players with new list of players received)
-   * - If list of players decreases to less than MIN_NUM_PLAYERS, disable "allowStart"
-   * - Check if the player left was an admin (from the new room info received)
-   * 1. If the participant was a room admin:
-   *    - Set new room admin ID (room.roomAdmin)
-   *    - Display message that new user has left & admin has changed
-   * 2. Else:
-   *    - Display message that new user has left
-   */
-  useEffect(() => {
-    async function onPlayerOutEvent({ user: player, room }: PlayerOutResponse) {
-      setSynchronousBlock(true); // Block other execution for consistency / synchronous (to make sure data is stored before action)
-
-      // Update room in the local storage first
-      updateRoom(room);
-      // If room still exists (at least one player left in the room) AND If admin changed then set new admin
-      if (room && room.roomAdmin.toString() !== adminId?.toString()) {
-        setAdminId(room.roomAdmin);
+      // ERROR
+      if (error) {
+        outputServerError(error);
       }
-      // Remove player from the list of players
-      setPlayers((prevPlayers: User[]) =>
-        prevPlayers.filter(
-          (prevPlayer: User) => prevPlayer._id.toString() !== player._id.toString()
-        )
-      );
-      // Store player and snackbar info for snackbar notification + Add to snackbar queue
-      setPlayerSnackbars((prev) => [
-        ...prev,
-        {
-          key: new Date().getTime(),
-          player: player,
-          status: 'out',
-        },
-      ]);
+
+      processPreFormSubmission(false);
+    });
+  };
+
+  /**
+   * Handler for creating (initializing) game.
+   */
+  const handleStartGame = () => {
+    processPreFormSubmission(true);
+
+    /** @socket_send - Create new game record & update room info */
+    socket.emit(NamespaceEnum.CREATE_GAME, async ({ error }: CreateGameResponse) => {
+      // ERROR
+      if (error) outputServerError(error);
+      // SUCCESS
+      processPreFormSubmission(false);
+    });
+  };
+
+  useEffect(() => {
+    async function onGameCreating() {
+      setBackdropOpen(true);
+    }
+    // Executes whenever a socket event is received from the server
+    socket.on(NamespaceEnum.GAME_CREATING, onGameCreating);
+    return () => {
+      socket.off(NamespaceEnum.GAME_CREATING, onGameCreating);
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    async function onGameCreateFailed() {
+      setBackdropOpen(false);
+    }
+    // Executes whenever a socket event is received from the server
+    socket.on(NamespaceEnum.GAME_CREATE_FAILED, onGameCreateFailed);
+    return () => {
+      socket.off(NamespaceEnum.GAME_CREATE_FAILED, onGameCreateFailed);
+    };
+  }, [socket]);
+
+  /**
+   * Admin has started game.
+   */
+  useEffect(() => {
+    async function onGameCreatedEvent() {
+      navigateGame(navigate); // Navigate to game page
+      setBackdropOpen(false);
     }
 
-    setSynchronousBlock(false); // Unblock
-
-    // Executes whenever a socket event is recieved from the server
-    socket.on(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
+    // Executes whenever a socket event is received from the server
+    socket.on(NamespaceEnum.GAME_CREATED, onGameCreatedEvent);
     return () => {
-      socket.off(NamespaceEnum.PLAYER_OUT, onPlayerOutEvent);
+      socket.off(NamespaceEnum.GAME_CREATED, onGameCreatedEvent);
     };
-  }, [adminId, socket, updateRoom]);
+  }, [navigate, socket]);
 
   const PlayersNumber = () => {
     return (
@@ -279,19 +164,36 @@ export default function Waiting() {
 
   const PlayersList = () => {
     return (
-      <List id="waiting_player-list" dense={true} sx={{ overflowY: 'auto' }}>
-        {players.map((player) => (
-          <PlayerListItem key={player._id.toString()} player={player} adminId={adminId} />
+      <List id="waiting_player-list" dense={true} sx={{ overflowY: 'auto' }} disablePadding>
+        {players.map((player: User) => (
+          <PlayerListItem
+            key={player._id.toString()}
+            player={player}
+            adminId={adminId}
+            currentUserId={currentUser?._id}
+            handleChangeAdmin={handleChangeAdmin}
+          />
         ))}
       </List>
     );
   };
 
   const RoomIdDisplay = () => {
+    const handleRoomIdCopy = () => {
+      navigator.clipboard.writeText(room._id).then(
+        () => {
+          alert('Room ID copied to clipboard!');
+        },
+        (err) => {
+          console.error('Could not copy Room ID to your clipboard: ', err);
+        }
+      );
+    };
+
     return (
       <Stack
         id="waiting_id-display_wrapper"
-        spacing="0.25rem"
+        spacing="0.4rem"
         bgcolor="grey.200"
         p={{ xs: '1.4rem', lg: '2rem' }}
         border={2}
@@ -299,9 +201,21 @@ export default function Waiting() {
       >
         <Typography variant="h4" component="h2">
           Room ID:{' '}
-          <Typography variant="inherit" fontWeight="bold" component="span">
-            {room._id}
-          </Typography>
+          <TooltipStyled title="Click to copy" placement="right">
+            <Typography
+              variant="inherit"
+              component="span"
+              fontWeight="bold"
+              color="primary.contrastText"
+              bgcolor="grey.600"
+              paddingY="0.2rem"
+              paddingX="0.5rem"
+              sx={{ cursor: 'pointer' }}
+              onClick={handleRoomIdCopy}
+            >
+              {room._id}
+            </Typography>
+          </TooltipStyled>
         </Typography>
         <Typography variant="body1" component="div">
           Invite other players with this room ID.
@@ -351,7 +265,8 @@ export default function Waiting() {
           variant="contained"
           loading={loadingButton}
           loadingElement="Loading..."
-          disabled={!isAdmin || !allowStart || !synchronousBlock} // Only admin can start the game
+          sx={{ fontWeight: 600 }}
+          disabled={!isAdmin || !allowStart || synchronousBlock} // Only admin can start the game
         >
           Start Game
         </TextButton>
@@ -413,6 +328,7 @@ export default function Waiting() {
               id="waiting_player-list_wrapper"
               width="100%"
               height="100%"
+              minHeight="30vh"
               border="2px solid"
               borderColor="grey.300"
               sx={{ overflowY: 'auto' }}
@@ -430,34 +346,12 @@ export default function Waiting() {
         </Stack>
       )}
 
-      {/* Snackbar player in / out notification */}
-      <SnackbarPlayer
-        open={snackbarOpen}
-        snackbarInfo={snackbarPlayerInfo}
-        onClose={handleSnackbarClose}
-        onExited={handleSnackbarExited}
-      />
-
-      {/* Dialog before leaving (press back button) */}
-      <Dialog id="waiting_before-leave_dialog" open={blocker.state === 'blocked'}>
-        <DialogTitle>Are you sure you want to leave?</DialogTitle>
-        <DialogActions>
-          {/* No need of blocker.proceed?.() as handleLeaveRoom() automatically redirects */}
-          <Button onClick={() => blocker.reset?.()} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button onClick={handleLeaveRoom} disabled={isSubmitting}>
-            Proceed
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Backdrop when game start button is pressed */}
       <Backdrop
         open={backdropOpen}
         sx={{ color: 'common.white', zIndex: (theme) => theme.zIndex.drawer + 1 }}
       >
-        <CircularProgress color="inherit" size="3rem" />
+        {backdropOpen && <CircularProgress color="inherit" size="3rem" />}
       </Backdrop>
     </>
   );

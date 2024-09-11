@@ -1,15 +1,19 @@
-import { defineConfig, splitVendorChunkPlugin } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), splitVendorChunkPlugin()],
+  plugins: [react()],
 
   // Expose host for the Docker (or do "vite --host --port 5173" in the script)
   server: {
-    host: true,
-    port: 5173,
+    host: true, // Allows access from external devices
+    port: 5173, // Port number for the Vite server
+    https: {
+      key: '../../ssl/localhost.key',
+      cert: '../../ssl/localhost.crt',
+    },
   },
   preview: {
     host: true,

@@ -17,9 +17,10 @@ export const insertUser = async (
 ): Promise<boolean> => {
   logQueryEvent('Inserting new user.');
 
-  const options = dbSession ? { session: dbSession } : {};
-
-  const result = await getDB().users.insertOne(newUserObj, options);
+  const result = await getDB().users.insertOne(
+    newUserObj, // Insert
+    dbSession ? { session: dbSession } : {} // Option
+  );
   return result.acknowledged; // true or false
 };
 
@@ -46,25 +47,51 @@ export const updateUserStatus = async (
 ): Promise<User | null> => {
   logQueryEvent('Updating only the user status in User.');
 
-  // Options object
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().users.findOneAndUpdate(
-    { _id: userId }, // Query part: find a user with this _id
-    { $set: { status: newStatus } }, // Update part: set the new status
-    options
+    // Filter
+    { _id: userId }, // find a user with this _id
+    // Update
+    { $set: { status: newStatus } }, // set the new status
+    // Option
+    dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          session: dbSession,
+          includeResultMetadata: false,
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          includeResultMetadata: false,
+        } // return the updated document
   );
+};
+
+export const updateGivenUsersStatus = async (
+  userIds: Array<ObjectId>,
+  newStatus: UserStatusEnum,
+  dbSession: ClientSession | null = null
+): Promise<boolean> => {
+  logQueryEvent('Updating the user status for given array of users.');
+
+  // Update status for all users in the room
+  const result = await getDB().users.updateMany(
+    // Filter
+    { _id: { $in: userIds } },
+    // Update
+    { $set: { status: newStatus } },
+    // Option
+    dbSession ? { session: dbSession } : {}
+  );
+
+  if (result.matchedCount !== userIds.length) {
+    console.error('Some user records were not matched.');
+  }
+  if (result.modifiedCount !== userIds.length) {
+    console.warn('Some user records were matched but not modified.');
+  }
+
+  return result.matchedCount === userIds.length;
 };
 
 export const deleteUser = async (
@@ -73,9 +100,13 @@ export const deleteUser = async (
 ): Promise<boolean> => {
   logQueryEvent('Deleting the user.');
 
-  const options = dbSession ? { session: dbSession } : {};
+  const result = await getDB().users.deleteOne(
+    // Filter
+    { _id: userId },
+    // Option
+    dbSession ? { session: dbSession } : {}
+  );
 
-  const result = await getDB().users.deleteOne({ _id: userId }, options);
   return result.deletedCount === 1; // true or false
 };
 

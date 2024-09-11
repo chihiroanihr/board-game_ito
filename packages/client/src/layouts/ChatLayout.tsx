@@ -2,30 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useTheme, useMediaQuery } from '@mui/material';
 
 import {
-  NamespaceEnum,
-  CommunicationMethodEnum,
   type RoomChatMessage,
+  type SendChatResponse,
   type ReceiveChatResponse,
+  NamespaceEnum,
 } from '@bgi/shared';
 
 import { ChatContent, ChatPopover, ChatPopper, VoiceButton } from '@/components';
-import {
-  useRoom,
-  useSocket,
-  useAction,
-  usePageVisibility,
-  type BeforeSubmitCallbackParams,
-  type BeforeSubmitCallbackFunction,
-  type ErrorCallbackParams,
-  type ErrorCallbackFunction,
-  type SuccessCallbackParams,
-  type SuccessCallbackFunction,
-} from '@/hooks';
+import { useSocket, useAuth, usePreFormSubmission, usePageVisibility } from '@/hooks';
+import { outputServerError, outputResponseTimeoutError } from '@/utils';
+import { type SendChatFormDataType } from '../enum.js';
 
-const CommunicationLayout = () => {
+const ChatLayout = () => {
   const theme = useTheme();
   const { socket } = useSocket();
-  const { room } = useRoom();
+  const { user } = useAuth();
   const isVisible = usePageVisibility();
   const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
   const isSmViewport = useMediaQuery(theme.breakpoints.up('sm'));
@@ -35,8 +26,6 @@ const CommunicationLayout = () => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null); // or HTMLElement -> sets if popover / popper is opened or not
   const [isChatButtonLoading, setIsChatButtonLoading] = useState<boolean>(false); // Custom loading button only for chat
   const [triggerScroll, setTriggerScroll] = useState<RoomChatMessage[] | boolean>(allMessages);
-
-  const communicationMethod = room?.setting.communicationMethod;
 
   // Popper toggle (open / close) handler
   const handleTogglePopper = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -48,23 +37,58 @@ const CommunicationLayout = () => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
-  // Callback for button click handlers
-  const beforeSubmit: BeforeSubmitCallbackFunction = ({ action }: BeforeSubmitCallbackParams) => {
-    setIsChatButtonLoading(true);
-  };
-  const onError: ErrorCallbackFunction = ({ action }: ErrorCallbackParams) => {
-    setIsChatButtonLoading(false);
-  };
-  const onSuccess: SuccessCallbackFunction = ({ action }: SuccessCallbackParams) => {
-    setIsChatButtonLoading(false);
-  };
-
   // Button click handlers
-  const { handleSendChat, errorMessage } = useAction({
-    beforeSubmit,
-    onError,
-    onSuccess,
-  });
+  const { formErrorMessage, setFormErrorMessage, processPreFormSubmission } =
+    usePreFormSubmission();
+
+  /**
+   * Handler for sending chat message.
+   * (NO SHARED LOADING BUTTON)
+   * @param data
+   * @returns
+   */
+  const handleSendChat = (data: SendChatFormDataType) => {
+    setFormErrorMessage(''); // Reset error message
+    setIsChatButtonLoading(true);
+
+    const message = data.message.trim(); // Trim any start/end spaces
+    // ERROR
+    if (!message) {
+      setFormErrorMessage('Please enter a message.');
+      setIsChatButtonLoading(false);
+      return;
+    }
+
+    // Create a timeout to check if the response is received
+    const timeoutId = setTimeout(() => {
+      outputResponseTimeoutError();
+      // ERROR
+      setIsChatButtonLoading(false);
+    }, 5000);
+
+    const chatData: RoomChatMessage = {
+      fromUser: user,
+      message: message,
+      timestamp: Date.now(),
+    };
+
+    /** @socket_send - Send to socket & receive response */
+    socket.emit(NamespaceEnum.SEND_CHAT, chatData, async ({ error }: SendChatResponse) => {
+      clearTimeout(timeoutId);
+
+      // ERROR
+      if (error) {
+        outputServerError(error);
+        setIsChatButtonLoading(false);
+      }
+      // SUCCESS
+      else {
+        setIsChatButtonLoading(false);
+      }
+
+      processPreFormSubmission(false);
+    });
+  };
 
   // Close popper and popover when viewport changes
   useEffect(() => {
@@ -87,12 +111,12 @@ const CommunicationLayout = () => {
       }
     }
 
-    // Executes whenever a socket event is recieved from the server
+    // Executes whenever a socket event is received from the server
     socket.on(NamespaceEnum.RECEIVE_CHAT, onReceiveChatEvent);
     return () => {
       socket.off(NamespaceEnum.RECEIVE_CHAT, onReceiveChatEvent);
     };
-  }, [socket, allMessages, anchorEl, isVisible, isLgViewport]);
+  }, [allMessages, anchorEl, isLgViewport, isVisible, socket]);
 
   /**
    * Every render
@@ -111,60 +135,51 @@ const CommunicationLayout = () => {
         setTriggerScroll(allMessages); // If messages exists and not yet scrolled down then scroll down
       }
     }
-  }, [allMessages, unreadMessages, anchorEl, isLgViewport, isVisible]);
+  }, [allMessages, anchorEl, isLgViewport, isVisible, unreadMessages]);
 
-  return (
-    <>
-      {/* ------------------------- Chat ------------------------- */}
-      {communicationMethod === CommunicationMethodEnum.CHAT &&
-        (isLgViewport ? (
-          <ChatContent
-            allMessages={allMessages}
-            onSubmit={handleSendChat}
-            errorMessage={errorMessage}
-            isButtonLoading={isChatButtonLoading}
-            triggerScroll={triggerScroll}
-          />
-        ) : isSmViewport ? (
-          // Popper Button (Screen > sm)
-          <ChatPopper
-            numNotif={unreadMessages.length}
-            anchorEl={anchorEl}
-            isOpen={Boolean(anchorEl)}
-            handleToggle={handleTogglePopper}
-          >
-            <ChatContent
-              allMessages={allMessages}
-              onSubmit={handleSendChat}
-              errorMessage={errorMessage}
-              isButtonLoading={isChatButtonLoading}
-              triggerScroll={triggerScroll}
-              isInModal={true}
-            />
-          </ChatPopper>
-        ) : (
-          // Popover Button (Screen > 0)
-          <ChatPopover
-            numNotif={unreadMessages.length}
-            anchorEl={anchorEl}
-            isOpen={Boolean(anchorEl)}
-            handleToggle={handleTogglePopover}
-          >
-            <ChatContent
-              allMessages={allMessages}
-              onSubmit={handleSendChat}
-              errorMessage={errorMessage}
-              isButtonLoading={isChatButtonLoading}
-              triggerScroll={triggerScroll}
-              isInModal={true}
-            />
-          </ChatPopover>
-        ))}
-
-      {/* ------------------------- Mic ------------------------- */}
-      {communicationMethod === CommunicationMethodEnum.MIC && <VoiceButton />}
-    </>
+  return isLgViewport ? (
+    <ChatContent
+      allMessages={allMessages}
+      onSubmit={handleSendChat}
+      errorMessage={formErrorMessage}
+      isButtonLoading={isChatButtonLoading}
+      triggerScroll={triggerScroll}
+    />
+  ) : isSmViewport ? (
+    // Popper Button (Screen > sm)
+    <ChatPopper
+      numNotif={unreadMessages.length}
+      anchorEl={anchorEl}
+      isOpen={Boolean(anchorEl)}
+      handleToggle={handleTogglePopper}
+    >
+      <ChatContent
+        allMessages={allMessages}
+        onSubmit={handleSendChat}
+        errorMessage={formErrorMessage}
+        isButtonLoading={isChatButtonLoading}
+        triggerScroll={triggerScroll}
+        isInModal={true}
+      />
+    </ChatPopper>
+  ) : (
+    // Popover Button (Screen > 0)
+    <ChatPopover
+      numNotif={unreadMessages.length}
+      anchorEl={anchorEl}
+      isOpen={Boolean(anchorEl)}
+      handleToggle={handleTogglePopover}
+    >
+      <ChatContent
+        allMessages={allMessages}
+        onSubmit={handleSendChat}
+        errorMessage={formErrorMessage}
+        isButtonLoading={isChatButtonLoading}
+        triggerScroll={triggerScroll}
+        isInModal={true}
+      />
+    </ChatPopover>
   );
 };
 
-export default CommunicationLayout;
+export default ChatLayout;

@@ -1,12 +1,11 @@
 import React, { Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { AppBar, Toolbar, Box, Grid, styled } from '@mui/material';
 
-import { CommunicationMethodEnum } from '@bgi/shared';
-
-import { HeaderLayout, CommunicationLayout } from '@/layouts';
+import { HeaderLayout } from '@/layouts';
 import { Loader, Copyright } from '@/components';
-import { useAuth, useRoom } from '@/hooks';
+import { useAuth, useGame } from '@/hooks';
+import { toolBarStyle } from '../theme';
 
 /** @/debug - Display amount of sockets connected: Only for development environment */
 const SocketsConnected = React.lazy(() => import('../components/debug/SocketsConnected'));
@@ -15,30 +14,28 @@ const SocketsLoggedIn = React.lazy(() => import('../components/debug/SocketsLogg
 /** @/debug - Initialize DB button: Only for development environment */
 const Initialize = React.lazy(() => import('../components/debug/Initialize'));
 
+const OffsetAppBar = styled('div')(({ theme }) => theme.mixins.toolbar);
+
 export default function CommonLayout() {
-  const theme = useTheme();
   const { user } = useAuth();
-  const { room } = useRoom();
+  const { game } = useGame();
   const location = useLocation(); /** @/debug */
 
-  const isLgViewport = useMediaQuery(theme.breakpoints.up('lg'));
-
-  const communicationMethod = room?.setting.communicationMethod;
-
   return (
-    <Box>
+    <Box sx={{ overflowY: 'auto' }} height="100%">
+      {/** @todo: Fix mobile browser 100vh problem */}
       <Box height="100vh" display="flex" flexDirection="column" pb="0.5rem">
         {/* -------------- Header -------------- */}
         {user && (
-          <Box
-            component="header"
-            px={{ xs: '1.4rem', lg: '2%' }}
-            py="0.8rem"
-            borderBottom="2px solid"
-            borderColor="grey.300"
-          >
-            <HeaderLayout />
-          </Box>
+          <>
+            <AppBar component="header">
+              <Toolbar sx={toolBarStyle}>
+                <HeaderLayout />
+              </Toolbar>
+            </AppBar>
+
+            <OffsetAppBar />
+          </>
         )}
 
         {/* -------------- Main -------------- */}
@@ -47,10 +44,7 @@ export default function CommonLayout() {
           component="main"
           flexGrow={1}
           position="relative"
-          height="100%"
-          pt={{ xs: '1.4rem', lg: '2%' }}
-          px={{ xs: '1.4rem', lg: '2%' }}
-          sx={{ overflowY: 'auto' }}
+          p={{ xs: '1.4rem', lg: '2%' }}
         >
           {/* Main Layout */}
           <Grid
@@ -64,32 +58,14 @@ export default function CommonLayout() {
           >
             <Outlet />
           </Grid>
-
-          {/* Communication Method Layout */}
-          {communicationMethod && (
-            <Grid
-              id="communication-wrapper"
-              item
-              xs={3.6} // grid item width
-              sx={{
-                ...(isLgViewport && communicationMethod === CommunicationMethodEnum.CHAT
-                  ? { display: 'flex', height: '100%', ml: '2rem' } // Only when chat option + viewport > large, grow horizontally
-                  : {
-                      position: 'fixed',
-                      bottom: '1.4rem',
-                      right: { xs: '1.4rem', lg: '2%' },
-                    }), // Otherwise, fixed position with chat / mic button on the bottom-left
-              }}
-            >
-              <CommunicationLayout />
-            </Grid>
-          )}
         </Grid>
 
         {/* -------------- Footer -------------- */}
-        <Box component="footer" mt="0.5rem">
-          <Copyright />
-        </Box>
+        {!game && (
+          <Box component="footer" mt="0.5rem">
+            <Copyright />
+          </Box>
+        )}
       </Box>
 
       {/* {process.env.NODE_ENV === 'development' && (

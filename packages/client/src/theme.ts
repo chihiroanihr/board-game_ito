@@ -93,9 +93,17 @@ theme = createTheme(theme, {
 export default theme;
 
 export const commonIconButtonStyle = {
-  bgcolor: 'primary.main',
-  color: 'background.default',
+  bgcolor: 'primary.contrastText',
+  color: 'primary.main',
   '&:hover': {
     bgcolor: 'primary.dark', // Background color on hover
   },
+};
+
+export const toolBarStyle = {
+  backgroundColor: 'primary.main',
+  px: { xs: 2, lg: '1%' },
+  py: { xs: '0.685rem', md: 'initial' },
+  // borderBottom: '2px solid',
+  // borderColor: 'grey.300',
 };

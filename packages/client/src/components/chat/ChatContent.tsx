@@ -116,7 +116,7 @@ const ChatContent: React.FC<ChatContentProps> = ({
               {error && (
                 <FormHelperText
                   component="span"
-                  error={error}
+                  error={!!error}
                   sx={{ position: 'absolute', top: '-43%', right: 0 }}
                 >
                   {error ? error.message : null}

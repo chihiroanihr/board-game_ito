@@ -1,4 +1,8 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
+
+import * as log from '../log';
+import { getAvailableThemeLanguages } from '../database/controllers/themeController';
+
 const router = express.Router();
 
 // Main Route
@@ -18,6 +22,25 @@ router.get('/', async (_req, res) => {
   `;
 
   res.status(200).send(htmlContent);
+});
+
+/**
+ * @function getAvailableThemeLanguages
+ * @route  GET /api/languages
+ * @desc   Get available theme languages
+ * @access Public
+ */
+router.get('/api/languages', async (req: Request, res: Response) => {
+  try {
+    const languages = await getAvailableThemeLanguages();
+    res.status(200).json(languages);
+  } catch (error) {
+    log.handleServerError(error, 'routeHandlers.ts');
+    res.status(500).json({
+      error,
+      errorMessage: 'Internal server error: Failed to fetch available languages.',
+    });
+  }
 });
 
 // Initial session

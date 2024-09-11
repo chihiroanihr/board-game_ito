@@ -1,4 +1,4 @@
-import { ClientSession, ReturnDocument } from 'mongodb';
+import { ClientSession, ReturnDocument, ObjectId } from 'mongodb';
 
 import type { Room, RoomStatusEnum, RoomSetting } from '@bgi/shared';
 
@@ -42,6 +42,33 @@ export const updateRoom = async (
   }; // true or false
 };
 
+export const updateRoomAdmin = async (
+  newAdminId: ObjectId,
+  roomId: string,
+  dbSession: ClientSession | null = null
+): Promise<Room | null> => {
+  logQueryEvent('Updating only the room admin in Room.');
+
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
+  return await getDB().rooms.findOneAndUpdate(
+    // Filter
+    { _id: roomId }, // find a room with roomId
+    // Update
+    { $set: { roomAdmin: newAdminId } }, // set the new admin
+    // Option
+    dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          session: dbSession,
+          includeResultMetadata: false,
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          includeResultMetadata: false,
+        } // return the updated document
+  );
+};
+
 export const updateRoomStatus = async (
   roomId: string,
   newStatus: RoomStatusEnum,
@@ -49,24 +76,23 @@ export const updateRoomStatus = async (
 ): Promise<Room | null> => {
   logQueryEvent('Updating only the room status in Room.');
 
-  // Options object
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().rooms.findOneAndUpdate(
-    { _id: roomId }, // Query part: find a room with roomId
-    { $set: { status: newStatus } }, // Update part: set the new status
-    options
+    // Filter
+    { _id: roomId }, // find a room with roomId
+    // Update
+    { $set: { status: newStatus } }, // set the new status
+    // Option
+    dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          session: dbSession,
+          includeResultMetadata: false,
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          includeResultMetadata: false,
+        } // return the updated document
   );
 };
 
@@ -77,24 +103,23 @@ export const updateRoomSetting = async (
 ): Promise<Room | null> => {
   logQueryEvent('Updating only the room setting in Room.');
 
-  // Options object
-  const options = dbSession
-    ? {
-        returnDocument: ReturnDocument.AFTER,
-        session: dbSession,
-        includeResultMetadata: false,
-      }
-    : {
-        returnDocument: ReturnDocument.AFTER,
-        includeResultMetadata: false,
-      }; // return the updated document
-
-  // Result will contain the updated or original (if no modification) document,
-  // or null if no document was found.
+  // Result will contain the updated or original (if no modification) document, or null if no document was found.
   return await getDB().rooms.findOneAndUpdate(
-    { _id: roomId }, // Query part: find a room with roomId
-    { $set: { setting: newSetting } }, // Update part: set the new status
-    options
+    // Filter
+    { _id: roomId }, // find a room with roomId
+    // Update
+    { $set: { setting: newSetting } }, // set the new status
+    // Option
+    dbSession
+      ? {
+          returnDocument: ReturnDocument.AFTER,
+          session: dbSession,
+          includeResultMetadata: false,
+        }
+      : {
+          returnDocument: ReturnDocument.AFTER,
+          includeResultMetadata: false,
+        } // return the updated document
   );
 };
 
@@ -104,11 +129,13 @@ export const deleteRoom = async (
 ): Promise<boolean> => {
   logQueryEvent('Deleting the room.');
 
-  // Options object
-  const options = dbSession ? { session: dbSession } : {};
-
-  // Execute delete
-  const result = await getDB().rooms.deleteOne({ _id: roomId }, options);
+  // Execute deletion
+  const result = await getDB().rooms.deleteOne(
+    // Filter
+    { _id: roomId },
+    // Option
+    dbSession ? { session: dbSession } : {}
+  );
 
   return result.deletedCount === 1; // true or false
 };
@@ -122,7 +149,9 @@ export const getAllRooms = async (): Promise<Array<Room>> => {
 export const deleteAllRooms = async (): Promise<boolean> => {
   logQueryEvent('Deleting all rooms.');
 
+  // Execute deletion
   const result = await getDB().rooms.deleteMany({});
+
   return result.deletedCount > 0; // true or false
 };
 

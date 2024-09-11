@@ -10,6 +10,9 @@ WORKDIR /board-game_ito
 COPY ../package.json ./
 COPY ../package-lock.json ./
 
+# Copy /ssl folder
+COPY ../ssl ./ssl/
+
 # Copy /shared folder
 COPY ../packages/shared ./packages/shared/
 

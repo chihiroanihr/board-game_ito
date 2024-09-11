@@ -14,5 +14,8 @@
     "build-check": "tsc -p ./tsconfig.shared.json --noEmit",
     "build-watch": "npm run clean && tsc -p ./tsconfig.shared.json --watch",
     "build": "npm run clean && tsc -p ./tsconfig.shared.json"
+  },
+  "dependencies": {
+    "@mui/material": "^6.0.0"
   }
 }
