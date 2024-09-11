@@ -1,11 +1,11 @@
 import React from 'react';
-import { ListItem, ListItemAvatar, Avatar, Stack, ListItemText, Typography } from '@mui/material';
+import { ListItem, ListItemAvatar, Stack, ListItemText, Typography } from '@mui/material';
 
 import { type RoomChatMessage } from '@bgi/shared';
 
-import { MessageSpeechBubble } from '@/components';
+import { MessageSpeechBubble, PlayerAvatar } from '@/components';
 import { useAuth, useRoom } from '@/hooks';
-import { getAvatarProps, getUserTextColor, userNameToColor, computeRelativeTime } from '@/utils';
+import { getUserTextColor, usernameToColor, computeRelativeTime } from '@/utils';
 
 const MessageItem: React.FC<RoomChatMessage> = ({ fromUser, message, timestamp }) => {
   const { user } = useAuth();
@@ -15,7 +15,7 @@ const MessageItem: React.FC<RoomChatMessage> = ({ fromUser, message, timestamp }
     <ListItem alignItems="flex-start" sx={{ px: 0, py: '1.8%' }}>
       {/* Avatar */}
       <ListItemAvatar sx={{ mt: 0, pr: '0.625rem', zIndex: 1 }}>
-        <Avatar {...getAvatarProps(fromUser.name)} sizes="small" />
+        <PlayerAvatar player={fromUser} sizes="small" />
       </ListItemAvatar>
 
       {/* Message content */}
@@ -68,7 +68,7 @@ const MessageItem: React.FC<RoomChatMessage> = ({ fromUser, message, timestamp }
           component="p"
           bgcolor={
             fromUser._id.toString() === user._id.toString() && // If your message
-            userNameToColor(fromUser.name, 0.1)
+            usernameToColor(fromUser.name, 0.1)
           }
         >
           {message}

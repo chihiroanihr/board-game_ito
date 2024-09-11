@@ -4,8 +4,9 @@ import { Avatar, Typography, Box, Stack } from '@mui/material';
 
 import { type User, type Room, type Game, type InGameResponse, NamespaceEnum } from '@bgi/shared';
 
+import { PlayerAvatar } from '@/components';
 import { useSession, useAuth, useRoom, useGame, useSocket, useWindowDimensions } from '@/hooks';
-import { outputServerError, getAvatarProps } from '@/utils';
+import { outputServerError } from '@/utils';
 import { type GameLayoutOutletContextType } from '../enum';
 
 const Game = () => {
@@ -114,7 +115,7 @@ const Game = () => {
                 {player.name}
               </Typography>
             )}
-            <Avatar {...getAvatarProps(player.name)} />
+            <PlayerAvatar player={player} />
           </Stack>
         );
       })}

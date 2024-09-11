@@ -1,4 +1,4 @@
-export const userNameToColor = (string: string, opacity?: number) => {
+export const usernameToColor = (string: string, opacity?: number) => {
   let hash = 0;
   let i;
 
@@ -26,26 +26,10 @@ export const userNameToColor = (string: string, opacity?: number) => {
   return color;
 };
 
-export const getAvatarProps = (name: string, isSpeaking = false) => {
-  return {
-    alt: name,
-    // background color
-    sx: {
-      bgcolor: userNameToColor(name),
-      ...(isSpeaking && {
-        border: '2px solid',
-        borderColor: 'primary.main',
-      }),
-    },
-    // name as initial
-    children: `${name[0]}${name[1]}`,
-  };
-};
-
 export const getUserTextColor = (name: string) => {
   return {
     sx: {
-      color: userNameToColor(name),
+      color: usernameToColor(name),
     },
   };
 };

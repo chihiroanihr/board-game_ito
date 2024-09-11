@@ -1,5 +1,4 @@
-import usePeerConnections from './usePeerConnections';
-import useDataChannels from './useDataChannels';
-import useVoiceActivity from './useVoiceActivity';
+export * from './useRemoteStreams';
 
-export { usePeerConnections, useDataChannels, useVoiceActivity };
+import usePeerConnections from './usePeerConnections';
+export { usePeerConnections };

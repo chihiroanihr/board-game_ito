@@ -5,7 +5,6 @@ import {
   ListItem,
   ListItemButton,
   ListItemAvatar,
-  Avatar,
   ListItemText,
   Typography,
   Dialog,
@@ -18,7 +17,7 @@ import {
 import { type User } from '@bgi/shared';
 
 import { OnlineBadgeStyled } from './styled';
-import { getAvatarProps } from '@/utils';
+import { PlayerAvatar } from '@/components';
 import { PlayerInQueueActionEnum } from '../enum';
 
 interface ManagePlayerButtonData {
@@ -124,9 +123,9 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
             <OnlineBadgeStyled
               variant="dot"
               overlap="circular"
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-              <Avatar {...getAvatarProps(player.name)} />
+              <PlayerAvatar player={player} />
             </OnlineBadgeStyled>
           </ListItemAvatar>
           <ListItemText
@@ -152,7 +151,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
               padding="0.5rem"
               borderRadius="0.3rem"
             >
-              myself
+              you
             </Typography>
           )}
         </ListItemButton>
@@ -174,7 +173,7 @@ const PlayerListItem: React.FC<PlayerListItemProps> = ({
             bgcolor="grey.200"
             marginBottom="1rem"
           >
-            <Avatar alt={player.name} {...getAvatarProps(player.name)} />
+            <PlayerAvatar player={player} />
             <Typography component="div">{player.name}</Typography>
           </Stack>
 

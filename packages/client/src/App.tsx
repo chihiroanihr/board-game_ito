@@ -14,11 +14,12 @@ import {
   GameProvider,
   SocketProvider,
   SubmissionStatusProvider,
+  RemoteStreamsProvider,
   useWindowDimensions,
 } from '@/hooks';
 import { CommonLayout, ConnectLayout, GameLayout } from '@/layouts';
 import { Home, Dashboard, CreateRoom, JoinRoom, Waiting, Game, NotFound } from '@/pages';
-import { socket } from './service/socket';
+import { socket } from '@/services';
 
 // Function to calculate window (screen) height and set the CSS variable
 const setWindowHeightCSS = (height: number = window.innerHeight) => {
@@ -67,7 +68,9 @@ function App() {
           <GameProvider>
             <SocketProvider socket={socket}>
               <SubmissionStatusProvider>
-                <RouterProvider router={routes} />
+                <RemoteStreamsProvider>
+                  <RouterProvider router={routes} />
+                </RemoteStreamsProvider>
               </SubmissionStatusProvider>
             </SocketProvider>
           </GameProvider>

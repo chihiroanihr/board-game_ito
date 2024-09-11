@@ -1,13 +1,13 @@
-// usePeerConnections.js
 import { useRef, useCallback } from 'react';
 
-import { MicReadyResponse, NamespaceEnum } from '@bgi/shared';
+import { NamespaceEnum } from '@bgi/shared';
 
-import { useSocket } from '@/hooks';
+import { useSocket, useRemoteStreams } from '@/hooks';
 
 // Multiple STUN servers and a TURN server to increase the chances of successful connection:
 const ICE_SERVERS = [
-  { urls: 'stun:stun.l.google.com:19302' }, // Google's public STUN server // 'turn:your-turn-server-host:your-turn-server-port',
+  // Google's public STUN server
+  { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
   { urls: 'stun:stun2.l.google.com:19302' },
   { urls: 'stun:stun3.l.google.com:19302' },
@@ -21,38 +21,43 @@ const ICE_SERVERS = [
 
 /**
  * @function usePeerConnections - A hook that handles the creation and management of RTCPeerConnections.
- * @returns {Object} An object containing functions to manage peer connections
- * @returns {Function} closePeerConnection - A function to close a peer connection
- * @returns {Function} closeAllPeerConnections - A function to close all peer connections
- * @returns {Function} createNewPeerConnection - A function to create a new peer connection
- * @returns {Function} createOfferAndSendSignal - A function to create an offer and send it to a peer
- * @returns {Function} createAnswerAndSendSignal - A function to create an answer and send it to a peer
- * @returns {Record<string, RTCPeerConnection>} peerConnections - An object containing peer connections
- * @example
- * const { closePeerConnection, createNewPeerConnection, createOfferAndSendSignal, createAnswerAndSendSignal, peerConnections } = usePeerConnections();
+ * @returns {Record<string, RTCPeerConnection>} - An object containing the peer connections.
+ * @example const { peerConnections } = usePeerConnections();
  */
 const usePeerConnections = () => {
+  // Calling context hook inside this custom "usePeerConnections" hook
+  const { addRemoteStream, removeRemoteStream, removeAllRemoteStreams, setRemoteMuteState } =
+    useRemoteStreams();
+
   const { socket } = useSocket();
 
   const peerConnections = useRef<Record<string, RTCPeerConnection>>({});
+
+  const handleError = (msg: string, error: unknown) => {
+    console.error(`[!] ${msg}: `, error);
+  };
 
   /**
    * @function closePeerConnection - Closes an existing peer connection
    * @param {string} strPlayerId - The stringified player ID of the peer connection to close
    * @returns {void}
    */
-  const closePeerConnection = useCallback((strPlayerId: string) => {
-    const peerConnection = peerConnections.current[strPlayerId];
-    // Close the existing peer connection
-    if (peerConnection) {
-      peerConnection.close();
-    }
+  const closePeerConnection = useCallback(
+    (strPlayerId: string) => {
+      // Close the existing peer connection
+      const peerConnection = peerConnections.current[strPlayerId];
+      if (peerConnection) {
+        peerConnection.close();
+      }
+      // Remove from the peerConnections list
+      delete peerConnections.current[strPlayerId];
+      // Remove the peer from remote streams
+      removeRemoteStream(strPlayerId);
 
-    // Remove from the peerConnections list
-    delete peerConnections.current[strPlayerId];
-
-    console.log('Peer connection closed.');
-  }, []);
+      console.log('Peer connection closed.');
+    },
+    [removeRemoteStream]
+  );
 
   /**
    * @function closeAllPeerConnections - Closes all existing peer connections
@@ -60,35 +65,16 @@ const usePeerConnections = () => {
    */
   const closeAllPeerConnections = useCallback(() => {
     // Close all peer connections by iterating the peerConnections list
-    Object.values(peerConnections.current).forEach((connection) => {
-      connection?.close();
+    Object.values(peerConnections.current).forEach((peerConnection) => {
+      peerConnection.close();
     });
     // Initialize peerConnections list to an empty object
     peerConnections.current = {};
+    // Remove all peers from remote streams
+    removeAllRemoteStreams();
 
     console.log('All peer connections closed.');
-  }, []);
-
-  /**
-   * @function restartPeerConnection - Restarts a peer connection
-   * @param {MediaStream} localMediaStream - The local media stream
-   * @param {string} remoteStrUserId - The remote user ID
-   * @returns {void}
-   */
-  const restartPeerConnection = useCallback(
-    (localMediaStream: MediaStream, remoteStrUserId: string) => {
-      // Close existing connection
-      closePeerConnection(remoteStrUserId);
-
-      // Initiate new connection
-      if (localMediaStream) {
-        socket.emit(NamespaceEnum.MIC_READY, async ({ error }: MicReadyResponse) => {
-          if (error) console.error(error);
-        });
-      }
-    },
-    [closePeerConnection, socket]
-  );
+  }, [removeAllRemoteStreams]);
 
   /**
    * @function createOfferAndSendSignal - Creates an offer and sends it to a peer
@@ -109,10 +95,7 @@ const usePeerConnections = () => {
           toSocketId,
         });
       } catch (error) {
-        console.error(
-          `[!] Failed to create and send offer to user with socket ID: ${toSocketId}: \n
-          Error: ${error}`
-        );
+        handleError(`Failed to create/send offer to user with socket ID ${toSocketId}`, error);
       }
     },
     [socket]
@@ -144,10 +127,7 @@ const usePeerConnections = () => {
           toSocketId,
         }); // Send answer and my user ID to the *sender's socket*
       } catch (error) {
-        console.error(
-          `[!] Failed to create and send answer to user with socket ID: ${toSocketId}. \n
-           Error: ${error}`
-        );
+        handleError(`Failed to create/send answer to user with socket ID ${toSocketId}`, error);
       }
     },
     [socket]
@@ -163,17 +143,12 @@ const usePeerConnections = () => {
     async (signal: RTCSessionDescriptionInit, fromStrUserId: string) => {
       try {
         const peerConnection = peerConnections.current[fromStrUserId];
-        // If answer is back from the voice exchanged user
-        if (peerConnection) {
-          // Set sender's signal to remote description
-          await peerConnection.setRemoteDescription(signal);
-        }
+        // If answer is back from the voice exchanged user, set sender's signal to remote description
+        if (peerConnection) await peerConnection.setRemoteDescription(signal);
         // Answer came from nowhere (player ID does not exist in peer connections)
-        else {
-          throw new Error(`Incoming answer error from User ID: ${fromStrUserId}. Who is this?`);
-        }
+        else throw new Error(`Incoming answer error from User ID ${fromStrUserId}. Who is this?`);
       } catch (error) {
-        console.error(`[!] Failed to set remote description: ${error}`);
+        handleError('Failed to set remote description', error);
       }
     },
     []
@@ -189,19 +164,15 @@ const usePeerConnections = () => {
     async (candidate: RTCIceCandidate, fromStrUserId: string) => {
       try {
         const peerConnection = peerConnections.current[fromStrUserId];
-        // If sender exists
-        if (peerConnection) {
-          // Add sender's candidate to remote description
-          await peerConnection.addIceCandidate(candidate);
-        }
+        // If sender exists, add sender's candidate to remote description
+        if (peerConnection) await peerConnection.addIceCandidate(candidate);
         // Answer came from nowhere (player ID does not exist in peer connections)
-        else {
+        else
           throw new Error(
-            `Incoming ice candidate error for User ID: ${fromStrUserId}. Who is this?`
+            `Incoming ice candidate error for User ID ${fromStrUserId}. Who is this?`
           );
-        }
       } catch (error) {
-        console.error(`[!] Failed to set remote candidate: ${error}`);
+        handleError('Failed to set remote candidate', error);
       }
     },
     []
@@ -246,16 +217,20 @@ const usePeerConnections = () => {
       newPeerConnection.onconnectionstatechange = () => {
         console.log(`[*] Connection state change: ${newPeerConnection.connectionState}`);
         if (newPeerConnection.connectionState === 'failed') {
-          newPeerConnection.restartIce();
+          console.log('[!] Connection failed. Trying ICE restart...');
+          try {
+            newPeerConnection.restartIce();
+          } catch (error) {
+            console.error('[!] ICE restart failed. Recreating the peer connection...');
+            closePeerConnection(remoteStrUserId);
+            createNewPeerConnection(localMediaStream, remoteSocketId, remoteStrUserId);
+          }
         }
       };
 
       // Handle ICE connection state change
       newPeerConnection.oniceconnectionstatechange = () => {
         console.log(`[*] Ice connection state change: ${newPeerConnection.iceConnectionState}`);
-        // if (newPeerConnection.connectionState === 'failed') {
-        //   restartPeerConnection(localMediaStream, remoteStrUserId);
-        // }
       };
 
       // Handle renegotiation: updating an existing peer connection to accommodate changes (i.e., adding or removing media tracks)
@@ -274,6 +249,8 @@ const usePeerConnections = () => {
         // Get remote stream
         const remoteStream = event.streams[0];
         if (remoteStream) {
+          // Store remote stream received from the peer into remoteStreams list
+          addRemoteStream(remoteStrUserId, remoteStream);
           // Play remote streams
           const remoteAudio = new Audio();
           remoteAudio.srcObject = remoteStream;
@@ -283,12 +260,31 @@ const usePeerConnections = () => {
         }
       };
 
+      // Create a data channel for mute state
+      newPeerConnection.createDataChannel('mute-state');
+      // Handle data channel events
+      newPeerConnection.ondatachannel = (event: RTCDataChannelEvent) => {
+        console.log('[+] Received data channel: ', event.channel.label);
+        // Handle data channel open event
+        event.channel.onopen = () => console.log('[*] Data channel is open for: ', remoteStrUserId);
+        // Handle incoming mute state messages from the peer
+        event.channel.onmessage = (event) => {
+          console.log('[+] Received mute state: ', event.data);
+          // Extract the peer's mute state
+          const { muted } = JSON.parse(event.data);
+          // Update the remote mute state for this peer
+          setRemoteMuteState(remoteStrUserId, muted);
+        };
+        // Handle data channel close event
+        event.channel.onclose = () => console.log('[*] Data channel closed for: ', remoteStrUserId);
+      };
+
       // Store new player into peerConnections object
       peerConnections.current[remoteStrUserId] = newPeerConnection;
 
       return newPeerConnection;
     },
-    [socket]
+    [addRemoteStream, closePeerConnection, setRemoteMuteState, socket]
   );
 
   return {

@@ -26,15 +26,14 @@ import { navigateGame, outputServerError, outputResponseTimeoutError } from '@/u
 import { type GameLayoutOutletContextType } from '../enum';
 
 export default function Waiting() {
-  const { adminId, players, synchronousBlock } = useOutletContext<GameLayoutOutletContextType>();
+  const theme = useTheme();
+  const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
   const navigate = useNavigate();
   const { socket } = useSocket();
   const { user: currentUser } = useAuth();
   const { room } = useRoom();
   const { loadingButton, processPreFormSubmission } = usePreFormSubmission();
-
-  const theme = useTheme();
-  const isLgViewport = useMediaQuery(theme.breakpoints.up('lg')); // boolean
+  const { adminId, players, synchronousBlock } = useOutletContext<GameLayoutOutletContextType>();
 
   const [allowStart, setAllowStart] = useState<boolean>(false);
   const [backdropOpen, setBackdropOpen] = useState(false);

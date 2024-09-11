@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ObjectId } from 'mongodb';
 import { Grid, useMediaQuery, useTheme } from '@mui/material';
@@ -17,7 +17,8 @@ import {
 import { ChatLayout, VoiceCallLayout } from '@/layouts';
 import { SnackbarPlayerInQueue } from '@/components';
 import { useRoom, useSocket, usePeerConnections } from '@/hooks';
-import { outputServerError, LocalMediaStreamManager } from '@/utils';
+import { LocalMediaStreamManager } from '@/services';
+import { outputServerError } from '@/utils';
 import { PlayerInQueueActionEnum, type SnackbarPlayerInQueueInfoType } from '../enum';
 
 const GameLayout = () => {

@@ -46,3 +46,8 @@ export type GameLayoutOutletContextType = {
   players: Array<User>;
   synchronousBlock: boolean;
 };
+
+export type RemotePeerDataType = {
+  stream: MediaStream;
+  isMuted: boolean;
+};
