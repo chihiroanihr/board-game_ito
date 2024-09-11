@@ -10,12 +10,13 @@ import {
 } from '@bgi/shared';
 
 import { VoiceButton } from '@/components';
-import { useSocket, usePeerConnections } from '@/hooks';
+import { useSocket, usePeerConnections, useRoom } from '@/hooks';
 import { LocalMediaStreamManager } from '@/services';
 import { outputServerError } from '@/utils';
 
 const VoiceCallLayout = () => {
   const { socket: mySocket } = useSocket();
+  const { room } = useRoom();
 
   const {
     peerConnections,
@@ -29,10 +30,7 @@ const VoiceCallLayout = () => {
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
-  // const localAudioRef = useRef<HTMLAudioElement>(null);
-
   const startMediaStream = useCallback(async () => {
-    // If unmuted for the first time, start the media stream
     if (!LocalMediaStreamManager.hasStream()) {
       await LocalMediaStreamManager.startStream();
       setLocalStream(LocalMediaStreamManager.getStream());
@@ -40,16 +38,12 @@ const VoiceCallLayout = () => {
   }, []);
 
   useEffect(() => {
-    startMediaStream();
-  }, [startMediaStream]);
+    room && startMediaStream();
+  }, [room, startMediaStream]);
 
   // When your local media stream is ready
   useEffect(() => {
     if (!localStream) return;
-    // if (!localAudioRef.current || !localStream) return;
-    // // Add stream to local audio element
-    // localAudioRef.current.srcObject = localStream;
-
     console.log('Sending mic ready status.');
 
     // Emit mic ready signal to server
@@ -62,8 +56,6 @@ const VoiceCallLayout = () => {
    * Toggle mute button handler
    */
   const handleToggleMute = useCallback(async () => {
-    console.log(peerConnections.current);
-
     try {
       if (isMuted) {
         // If initially muted then unmute
@@ -178,19 +170,6 @@ const VoiceCallLayout = () => {
     localStream,
     mySocket,
   ]);
-
-  // useEffect(() => {
-  //   console.log('LOCAL MEDIA STREAM: ', localStream?.getTracks()[0]);
-  //   console.log('PEER CONNECTIONS: ', peerConnections.current);
-  //   Object.entries(
-  //     peerConnections.current as React.MutableRefObject<Record<string, RTCPeerConnection>>
-  //   ).map(([playerId, connection]) => {
-  //     console.log(playerId);
-  //     console.log(connection);
-  //   });
-  // }, [localStream, peerConnections]);
-
-  /* {localStream && <audio ref={localAudioRef} autoPlay muted />} */
 
   return <VoiceButton isMuted={isMuted} onClick={handleToggleMute} />;
 };

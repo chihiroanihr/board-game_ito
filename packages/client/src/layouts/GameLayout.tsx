@@ -25,7 +25,7 @@ const GameLayout = () => {
   const theme = useTheme();
   const { socket } = useSocket();
   const { room, updateRoom } = useRoom();
-  const { closePeerConnection, closeAllPeerConnections } = usePeerConnections();
+  const { peerConnections, closePeerConnection, closeAllPeerConnections } = usePeerConnections();
 
   const [adminId, setAdminId] = useState<ObjectId>();
   const [players, setPlayers] = useState<Array<User>>([]);
