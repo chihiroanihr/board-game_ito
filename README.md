@@ -1,5 +1,7 @@
 # board-game_ito
 
+<video src='https://youtu.be/nEPj8IriKhY'></video>
+
 ## Connect to project env vault
 
 1. Connect to your project env vault (visit dotenv website and login to your account first).
