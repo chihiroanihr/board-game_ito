@@ -1,6 +1,6 @@
 # board-game_ito
 
-<video src='https://youtu.be/nEPj8IriKhY'></video>
+https://github.com/user-attachments/assets/bb02236d-8c8f-4e40-850c-e64f9ab5cf37
 
 ## Connect to project env vault
 
